@@ -10,7 +10,7 @@ import org.springframework.web.servlet.view.RedirectView;
 public class HelloController {
     @GetMapping("/hello")
     public String test() {
-        return "Hello World!";
+        return "Hello World from Java!";
     }
 
     @GetMapping("/")
