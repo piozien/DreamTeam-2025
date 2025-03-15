@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
-import { BackendComponent } from './components/backend/backend.component';
-import { HomeComponent } from './components/home/home.component';
+import { BackendComponent } from './features/backend/backend.component';
+import { HomeComponent } from './features/home/home.component';
+import { ProjectPanelComponent } from './features/project-panel/components/project-panel.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
-  { path: 'backend', component: BackendComponent }
+  { path: 'backend', component: BackendComponent },
+  { path: 'projects', component: ProjectPanelComponent }
 ];

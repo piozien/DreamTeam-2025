@@ -1,0 +1,51 @@
+<div class="project-panel">
+  <div class="project-list">
+    <div class="header">
+      <div class="header-left">
+        <button class="back-button" (click)="goToHome()">← Powrót</button>
+        <h2>Projekty</h2>
+      </div>
+      <button class="create-button" (click)="createProject()">Nowy Projekt</button>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      Ładowanie projektów...
+    </div>
+
+    <div *ngIf="error" class="error-message">
+      {{ error }}
+    </div>
+
+    <div class="project-cards" *ngIf="!loading && !error">
+      <div *ngFor="let project of projects" 
+           class="project-card"
+           [class.selected]="selectedProject?.id === project.id"
+           (click)="selectProject(project)">
+        <div class="card-header">
+          <h3>{{ project.name }}</h3>
+          <button class="delete-button" (click)="deleteProject(project); $event.stopPropagation()">×</button>
+        </div>
+        <p>{{ project.description }}</p>
+        <div class="project-status" [style.background-color]="getStatusColor(project.status)">
+          {{ project.status }}
+        </div>
+        <div class="project-dates">
+          <span>Start: {{ project.startDate | date:'longDate':'':'pl-PL' }}</span>
+          <span>Koniec: {{ project.endDate | date:'longDate':'':'pl-PL' }}</span>
+        </div>
+        <div class="team-members" *ngIf="project.teamMembers.length > 0">
+          <h4>Członkowie zespołu:</h4>
+          <ul>
+            <li *ngFor="let member of project.teamMembers">
+              {{ member.name }} - {{ member.role }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && !error && projects.length === 0" class="no-projects">
+      Brak projektów. Kliknij "Nowy Projekt" aby rozpocząć.
+    </div>
+  </div>
+</div>

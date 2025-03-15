@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HelloService } from '../../services/hello.service';
+import { HelloService } from '../../shared/services/hello.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 

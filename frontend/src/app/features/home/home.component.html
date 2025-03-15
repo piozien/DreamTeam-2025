@@ -1,0 +1,36 @@
+<div class="home-container">
+  <header class="home-header">
+    <h1>Strona główna</h1>
+    <p>Efektywne zarządzanie projektami i zespołami</p>
+  </header>
+
+  <div class="features-grid">
+    <div class="feature-card" (click)="navigateToProjects()">
+      <div class="icon">📋</div>
+      <h2>Projekty</h2>
+      <p>Zarządzaj i śledź wszystkie swoje projekty w jednym miejscu</p>
+    </div>
+
+    <div class="feature-card" (click)="navigateToTeams()">
+      <div class="icon">👥</div>
+      <h2>Zespoły</h2>
+      <p>Organizuj i współpracuj z członkami zespołu</p>
+    </div>
+
+    <div class="feature-card" (click)="navigateToTasks()">
+      <div class="icon">✓</div>
+      <h2>Zadania</h2>
+      <p>Śledź i zarządzaj zadaniami we wszystkich projektach</p>
+    </div>
+
+    <div class="feature-card" (click)="navigateToCalendar()">
+      <div class="icon">📅</div>
+      <h2>Kalendarz</h2>
+      <p>Planuj i zarządzaj harmonogramami projektów</p>
+    </div>
+  </div>
+
+  <footer class="home-footer">
+    <p>DreamTeam - projekt zespołowy 2025</p>
+  </footer>
+</div>
