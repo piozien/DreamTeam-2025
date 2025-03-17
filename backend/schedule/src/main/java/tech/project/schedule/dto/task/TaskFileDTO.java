@@ -1,4 +1,12 @@
 package tech.project.schedule.dto.task;
 
-public record TaskFileDTO() {
-}
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+public record TaskFileDTO(
+        UUID id,
+        UUID taskId,
+        UUID uploadedById,
+        String filePath,
+        LocalDateTime uploadedAt
+) {}

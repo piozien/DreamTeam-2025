@@ -1,4 +1,9 @@
 package tech.project.schedule.dto.task;
 
-public record TaskDependencyDTO() {
-}
+import java.util.UUID;
+
+public record TaskDependencyDTO(
+        UUID id,
+        UUID taskId,
+        UUID dependsOnTaskId
+) {}
