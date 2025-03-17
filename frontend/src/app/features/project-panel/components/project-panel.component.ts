@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Project, ProjectStatus } from '../../../shared/models/project.model';
+import { Project, ProjectUserRole } from '../../../shared/models/project.model';
 import { ProjectService } from '../../../shared/services/project.service';
 import { Subscription } from 'rxjs';
 
@@ -17,7 +17,7 @@ import { Subscription } from 'rxjs';
 export class ProjectPanelComponent implements OnInit, OnDestroy {
   projects: Project[] = [];
   selectedProject: Project | null = null;
-  projectStatuses = Object.values(ProjectStatus);
+  projectRoles = Object.values(ProjectUserRole);
   loading = false;
   error: string | null = null;
   isCreating = false;
@@ -39,18 +39,23 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
   loadProjects(): void {
     this.loading = true;
     this.error = null;
-    const sub = this.projectService.getProjects().subscribe(
-      (projects) => {
-        this.projects = projects;
-        this.loading = false;
-      },
-      (error) => {
-        console.error('Błąd podczas ładowania projektów:', error);
-        this.error = 'Nie udało się załadować projektów. Spróbuj ponownie później.';
-        this.loading = false;
-      }
+    this.subscriptions.add(
+      this.projectService.getProjects().subscribe({
+        next: (projects) => {
+          this.projects = projects;
+          this.loading = false;
+        },
+        error: (error) => {
+          this.error = 'Nie udało się załadować projektów';
+          this.loading = false;
+          console.error('Error loading projects:', error);
+        }
+      })
     );
-    this.subscriptions.add(sub);
+  }
+
+  selectProject(project: Project): void {
+    this.selectedProject = project;
   }
 
   createProject(): void {
@@ -58,72 +63,50 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
       console.log('Trwa tworzenie projektu, proszę czekać...');
       return;
     }
-
+    
     this.isCreating = true;
     const newProject: Project = {
-      id: 0,
+      id: '',
       name: 'Nowy Projekt',
       description: 'Opis projektu',
       startDate: new Date(),
       endDate: new Date(new Date().setMonth(new Date().getMonth() + 3)),
-      status: ProjectStatus.NOT_STARTED,
-      teamMembers: []
+      members: []
     };
 
-    const sub = this.projectService.createProject(newProject).subscribe(
-      (created) => {
-        this.projects = [...this.projects, created];
-        this.selectProject(created);
-        this.isCreating = false;
-      },
-      (error) => {
-        console.error('Błąd podczas tworzenia projektu:', error);
-        this.error = 'Nie udało się utworzyć projektu. Spróbuj ponownie.';
-        this.isCreating = false;
-      }
+    this.subscriptions.add(
+      this.projectService.createProject(newProject).subscribe({
+        next: (project) => {
+          this.projects.push(project);
+          this.selectProject(project);
+          this.isCreating = false;
+        },
+        error: (error) => {
+          this.error = 'Nie udało się utworzyć projektu';
+          this.isCreating = false;
+          console.error('Error creating project:', error);
+        }
+      })
     );
-    this.subscriptions.add(sub);
-  }
-
-  selectProject(project: Project): void {
-    this.selectedProject = project;
   }
 
   deleteProject(project: Project): void {
-    if (confirm(`Czy na pewno chcesz usunąć projekt "${project.name}"?`)) {
-      const sub = this.projectService.deleteProject(project.id).subscribe(
-        () => {
+    if (!confirm('Czy na pewno chcesz usunąć ten projekt?')) return;
+
+    this.subscriptions.add(
+      this.projectService.deleteProject(project.id).subscribe({
+        next: () => {
           this.projects = this.projects.filter(p => p.id !== project.id);
           if (this.selectedProject?.id === project.id) {
             this.selectedProject = null;
           }
         },
-        (error) => {
-          console.error('Błąd podczas usuwania projektu:', error);
-          this.error = 'Nie udało się usunąć projektu. Spróbuj ponownie.';
+        error: (error) => {
+          this.error = 'Nie udało się usunąć projektu';
+          console.error('Error deleting project:', error);
         }
-      );
-      this.subscriptions.add(sub);
-    }
-  }
-
-  getStatusClass(status: ProjectStatus): string {
-    return status.toLowerCase().replace('_', '-');
-  }
-
-  getStatusColor(status: ProjectStatus): string {
-    switch (status) {
-      case ProjectStatus.NOT_STARTED:
-        return '#6c757d';
-      case ProjectStatus.IN_PROGRESS:
-        return '#007bff';
-      case ProjectStatus.ON_HOLD:
-        return '#ffc107';
-      case ProjectStatus.COMPLETED:
-        return '#28a745';
-      default:
-        return '#6c757d';
-    }
+      })
+    );
   }
 
   goToHome(): void {

@@ -26,18 +26,15 @@
           <button class="delete-button" (click)="deleteProject(project); $event.stopPropagation()">×</button>
         </div>
         <p>{{ project.description }}</p>
-        <div class="project-status" [style.background-color]="getStatusColor(project.status)">
-          {{ project.status }}
-        </div>
         <div class="project-dates">
           <span>Start: {{ project.startDate | date:'longDate':'':'pl-PL' }}</span>
           <span>Koniec: {{ project.endDate | date:'longDate':'':'pl-PL' }}</span>
         </div>
-        <div class="team-members" *ngIf="project.teamMembers.length > 0">
+        <div class="team-members" *ngIf="project.members.length > 0">
           <h4>Członkowie zespołu:</h4>
           <ul>
-            <li *ngFor="let member of project.teamMembers">
-              {{ member.name }} - {{ member.role }}
+            <li *ngFor="let member of project.members">
+              {{ member.user.name }} - {{ member.role }}
             </li>
           </ul>
         </div>
