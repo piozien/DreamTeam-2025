@@ -2,6 +2,7 @@ package tech.project.schedule.model.user;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import tech.project.schedule.model.notification.Notification;
 import tech.project.schedule.model.enums.GlobalRole;
 import tech.project.schedule.model.project.ProjectMember;
@@ -16,18 +17,22 @@ import java.util.UUID;
 @Entity
 @Table(name = "Users")
 @Data
+@NoArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
-    private String name;
+    private String firstName;
+
+    private String lastName;
 
     @Column(nullable = false, unique = true)
     private String email;
 
     private String password;
+
+    private String username;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "global_role", nullable = false)
@@ -50,4 +55,15 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private Set<Notification> notifications;
+
+    public User(String firstName, String lastName,
+                String email, String password,
+                String username) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.username = username;
+        this.globalRole = GlobalRole.CLIENT;
+    }
 }
