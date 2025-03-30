@@ -1,184 +1,111 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
 import { Project, ProjectUserRole } from '../models/project.model';
 import { User, GlobalRole } from '../models/user.model';
 
-@Injectable()
+interface ProjectsData {
+  projects: Project[];
+}
+
+@Injectable({
+  providedIn: 'root'
+})
 export class ProjectService {
   private apiUrl = 'http://localhost:8080';
+  private jsonUrl = 'assets/data/projects.json';
   private useMockData = true;
-  private nextId = 4;
+  private cachedProjects: Project[] = [];
 
-  private mockProjects: Project[] = [
-    {
-      id: '1',
-      name: 'Platforma E-commerce',
-      description: 'Budowa nowoczesnej platformy e-commerce z wykorzystaniem React i Spring Boot',
-      startDate: new Date('2025-01-15'),
-      endDate: new Date('2025-06-30'),
-      members: [
-        {
-          id: '1',
-          projectId: '1',
-          user: {
-            id: '1',
-            name: 'Jan Kowalski',
-            email: 'jan@example.com',
-            globalRole: GlobalRole.CLIENT
-          },
-          role: ProjectUserRole.PM
-        },
-        {
-          id: '2',
-          projectId: '1',
-          user: {
-            id: '2',
-            name: 'Anna Nowak',
-            email: 'anna@example.com',
-            globalRole: GlobalRole.CLIENT
-          },
-          role: ProjectUserRole.MEMBER
-        }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Aplikacja Mobilna',
-      description: 'Tworzenie aplikacji mobilnej do śledzenia aktywności fizycznej',
-      startDate: new Date('2025-03-01'),
-      endDate: new Date('2025-08-15'),
-      members: [
-        {
-          id: '3',
-          projectId: '2',
-          user: {
-            id: '3',
-            name: 'Michał Wiśniewski',
-            email: 'michal@example.com',
-            globalRole: GlobalRole.CLIENT
-          },
-          role: ProjectUserRole.PM
-        }
-      ]
-    },
-    {
-      id: '3',
-      name: 'Migracja do Chmury',
-      description: 'Migracja systemów legacy do infrastruktury chmurowej AWS',
-      startDate: new Date('2025-02-01'),
-      endDate: new Date('2025-04-30'),
-      members: [
-        {
-          id: '4',
-          projectId: '3',
-          user: {
-            id: '4',
-            name: 'Katarzyna Zielińska',
-            email: 'katarzyna@example.com',
-            globalRole: GlobalRole.CLIENT
-          },
-          role: ProjectUserRole.PM
-        },
-        {
-          id: '5',
-          projectId: '3',
-          user: {
-            id: '5',
-            name: 'Tomasz Brzoza',
-            email: 'tomasz@example.com',
-            globalRole: GlobalRole.CLIENT
-          },
-          role: ProjectUserRole.MEMBER
-        }
-      ]
-    }
-  ];
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getProjects(): Observable<Project[]> {
     if (this.useMockData) {
-      return of([...this.mockProjects]);
+      if (this.cachedProjects.length > 0) {
+        return of(this.cachedProjects);
+      }
+      
+      return this.http.get<ProjectsData>(this.jsonUrl).pipe(
+        map(data => {
+          // Convert string dates to Date objects
+          const projects = data.projects.map(project => ({
+            ...project,
+            startDate: new Date(project.startDate),
+            endDate: new Date(project.endDate)
+          }));
+          this.cachedProjects = projects;
+          return projects;
+        }),
+        catchError(error => {
+          console.error('Error loading projects from JSON:', error);
+          return of([]);
+        })
+      );
     }
-    return of([]);
+    return this.http.get<Project[]>(`${this.apiUrl}/projects`);
   }
 
-  getProject(id: string): Observable<Project> {
+  getProject(id: string): Observable<Project | undefined> {
     if (this.useMockData) {
-      const project = this.mockProjects.find(p => p.id === id);
-      return of(project ? {...project} : {
-        id: '',
-        name: '',
-        description: '',
-        startDate: new Date(),
-        endDate: new Date(),
-        members: []
-      });
+      return this.getProjects().pipe(
+        map(projects => projects.find(p => p.id === id))
+      );
     }
-    return of({
-      id: '',
-      name: '',
-      description: '',
-      startDate: new Date(),
-      endDate: new Date(),
-      members: []
-    });
+    return this.http.get<Project>(`${this.apiUrl}/projects/${id}`);
   }
 
   createProject(project: Project): Observable<Project> {
     if (this.useMockData) {
-      const newProject = {
-        ...project,
-        id: String(this.nextId++)
-      };
-      this.mockProjects.push(newProject);
-      return of({...newProject});
+      return this.getProjects().pipe(
+        map(projects => {
+          const newId = (Math.max(...projects.map(p => parseInt(p.id))) + 1).toString();
+          const newProject = { ...project, id: newId };
+          this.cachedProjects = [...projects, newProject];
+          this.saveProjectsToJson(this.cachedProjects);
+          return newProject;
+        })
+      );
     }
-    return of({
-      id: '',
-      name: '',
-      description: '',
-      startDate: new Date(),
-      endDate: new Date(),
-      members: []
-    });
+    return this.http.post<Project>(`${this.apiUrl}/projects`, project);
   }
 
   updateProject(project: Project): Observable<Project> {
     if (this.useMockData) {
-      const index = this.mockProjects.findIndex(p => p.id === project.id);
-      if (index !== -1) {
-        this.mockProjects[index] = {...project};
-        return of({...project});
-      }
-      return of({
-        id: '',
-        name: '',
-        description: '',
-        startDate: new Date(),
-        endDate: new Date(),
-        members: []
-      });
+      return this.getProjects().pipe(
+        map(projects => {
+          const index = projects.findIndex(p => p.id === project.id);
+          if (index !== -1) {
+            this.cachedProjects = [
+              ...projects.slice(0, index),
+              project,
+              ...projects.slice(index + 1)
+            ];
+            this.saveProjectsToJson(this.cachedProjects);
+          }
+          return project;
+        })
+      );
     }
-    return of({
-      id: '',
-      name: '',
-      description: '',
-      startDate: new Date(),
-      endDate: new Date(),
-      members: []
-    });
+    return this.http.put<Project>(`${this.apiUrl}/projects/${project.id}`, project);
   }
 
   deleteProject(id: string): Observable<void> {
     if (this.useMockData) {
-      const index = this.mockProjects.findIndex(p => p.id === id);
-      if (index !== -1) {
-        this.mockProjects.splice(index, 1);
-      }
-      return of(void 0);
+      return this.getProjects().pipe(
+        map(projects => {
+          this.cachedProjects = projects.filter(p => p.id !== id);
+          this.saveProjectsToJson(this.cachedProjects);
+        })
+      );
     }
-    return of(void 0);
+    return this.http.delete<void>(`${this.apiUrl}/projects/${id}`);
+  }
+
+  private saveProjectsToJson(projects: Project[]): void {
+    // In a real application, this would be an API call
+    // For now, we'll just update our cache and log the changes
+    console.log('Projects to be saved:', projects);
+    this.cachedProjects = projects;
   }
 }

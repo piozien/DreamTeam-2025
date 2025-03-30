@@ -11,8 +11,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './project-panel.component.html',
   styleUrls: ['./project-panel.component.scss'],
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
-  providers: [ProjectService]
+  imports: [CommonModule, HttpClientModule]
 })
 export class ProjectPanelComponent implements OnInit, OnDestroy {
   projects: Project[] = [];
@@ -21,25 +20,22 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
   loading = false;
   error: string | null = null;
   isCreating = false;
-  private subscriptions = new Subscription();
+  private subscription: Subscription = new Subscription();
 
-  constructor(
-    private projectService: ProjectService,
-    private router: Router
-  ) {}
+  constructor(private projectService: ProjectService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadProjects();
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
+    this.subscription.unsubscribe();
   }
 
   loadProjects(): void {
     this.loading = true;
     this.error = null;
-    this.subscriptions.add(
+    this.subscription.add(
       this.projectService.getProjects().subscribe({
         next: (projects) => {
           this.projects = projects;
@@ -74,7 +70,7 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
       members: []
     };
 
-    this.subscriptions.add(
+    this.subscription.add(
       this.projectService.createProject(newProject).subscribe({
         next: (project) => {
           this.projects.push(project);
@@ -93,7 +89,7 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
   deleteProject(project: Project): void {
     if (!confirm('Czy na pewno chcesz usunąć ten projekt?')) return;
 
-    this.subscriptions.add(
+    this.subscription.add(
       this.projectService.deleteProject(project.id).subscribe({
         next: () => {
           this.projects = this.projects.filter(p => p.id !== project.id);
