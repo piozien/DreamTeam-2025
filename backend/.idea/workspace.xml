@@ -5,21 +5,70 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/exception/ApiException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/ProjectRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/UserRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/UserService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/.env.template" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/user/UserDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/user/UserDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/enums/GlobalRole.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/enums/GlobalRole.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/enums/ProjectUserRole.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/enums/ProjectUserRole.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/Project.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/Project.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/ProjectMember.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/ProjectMember.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/user/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/user/User.java" afterDir="false" />
+    </list>
+    <list id="09b865cc-bab5-44d0-bb58-d68cb411adc5" name="Changes by zient" comment="">
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/config/WebConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/config/WebConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/project/ProjectDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/project/ProjectDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/Project.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/Project.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/ProjectMember.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/ProjectMember.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/user/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/user/User.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="LineStatusTrackerManager">
+    <file path="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/Project.java">
+      <ranges>
+        <range start1="4" end1="4" start2="4" end2="6" changelist="09b865cc-bab5-44d0-bb58-d68cb411adc5" />
+        <range start1="5" end1="5" start2="7" end2="8" changelist="09b865cc-bab5-44d0-bb58-d68cb411adc5" />
+        <range start1="7" end1="9" start2="10" end2="11" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="30" end1="31" start2="32" end2="33" changelist="09b865cc-bab5-44d0-bb58-d68cb411adc5" />
+        <range start1="34" end1="34" start2="36" end2="43" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/user/User.java">
+      <ranges>
+        <range start1="4" end1="4" start2="4" end2="5" changelist="09b865cc-bab5-44d0-bb58-d68cb411adc5" />
+        <range start1="18" end1="18" start2="19" end2="20" changelist="09b865cc-bab5-44d0-bb58-d68cb411adc5" />
+        <range start1="23" end1="25" start2="25" end2="28" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="31" end1="31" start2="34" end2="36" changelist="09b865cc-bab5-44d0-bb58-d68cb411adc5" />
+        <range start1="52" end1="52" start2="57" end2="68" changelist="09b865cc-bab5-44d0-bb58-d68cb411adc5" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/ProjectMember.java">
+      <ranges>
+        <range start1="4" end1="4" start2="4" end2="5" changelist="09b865cc-bab5-44d0-bb58-d68cb411adc5" />
+        <range start1="12" end1="12" start2="13" end2="14" changelist="09b865cc-bab5-44d0-bb58-d68cb411adc5" />
+        <range start1="17" end1="20" start2="19" end2="22" changelist="09b865cc-bab5-44d0-bb58-d68cb411adc5" />
+        <range start1="21" end1="21" start2="23" end2="25" changelist="09b865cc-bab5-44d0-bb58-d68cb411adc5" />
+        <range start1="28" end1="28" start2="32" end2="37" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+      </ranges>
+    </file>
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
@@ -41,16 +90,49 @@
     "Spring Boot.ScheduleApplication.executor": "Run",
     "git-widget-placeholder": "backend",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/uwm/rok3/semestr6/DreamTeam-2025/backend",
+    "last_opened_file_path": "/Users/bundam/Desktop/git_uwm/DreamTeam-2025/backend",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RunManager">
+    <configuration default="true" type="AZURE_FUNCTION_SUPPORT" factoryName="Run Functions">
+      <option name="appName" />
+      <option name="appServicePlanName" />
+      <option name="appServicePlanResourceGroup" />
+      <option name="appSettingsKey" value="71f6163a-98fb-4978-a7cb-e228d6f606c6" />
+      <option name="artifact" />
+      <option name="debugOptions" />
+      <option name="deployment" />
+      <option name="deploymentStagingDirectoryPath" />
+      <option name="funcPath" />
+      <option name="functionHostArguments" />
+      <option name="hostJsonPath" />
+      <option name="insightsName" />
+      <option name="instrumentationKey" />
+      <option name="javaVersion" />
+      <option name="localSettingsJsonPath" />
+      <option name="moduleName" />
+      <option name="os" />
+      <option name="pricingTier" />
+      <option name="providerMap">
+        <map />
+      </option>
+      <option name="region" />
+      <option name="resourceGroup" />
+      <option name="stagingFolder" />
+      <option name="subscription" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="ScheduleApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="schedule" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="tech.project.schedule.ScheduleApplication" />
@@ -62,8 +144,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.25659.39" />
-        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.25659.39" />
+        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.26053.27" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.26053.27" />
       </set>
     </attachedChunks>
   </component>
@@ -77,6 +159,13 @@
       <updated>1742029415650</updated>
       <workItem from="1742029417000" duration="2762000" />
       <workItem from="1742032669322" duration="2425000" />
+      <workItem from="1742060550674" duration="1799000" />
+      <workItem from="1742063403075" duration="512000" />
+      <workItem from="1742124560107" duration="438000" />
+      <workItem from="1742205802987" duration="5133000" />
+      <workItem from="1742216884819" duration="880000" />
+      <workItem from="1743354663320" duration="754000" />
+      <workItem from="1743356045027" duration="6478000" />
     </task>
     <servers />
   </component>

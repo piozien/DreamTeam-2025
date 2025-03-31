@@ -2,11 +2,13 @@ package tech.project.schedule.model.project;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import tech.project.schedule.model.enums.ProjectStatus;
+import tech.project.schedule.model.enums.ProjectUserRole;
 import tech.project.schedule.model.task.Task;
+import tech.project.schedule.model.user.User;
 
 import java.time.LocalDate;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "Projects")
@@ -28,8 +30,12 @@ public class Project {
     private LocalDate endDate;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
-    private Set<ProjectMember> members;
+    private HashMap<UUID, ProjectMember> members = new HashMap<UUID, ProjectMember>();
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private Set<Task> tasks;
+
+    @Enumerated(EnumType.STRING)
+    private ProjectStatus projectStatus;
+
 }
