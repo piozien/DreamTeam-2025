@@ -1,48 +1,70 @@
 <div class="project-panel">
-  <div class="project-list">
-    <div class="header">
-      <div class="header-left">
-        <button class="back-button" (click)="goToHome()">← Powrót</button>
-        <h2>Projekty</h2>
-      </div>
-      <button class="create-button" (click)="createProject()">Nowy Projekt</button>
+  <div class="header">
+    <div class="header-left">
+      <button mat-button (click)="goToHome()">
+        <mat-icon>arrow_back</mat-icon>
+        Powrót
+      </button>
+      <h1>Projekty</h1>
     </div>
+    <button mat-raised-button color="primary" (click)="openCreateDialog()" [disabled]="isCreating">
+      <mat-icon>add</mat-icon>
+      Nowy Projekt
+    </button>
+  </div>
 
-    <div *ngIf="loading" class="loading">
-      Ładowanie projektów...
-    </div>
+  <div *ngIf="error" class="error-message">
+    <mat-icon>error</mat-icon>
+    {{ error }}
+  </div>
 
-    <div *ngIf="error" class="error-message">
-      {{ error }}
-    </div>
+  <div class="loading" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <span>Ładowanie projektów...</span>
+  </div>
 
-    <div class="project-cards" *ngIf="!loading && !error">
-      <div *ngFor="let project of projects" 
-           class="project-card"
-           [class.selected]="selectedProject?.id === project.id"
-           (click)="selectProject(project)">
-        <div class="card-header">
-          <h3>{{ project.name }}</h3>
-          <button class="delete-button" (click)="deleteProject(project); $event.stopPropagation()">×</button>
-        </div>
-        <p>{{ project.description }}</p>
+  <div class="projects-grid" *ngIf="!loading">
+    <mat-card class="project-card" *ngFor="let project of projects">
+      <mat-card-header>
+        <mat-card-title>{{ project.name }}</mat-card-title>
+        <button mat-icon-button class="delete-button" (click)="deleteProject(project)">
+          <mat-icon style="color: #f44336;">delete</mat-icon>
+        </button>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <p class="description">{{ project.description }}</p>
+        
         <div class="project-dates">
-          <span>Start: {{ project.startDate | date:'longDate':'':'pl-PL' }}</span>
-          <span>Koniec: {{ project.endDate | date:'longDate':'':'pl-PL' }}</span>
+          <span>
+            <mat-icon>event</mat-icon>
+            <strong>Start:</strong> {{ project.startDate | date:'longDate':'':'pl-PL' }}
+          </span>
+          <span>
+            <mat-icon>event_available</mat-icon>
+            <strong>Koniec:</strong> {{ project.endDate | date:'longDate':'':'pl-PL' }}
+          </span>
         </div>
-        <div class="team-members" *ngIf="project.members.length > 0">
-          <h4>Członkowie zespołu:</h4>
-          <ul>
-            <li *ngFor="let member of project.members">
-              {{ member.user.name }} - {{ member.role }}
-            </li>
-          </ul>
+        
+        <div class="members" *ngIf="project.members.length > 0">
+          <h3>
+            <mat-icon>group</mat-icon>
+            Członkowie zespołu
+          </h3>
+          <mat-list>
+            <mat-list-item *ngFor="let member of project.members">
+              <mat-icon matListItemIcon>person</mat-icon>
+              <div matListItemTitle>{{ member.user.name }}</div>
+              <div matListItemLine>{{ member.role }}</div>
+            </mat-list-item>
+          </mat-list>
         </div>
-      </div>
-    </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
 
-    <div *ngIf="!loading && !error && projects.length === 0" class="no-projects">
-      Brak projektów. Kliknij "Nowy Projekt" aby rozpocząć.
-    </div>
+  <div *ngIf="!loading && projects.length === 0" class="no-projects">
+    <mat-icon>info</mat-icon>
+    <span>Brak projektów. Kliknij "Nowy Projekt" aby rozpocząć.</span>
   </div>
 </div>

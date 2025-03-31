@@ -2,16 +2,50 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatListModule } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
 import { Project, ProjectUserRole } from '../../../shared/models/project.model';
 import { ProjectService } from '../../../shared/services/project.service';
+import { ProjectDialogComponent } from './project-dialog/project-dialog.component';
 import { Subscription } from 'rxjs';
+
+const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'DD/MM/YYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 @Component({
   selector: 'app-project-panel',
   templateUrl: './project-panel.component.html',
   styleUrls: ['./project-panel.component.scss'],
   standalone: true,
-  imports: [CommonModule, HttpClientModule]
+  imports: [
+    CommonModule,
+    HttpClientModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatListModule,
+    MatProgressSpinnerModule,
+    MatNativeDateModule
+  ],
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'pl-PL' },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
+  ]
 })
 export class ProjectPanelComponent implements OnInit, OnDestroy {
   projects: Project[] = [];
@@ -22,7 +56,11 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
   isCreating = false;
   private subscription: Subscription = new Subscription();
 
-  constructor(private projectService: ProjectService, private router: Router) {}
+  constructor(
+    private projectService: ProjectService,
+    private router: Router,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     this.loadProjects();
@@ -42,31 +80,38 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (error) => {
-          this.error = 'Nie udało się załadować projektów';
-          this.loading = false;
           console.error('Error loading projects:', error);
+          this.error = 'Wystąpił błąd podczas ładowania projektów.';
+          this.loading = false;
         }
       })
     );
   }
 
-  selectProject(project: Project): void {
-    this.selectedProject = project;
+  openCreateDialog(): void {
+    const dialogRef = this.dialog.open(ProjectDialogComponent, {
+      width: '500px',
+      data: {
+        title: 'Nowy Projekt',
+        submitButton: 'Utwórz'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.createProject(result);
+      }
+    });
   }
 
-  createProject(): void {
-    if (this.isCreating) {
-      console.log('Trwa tworzenie projektu, proszę czekać...');
-      return;
-    }
-    
+  createProject(projectData: Partial<Project>): void {
     this.isCreating = true;
     const newProject: Project = {
-      id: '',
-      name: 'Nowy Projekt',
-      description: 'Opis projektu',
-      startDate: new Date(),
-      endDate: new Date(new Date().setMonth(new Date().getMonth() + 3)),
+      id: '', // Will be set by the service
+      name: projectData.name || '',
+      description: projectData.description || '',
+      startDate: projectData.startDate || new Date(),
+      endDate: projectData.endDate || new Date(),
       members: []
     };
 
@@ -78,9 +123,9 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
           this.isCreating = false;
         },
         error: (error) => {
-          this.error = 'Nie udało się utworzyć projektu';
-          this.isCreating = false;
           console.error('Error creating project:', error);
+          this.error = 'Wystąpił błąd podczas tworzenia projektu.';
+          this.isCreating = false;
         }
       })
     );
@@ -98,11 +143,15 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          this.error = 'Nie udało się usunąć projektu';
           console.error('Error deleting project:', error);
+          this.error = 'Wystąpił błąd podczas usuwania projektu.';
         }
       })
     );
+  }
+
+  selectProject(project: Project): void {
+    this.selectedProject = project;
   }
 
   goToHome(): void {

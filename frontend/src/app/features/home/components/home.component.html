@@ -5,29 +5,37 @@
   </header>
 
   <div class="features-grid">
-    <div class="feature-card" (click)="navigateToProjects()">
-      <div class="icon">📋</div>
-      <h2>Projekty</h2>
-      <p>Zarządzaj i śledź wszystkie swoje projekty w jednym miejscu</p>
-    </div>
+    <mat-card class="feature-card" (click)="navigateToProjects()">
+      <mat-card-content>
+        <mat-icon class="feature-icon">assignment</mat-icon>
+        <h2>Projekty</h2>
+        <p>Zarządzaj i śledź wszystkie swoje projekty w jednym miejscu</p>
+      </mat-card-content>
+    </mat-card>
 
-    <div class="feature-card" (click)="navigateToTeams()">
-      <div class="icon">👥</div>
-      <h2>Zespoły</h2>
-      <p>Organizuj i współpracuj z członkami zespołu</p>
-    </div>
+    <mat-card class="feature-card" (click)="navigateToTeams()">
+      <mat-card-content>
+        <mat-icon class="feature-icon">groups</mat-icon>
+        <h2>Zespoły</h2>
+        <p>Organizuj i współpracuj z członkami zespołu</p>
+      </mat-card-content>
+    </mat-card>
 
-    <div class="feature-card" (click)="navigateToTasks()">
-      <div class="icon">✓</div>
-      <h2>Zadania</h2>
-      <p>Śledź i zarządzaj zadaniami we wszystkich projektach</p>
-    </div>
+    <mat-card class="feature-card" (click)="navigateToTasks()">
+      <mat-card-content>
+        <mat-icon class="feature-icon">check_circle</mat-icon>
+        <h2>Zadania</h2>
+        <p>Przydzielaj i monitoruj postęp zadań</p>
+      </mat-card-content>
+    </mat-card>
 
-    <div class="feature-card" (click)="navigateToCalendar()">
-      <div class="icon">📅</div>
-      <h2>Kalendarz</h2>
-      <p>Planuj i zarządzaj harmonogramami projektów</p>
-    </div>
+    <mat-card class="feature-card" (click)="navigateToCalendar()">
+      <mat-card-content>
+        <mat-icon class="feature-icon">calendar_today</mat-icon>
+        <h2>Kalendarz</h2>
+        <p>Planuj i zarządzaj harmonogramem</p>
+      </mat-card-content>
+    </mat-card>
   </div>
 
   <footer class="home-footer">
