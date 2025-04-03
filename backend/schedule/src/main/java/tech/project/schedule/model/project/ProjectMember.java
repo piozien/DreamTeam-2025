@@ -17,9 +17,9 @@ public class ProjectMember {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-//    @ManyToOne
-//    @JoinColumn(name = "project_id", nullable = false)
-//    private Project project;
+    @ManyToOne
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
 
 // one-sided coverage will probably be better
 // so that the person who creates the project can manage it right away

@@ -3,9 +3,7 @@ package tech.project.schedule.model.project;
 import jakarta.persistence.*;
 import lombok.Data;
 import tech.project.schedule.model.enums.ProjectStatus;
-import tech.project.schedule.model.enums.ProjectUserRole;
 import tech.project.schedule.model.task.Task;
-import tech.project.schedule.model.user.User;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -26,11 +24,12 @@ public class Project {
     @Column(name = "startdate", nullable = false)
     private LocalDate startDate;
 
-    @Column(name = "enddate", nullable = false)
+    @Column(name = "enddate")
     private LocalDate endDate;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
-    private HashMap<UUID, ProjectMember> members = new HashMap<UUID, ProjectMember>();
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private Map<UUID, ProjectMember> members = new HashMap<>();
+    // ToDo: if members is null add PrePersist and PreUpdate
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private Set<Task> tasks;
@@ -38,4 +37,7 @@ public class Project {
     @Enumerated(EnumType.STRING)
     private ProjectStatus projectStatus;
 
+    public void addMember(UUID userID, ProjectMember member) {
+        this.members.put(userID, member);
+    }
 }

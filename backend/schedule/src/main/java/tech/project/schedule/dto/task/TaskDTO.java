@@ -1,24 +1,40 @@
 package tech.project.schedule.dto.task;
 
-import java.time.LocalDate;
-import java.util.Set;
-import java.util.UUID;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import tech.project.schedule.model.enums.TaskPriority;
 import tech.project.schedule.model.enums.TaskStatus;
 
+import java.time.LocalDate;
+import java.util.Set;
+import java.util.UUID;
+
 public record TaskDTO(
         UUID id,
+
+        @NotNull(message = "Project ID is required")
         UUID projectId,
+
+        @NotBlank(message = "Task name is required")
         String name,
+
         String description,
+
+        @NotNull(message = "Start date is required")
         LocalDate startDate,
+
         LocalDate endDate,
+
+        @NotNull(message = "Priority is required")
         TaskPriority priority,
+
+        @NotNull(message = "Status is required")
         TaskStatus status,
+
         Set<UUID> assigneeIds,
-        Set<UUID> commentIds,
-        Set<UUID> historyIds,
-        Set<UUID> fileIds,
+        Set<TaskCommentDTO> comments,
+        Set<TaskHistoryDTO> history,
+        Set<TaskFileDTO> files,
         Set<UUID> dependencyIds,
         Set<UUID> dependentTaskIds
 ) {
