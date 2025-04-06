@@ -54,6 +54,9 @@ public class User {
     private Set<TaskFile> taskFiles;
 
     @OneToMany(mappedBy = "user")
+    private Set<ProjectMember> projects;
+
+    @OneToMany(mappedBy = "user")
     private Set<Notification> notifications;
 
     public User(String firstName, String lastName,
