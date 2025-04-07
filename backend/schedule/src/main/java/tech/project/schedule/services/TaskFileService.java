@@ -9,42 +9,42 @@ import tech.project.schedule.repositories.TaskFileRepository;
 import java.util.UUID;
 
 @Service
-public class TaskFileService{
+@RequiredArgsConstructor
+public class TaskFileService {
+
     private final TaskFileRepository taskFileRepository;
 
     public TaskFile getTaskFileByTaskId(UUID taskId) {
         return taskFileRepository.findByTask_Id(taskId);
     }
 
-    public TaskFile getTaskFileByPath(String filePath) {            //same as above
+    public TaskFile getTaskFileByPath(String filePath) {
         return taskFileRepository.findByFilePath(filePath);
     }
 
-    public TaskFile updateFilePath(UUID taskFileId, String newFilePath)
-    {
-        TaskFile taskFile = taskFileRepository.findById(taskFileId)
-                .orElseThrow() -> new ApiException("File with ID " + taskFileId + " not found"));
-        taskFile.setFilePath(newFilePath);
-        return taskFileRepository.save(taskFile)
+    public void updateFilePathByTaskId(UUID taskId, String newFilePath) {
+        if (!taskFileRepository.existsById(taskId)) {
+            throw new ApiException("TaskFile with task ID " + taskId + " not found");
+        }
+        taskFileRepository.setFilePath(taskId, newFilePath);
     }
 
     public boolean doesFileExist(String filePath) {
         return taskFileRepository.existsByFilePath(filePath);
     }
 
-    public void DeleteTaskFile(String taskPath){
-        Taskfile taskfile = taskFileRepository.findByFilePath(filePath);
-        if(taskfile != null){
+    public void deleteTaskFileByPath(String filePath) {
+        TaskFile taskFile = taskFileRepository.findByFilePath(filePath);
+        if (taskFile == null) {
             throw new ApiException("File with path " + filePath + " not found");
         }
-        taskFileRepository.delete(taskfile);
+        taskFileRepository.delete(taskFile);
     }
 
-    public void deleteTaskFileById(UUID taskFileId) {       //same thing as above but with ID
+    public void deleteTaskFileById(UUID taskFileId) {
         if (!taskFileRepository.existsById(taskFileId)) {
             throw new ApiException("TaskFile with ID " + taskFileId + " not found");
         }
-
         taskFileRepository.deleteById(taskFileId);
     }
 }
