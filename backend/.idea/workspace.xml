@@ -5,19 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/project/ProjectDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/project/ProjectDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/task/TaskDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/task/TaskDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/enums/ProjectStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/enums/ProjectStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/enums/TaskStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/enums/TaskStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/Project.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/Project.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/ProjectMember.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/project/ProjectMember.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/task/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/task/Task.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskCommentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskCommentService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskDependencyService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskDependencySerivce.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskFileService.java" afterDir="false" />
     </list>
-    <list id="e25d007b-1953-490c-bb82-debf09b00b32" name="Changes by bundam" comment="">
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/task/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/task/Task.java" afterDir="false" />
-    </list>
+    <list id="e25d007b-1953-490c-bb82-debf09b00b32" name="Changes by bundam" comment="" />
     <list id="09b865cc-bab5-44d0-bb58-d68cb411adc5" name="Changes by zient" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,18 +28,6 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
-  </component>
-  <component name="LineStatusTrackerManager">
-    <file path="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/task/Task.java">
-      <ranges>
-        <range start1="4" end1="4" start2="4" end2="5" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
-        <range start1="9" end1="9" start2="10" end2="11" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
-        <range start1="15" end1="15" start2="17" end2="18" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
-        <range start1="32" end1="33" start2="35" end2="36" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
-        <range start1="43" end1="43" start2="46" end2="47" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
-        <range start1="60" end1="60" start2="64" end2="82" changelist="e25d007b-1953-490c-bb82-debf09b00b32" />
-      </ranges>
-    </file>
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
@@ -65,7 +47,8 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.ScheduleApplication.executor": "Run",
-    "git-widget-placeholder": "backend",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "services",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/uwm/rok3/semestr6/finance-169399 — kopia/finance-dashboard",
     "node.js.detected.package.eslint": "true",
@@ -149,6 +132,7 @@
       <workItem from="1743438062212" duration="9194000" />
       <workItem from="1743520693515" duration="6386000" />
       <workItem from="1743611863147" duration="41000" />
+      <workItem from="1744022633697" duration="507000" />
     </task>
     <servers />
   </component>

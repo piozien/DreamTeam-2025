@@ -1,6 +1,7 @@
 package tech.project.schedule.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.task.TaskFile;
@@ -24,7 +25,7 @@ public class TaskFileService {
 
     public void updateFilePathByTaskId(UUID taskId, String newFilePath) {
         if (!taskFileRepository.existsById(taskId)) {
-            throw new ApiException("TaskFile with task ID " + taskId + " not found");
+            throw new ApiException("TaskFile with task ID " + taskId + " not found", HttpStatus.NOT_FOUND);
         }
         taskFileRepository.setFilePath(taskId, newFilePath);
     }
@@ -36,14 +37,14 @@ public class TaskFileService {
     public void deleteTaskFileByPath(String filePath) {
         TaskFile taskFile = taskFileRepository.findByFilePath(filePath);
         if (taskFile == null) {
-            throw new ApiException("File with path " + filePath + " not found");
+            throw new ApiException("File with path " + filePath + " not found", HttpStatus.NOT_FOUND);
         }
         taskFileRepository.delete(taskFile);
     }
 
     public void deleteTaskFileById(UUID taskFileId) {
         if (!taskFileRepository.existsById(taskFileId)) {
-            throw new ApiException("TaskFile with ID " + taskFileId + " not found");
+            throw new ApiException("TaskFile with ID " + taskFileId + " not found", HttpStatus.NOT_FOUND);
         }
         taskFileRepository.deleteById(taskFileId);
     }

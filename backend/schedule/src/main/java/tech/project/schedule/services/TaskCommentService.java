@@ -2,6 +2,7 @@ package tech.project.schedule.services;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.task.Task;
@@ -26,10 +27,10 @@ public class TaskCommentService {
 
     public TaskComment addComment(UUID taskId, UUID userId, String content) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new ApiException("Task not found"));
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException("User not found"));
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
 
         TaskComment comment = new TaskComment();
         comment.setTask(task);
@@ -41,7 +42,7 @@ public class TaskCommentService {
 
     public void deleteComment(UUID commentId) {
         if (!taskCommentRepository.existsById(commentId)) {
-            throw new ApiException("Comment not found");
+            throw new ApiException("Comment not found", HttpStatus.NOT_FOUND);
         }
         taskCommentRepository.deleteById(commentId);
     }
