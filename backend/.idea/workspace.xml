@@ -5,20 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/ProjectController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/exception/ProjectNotFoundException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/TaskCommentController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/TaskController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/TaskCommentRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/TaskFileRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/project/ProjectDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/project/ProjectDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/user/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/user/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/ProjectRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/ProjectRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/exception/ApiException.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/exception/ApiException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/TaskRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/TaskRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskCommentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskCommentService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskFileService.java" afterDir="false" />
     </list>
     <list id="e25d007b-1953-490c-bb82-debf09b00b32" name="Changes by bundam" comment="" />
     <list id="09b865cc-bab5-44d0-bb58-d68cb411adc5" name="Changes by zient" comment="" />
@@ -69,7 +64,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;Spring Boot.ScheduleApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;backend&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;swagger&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/rymsz/OneDrive/Documents/GitHub/DreamTeam-2025/backend&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
@@ -123,6 +118,14 @@
       </method>
     </configuration>
   </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.26053.27" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.26053.27" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -146,6 +149,12 @@
       <workItem from="1743520693515" duration="6386000" />
       <workItem from="1743611863147" duration="41000" />
       <workItem from="1743961193645" duration="312000" />
+      <workItem from="1744016873403" duration="324000" />
+      <workItem from="1744017583984" duration="689000" />
+      <workItem from="1744018313337" duration="1658000" />
+      <workItem from="1744020001132" duration="1194000" />
+      <workItem from="1744021358710" duration="109000" />
+      <workItem from="1744023078246" duration="319000" />
     </task>
     <servers />
   </component>
