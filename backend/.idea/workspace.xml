@@ -5,6 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskCommentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskCommentService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskDependencyService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskDependencySerivce.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskFileService.java" afterDir="false" />
+    </list>
       <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/TaskCommentController.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/TaskController.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/TaskCommentRepository.java" afterDir="false" />
@@ -15,6 +21,7 @@
       <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskCommentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskCommentService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskFileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskFileService.java" afterDir="false" />
     </list>
+    <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="" />
     <list id="e25d007b-1953-490c-bb82-debf09b00b32" name="Changes by bundam" comment="" />
     <list id="09b865cc-bab5-44d0-bb58-d68cb411adc5" name="Changes by zient" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -31,6 +38,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$/.." value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -53,6 +65,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Maven.schedule [clean].executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.ScheduleApplication.executor": "Run",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "services",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/uwm/rok3/semestr6/finance-169399 — kopia/finance-dashboard",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;Application.ScheduleApplication.executor&quot;: &quot;Run&quot;,
@@ -148,6 +184,7 @@
       <workItem from="1743438062212" duration="9194000" />
       <workItem from="1743520693515" duration="6386000" />
       <workItem from="1743611863147" duration="41000" />
+      <workItem from="1744022633697" duration="507000" />
       <workItem from="1743961193645" duration="312000" />
       <workItem from="1744016873403" duration="324000" />
       <workItem from="1744017583984" duration="689000" />
