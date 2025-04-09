@@ -1,0 +1,20 @@
+package tech.project.schedule.repositories;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import tech.project.schedule.model.task.TaskFile;
+
+import java.util.UUID;
+
+@Repository
+public interface TaskFileRepository extends JpaRepository<TaskFile, UUID> {
+    TaskFile findByTaskId(UUID taskId);
+
+    TaskFile findByFilePath(String filePath) ;
+
+    boolean existsByFilePath(String filePath);
+
+    void deleteByFilePath(String filePath);
+
+
+}
