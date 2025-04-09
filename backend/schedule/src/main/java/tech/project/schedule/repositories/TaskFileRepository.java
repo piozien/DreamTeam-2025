@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Repository;
 import tech.project.schedule.model.task.TaskFile;
 
 import java.util.UUID;
@@ -14,6 +14,9 @@ public interface TaskFileRepository extends JpaRepository<TaskFile, UUID> {
     TaskFile findByTask_Id(UUID taskId);
 
     TaskFile findByFilePath(String filePath);
+    TaskFile findByTaskId(UUID taskId);
+
+    TaskFile findByFilePath(String filePath) ;
 
     boolean existsByFilePath(String filePath);
 

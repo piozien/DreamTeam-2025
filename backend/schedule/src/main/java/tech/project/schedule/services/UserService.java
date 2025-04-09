@@ -11,12 +11,17 @@ import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
 
+import java.util.List;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-
+    public List<User> getUsersByProjectId(UUID projectId) {
+        return userRepository.getUsersByProjectId(projectId);
+    }
 
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(
