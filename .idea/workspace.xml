@@ -106,15 +106,25 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "backend",
+    "git-widget-placeholder": "swagger",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/rymsz/OneDrive/Documents/GitHub/DreamTeam-2025/backend",
+    "last_opened_file_path": "D:/uwm/rok3/semestr6/DreamTeam-2025",
     "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.25659.39" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.25659.39" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -124,6 +134,7 @@
       <option name="presentableId" value="Default" />
       <updated>1743356017830</updated>
       <workItem from="1743356018913" duration="12000" />
+      <workItem from="1744220397142" duration="306000" />
       <workItem from="1743846593712" duration="1648000" />
       <workItem from="1743849301763" duration="347000" />
       <workItem from="1743886816548" duration="2216000" />
