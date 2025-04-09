@@ -1,5 +1,9 @@
 package tech.project.schedule.services;
 
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +15,15 @@ import tech.project.schedule.repositories.TaskCommentRepository;
 import tech.project.schedule.repositories.TaskRepository;
 import tech.project.schedule.repositories.UserRepository;
 
+
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class TaskCommentService {
+
 import java.util.List;
 import java.util.UUID;
 @Service
@@ -20,6 +33,12 @@ public class TaskCommentService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
+    public TaskComment addComment(UUID taskId, UUID userId, String content) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
     @Transactional
     public TaskComment addComment(UUID taskId, UUID userId, String content){
         Task task = taskRepository.findById(taskId)
@@ -38,6 +57,7 @@ public class TaskCommentService {
 
     public void deleteComment(UUID commentId) {
         if (!taskCommentRepository.existsById(commentId)) {
+            throw new ApiException("Comment not found", HttpStatus.NOT_FOUND);
             throw new ApiException("Comment not found");
         }
         taskCommentRepository.deleteById(commentId);
@@ -47,5 +67,14 @@ public class TaskCommentService {
     public void deleteAllCommentsForTask(UUID taskId) {
         taskCommentRepository.deleteAllByTask_Id(taskId);
     }
+
+    public List<TaskComment> getCommentsForTask(UUID taskId) {
+        return taskCommentRepository.findAllByTask_Id(taskId);
+    }
+
+    public List<TaskComment> getCommentsByUser(UUID userId) {
+        return taskCommentRepository.findAllByUser_Id(userId);
+    }
+}
     //to do: add deleting single comment by comment Id
 }
