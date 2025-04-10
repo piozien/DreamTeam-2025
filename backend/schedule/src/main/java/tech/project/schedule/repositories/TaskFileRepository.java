@@ -1,9 +1,9 @@
 package tech.project.schedule.repositories;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Repository;
 import tech.project.schedule.model.task.TaskFile;
 
@@ -12,9 +12,6 @@ import java.util.UUID;
 @Repository
 public interface TaskFileRepository extends JpaRepository<TaskFile, UUID> {
     TaskFile findByTask_Id(UUID taskId);
-
-    TaskFile findByFilePath(String filePath);
-    TaskFile findByTaskId(UUID taskId);
 
     TaskFile findByFilePath(String filePath) ;
 
