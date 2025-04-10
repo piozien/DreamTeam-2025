@@ -8,6 +8,8 @@ import tech.project.schedule.model.task.Task;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "Projects")
@@ -47,6 +49,19 @@ public class Project {
         this.name = name;
         this.description = description;
         this.startDate = startDate;
-        this.projectStatus = ProjectStatus.IN_PROGRESS;
+        this.projectStatus = ProjectStatus.PLANNED;
+        this.members = new HashMap<>();
+        this.tasks = new HashSet<>();
+    }
+    
+    @PrePersist
+    @PreUpdate
+    private void ensureCollectionsAreInitialized() {
+        if (members == null) {
+            members = new HashMap<>();
+        }
+        if (tasks == null) {
+            tasks = new HashSet<>();
+        }
     }
 }
