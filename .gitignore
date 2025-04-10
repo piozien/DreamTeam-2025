@@ -91,3 +91,4 @@ fabric.properties
 !.idea/runConfigurations
 backend/.idea/workspace.xml
 
+/frontend
