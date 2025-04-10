@@ -19,9 +19,6 @@ import java.util.UUID;
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    public List<User> getUsersByProjectId(UUID projectId) {
-        return userRepository.getUsersByProjectId(projectId);
-    }
 
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(
@@ -55,7 +52,4 @@ public class UserService {
         userRepository.save(user);
         return "Registered successfully";
     }
-
-
-
 }
