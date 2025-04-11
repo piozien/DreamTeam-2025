@@ -26,6 +26,9 @@ public class User {
     private String firstName;
 
     private String lastName;
+    
+    @Column(nullable = false)
+    private String name;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -68,5 +71,6 @@ public class User {
         this.password = password;
         this.username = username;
         this.globalRole = GlobalRole.CLIENT;
+        this.name = firstName + " " + lastName;
     }
 }

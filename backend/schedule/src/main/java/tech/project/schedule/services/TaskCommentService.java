@@ -5,13 +5,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
-import tech.project.schedule.model.enums.GlobalRole;
+import tech.project.schedule.model.enums.ProjectUserRole;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskComment;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.TaskCommentRepository;
 import tech.project.schedule.repositories.TaskRepository;
 import tech.project.schedule.repositories.UserRepository;
+import tech.project.schedule.services.utils.GetProjectRole;
+import tech.project.schedule.services.utils.PmAndAssigneeCheck;
 
 
 import java.util.List;
@@ -25,41 +27,29 @@ public class TaskCommentService {
     private final UserRepository userRepository;
 
     @Transactional
-    public TaskComment addComment(UUID taskId, UUID userId, String content) {
+    public TaskComment addComment(UUID taskId, User user, TaskComment comment){
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new ApiException("Task not found"));
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException("User not found"));
-        // ToDo Check if user is assigned to task
-        TaskComment comment = new TaskComment();
-        comment.setTask(task);
-        comment.setUser(user);
-        comment.setComment(content);
-
-        return taskCommentRepository.save(comment);
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+        if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)){
+            throw new ApiException("You are not allowed to add comments", HttpStatus.FORBIDDEN);
+        }
+        task.getComments().add(comment);
+        taskRepository.save(task);
+        return comment;
     }
+    @Transactional
+    public TaskComment deleteComment(UUID taskId, User user, UUID commentId){
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found.", HttpStatus.NOT_FOUND));
 
-    public void deleteComment(UUID commentId, UUID userId, UUID taskId) {
-        // todo: add deleting single comment by comment Id and check if user is project manager or if he wrote the comment
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException("User not found"));
-        /*
-        boolean isPM = existingProject.getMembers().containsKey(user.getId()) &&
-                ProjectUserRole.PM.equals(existingProject.getMembers().get(user.getId()).getRole());
-         */
-
-
-        if(!user.getGlobalRole().equals(GlobalRole.ADMIN)){
-            throw new ApiException("You cannot delete this comment", HttpStatus.FORBIDDEN);
+        TaskComment comment = taskCommentRepository.findById(commentId)
+                .orElseThrow(() -> new ApiException("Comment not found.", HttpStatus.NOT_FOUND));
+        if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId,user)){
+            throw new ApiException("You are not allowed to delete this comment", HttpStatus.FORBIDDEN);
         }
-
-
-        if (!taskCommentRepository.existsById(commentId)) {
-            throw new ApiException("Comment not found", HttpStatus.NOT_FOUND);
-        }
-
-        taskCommentRepository.deleteById(commentId);
+        task.getComments().remove(comment);
+        taskRepository.save(task);
+        return comment;
     }
 
     @Transactional

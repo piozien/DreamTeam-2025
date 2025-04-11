@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.model.project.ProjectMember;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.ProjectRepository;
+import tech.project.schedule.services.utils.GetProjectRole;
 
 import java.util.Map;
 import java.util.UUID;
@@ -47,11 +48,10 @@ public class ProjectService {
         Project existingProject = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
 
-        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
-        boolean isPM = existingProject.getMembers().containsKey(user.getId()) &&
-                ProjectUserRole.PM.equals(existingProject.getMembers().get(user.getId()).getRole());
 
-        if (!isAdmin && !isPM) {
+        boolean isPM = GetProjectRole.getProjectRole(user, existingProject) == ProjectUserRole.PM;
+
+        if (!isPM) {
             throw new ApiException("You cannot edit this project", HttpStatus.FORBIDDEN);
         }
         if (updatedProject.getName() != null) {
@@ -87,12 +87,12 @@ public class ProjectService {
     public void deleteProject(UUID projectId, User user) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
-                
-        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
-        boolean isPM = project.getMembers().containsKey(user.getId()) &&
-                ProjectUserRole.PM.equals(project.getMembers().get(user.getId()).getRole());
-        
-        if (!isAdmin && !isPM) {
+
+
+        boolean isPM = GetProjectRole.getProjectRole(user, project) == ProjectUserRole.PM;
+
+
+        if (!isPM) {
             throw new ApiException("You cannot delete this project", HttpStatus.FORBIDDEN);
         }
         
@@ -102,11 +102,12 @@ public class ProjectService {
     public Project getProjectById(UUID projectId, User user) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
-                
-        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
-        boolean isMember = project.getMembers().containsKey(user.getId());
+
+
+        ProjectUserRole userRole = GetProjectRole.getProjectRole(user, project);
+        boolean isProjectMember = userRole != null; 
         
-        if (!isAdmin && !isMember) {
+        if (!isProjectMember) {
             throw new ApiException("You are not a member of this project", HttpStatus.FORBIDDEN);
         }
         
@@ -118,11 +119,10 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
                 
-        boolean isAdmin = currentUser.getGlobalRole() == GlobalRole.ADMIN;
-        boolean isPM = project.getMembers().containsKey(currentUser.getId()) &&
-                ProjectUserRole.PM.equals(project.getMembers().get(currentUser.getId()).getRole());
-        
-        if (!isAdmin && !isPM) {
+
+        boolean isPM = GetProjectRole.getProjectRole(user, project) == ProjectUserRole.PM;
+
+        if (!isPM) {
             throw new ApiException("You cannot add members to this project", HttpStatus.FORBIDDEN);
         }
         
@@ -142,12 +142,10 @@ public class ProjectService {
     public void removeMemberFromProject(UUID projectId, UUID userId, User currentUser) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
-                
-        boolean isAdmin = currentUser.getGlobalRole() == GlobalRole.ADMIN;
-        boolean isPM = project.getMembers().containsKey(currentUser.getId()) &&
-                ProjectUserRole.PM.equals(project.getMembers().get(currentUser.getId()).getRole());
+
+        boolean isPM = GetProjectRole.getProjectRole(currentUser, project) == ProjectUserRole.PM;
         
-        if (!isAdmin && !isPM) {
+        if (!isPM) {
             throw new ApiException("You cannot remove members from this project", HttpStatus.FORBIDDEN);
         }
         
@@ -173,12 +171,9 @@ public class ProjectService {
     public ProjectMember updateMemberRole(UUID projectId, UUID userId, ProjectUserRole newRole, User currentUser) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
-                
-        boolean isAdmin = currentUser.getGlobalRole() == GlobalRole.ADMIN;
-        boolean isPM = project.getMembers().containsKey(currentUser.getId()) &&
-                ProjectUserRole.PM.equals(project.getMembers().get(currentUser.getId()).getRole());
+        boolean isPM = GetProjectRole.getProjectRole(currentUser, project) == ProjectUserRole.PM;
         
-        if (!isAdmin && !isPM) {
+        if (!isPM) {
             throw new ApiException("You cannot update member roles in this project", HttpStatus.FORBIDDEN);
         }
         
@@ -206,10 +201,12 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
                 
-        boolean isMember = project.getMembers().containsKey(currentUser.getId());
+        ProjectUserRole userRole = GetProjectRole.getProjectRole(currentUser, project);
+        boolean isMember = userRole == ProjectUserRole.MEMBER;
+        boolean isPM = userRole == ProjectUserRole.PM;
         boolean isAdmin = currentUser.getGlobalRole() == GlobalRole.ADMIN;
         
-        if (!isAdmin && !isMember) {
+        if (!isAdmin && !isMember && !isPM) {
             throw new ApiException("You are not a member of this project", HttpStatus.FORBIDDEN);
         }
         

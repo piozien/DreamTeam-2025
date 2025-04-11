@@ -11,14 +11,9 @@ import java.util.Set;
 import java.util.UUID;
 
 public record ProjectDTO(
-        UUID id,
         @NotBlank(message = "Project name is required")
         String name,
         String description,
         @NotNull(message = "Start date is required")
-        LocalDate startDate,
-        LocalDate endDate,
-        ProjectStatus projectStatus,
-        Map<String, ProjectMemberDTO> members,  // Zmiana z UUID na String
-        Set<String> taskIds  // Zmiana z UUID na String
+        LocalDate startDate
 ) {}

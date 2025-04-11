@@ -17,21 +17,11 @@ public class ProjectMapper {
 
     public static Project dtoToProject(ProjectDTO dto) {
         Project project = new Project();
-        
-        if (dto.id() != null) {
-            project.setId(dto.id());
-        }
+
         
         project.setName(dto.name());
         project.setDescription(dto.description());
         project.setStartDate(dto.startDate());
-        project.setEndDate(dto.endDate());
-        
-        if (dto.projectStatus() != null) {
-            project.setProjectStatus(dto.projectStatus());
-        } else {
-            project.setProjectStatus(ProjectStatus.PLANNED);
-        }
         
         return project;
     }
@@ -55,14 +45,9 @@ public class ProjectMapper {
         }
         
         return new ProjectDTO(
-                project.getId(),
                 project.getName(),
                 project.getDescription(),
-                project.getStartDate(),
-                project.getEndDate(),
-                project.getProjectStatus(),
-                memberDTOs,
-                taskIds
+                project.getStartDate()
         );
     }
     

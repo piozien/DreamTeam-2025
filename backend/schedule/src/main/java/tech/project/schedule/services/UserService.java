@@ -41,11 +41,11 @@ public class UserService {
             throw new ApiException("User already exists.", HttpStatus.CONFLICT);
         }
         User user = new User(
-                request.getUsername(),
                 request.getFirstName(),
                 request.getLastName(),
                 request.getEmail(),
-                passwordEncoder.encode(request.getPassword())
+                passwordEncoder.encode(request.getPassword()),
+                request.getUsername()
         );
         userRepository.save(user);
         return "Registered successfully";

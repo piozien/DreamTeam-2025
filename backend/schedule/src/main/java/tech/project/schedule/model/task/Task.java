@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import tech.project.schedule.model.enums.TaskPriority;
 import tech.project.schedule.model.enums.TaskStatus;
 import tech.project.schedule.model.project.Project;
+import tech.project.schedule.model.project.ProjectMember;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -63,21 +64,43 @@ public class Task {
     @OneToMany(mappedBy = "dependsOnTask", cascade = CascadeType.ALL)
     private Set<TaskDependency> dependentTasks;
 
+    public void addAssignee(TaskAssignee assignee) {this.assignees.add(assignee);}
+
     public Task(Project project, String name, String description,
-                LocalDate startDate, TaskStatus status, Set<TaskAssignee> assignees,
-                Set<TaskComment> comments, Set<TaskHistory> history, Set<TaskDependency> dependencies,
-                Set<TaskDependency> dependentTasks, Set<TaskFile> files) {
+                LocalDate startDate, TaskStatus status) {
         this.project = project;
         this.name = name;
         this.description = description;
         this.startDate = startDate;
         this.status = status;
-        // ToDo: initialize sets correctly
         this.assignees = new HashSet<>();
         this.comments = new HashSet<>();
         this.history = new HashSet<>();
         this.dependencies = new HashSet<>();
         this.dependentTasks = new HashSet<>();
         this.files = new HashSet<>();
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void ensureCollectionsAreInitialized(){
+        if(assignees == null){
+            assignees = new HashSet<>();
+        }
+        if(comments == null){
+            comments = new HashSet<>();
+        }
+        if(history == null){
+            history = new HashSet<>();
+        }
+        if(dependencies == null){
+            dependencies = new HashSet<>();
+        }
+        if(dependentTasks == null){
+            dependentTasks = new HashSet<>();
+        }
+        if(files == null){
+            files = new HashSet<>();
+        }
     }
 }

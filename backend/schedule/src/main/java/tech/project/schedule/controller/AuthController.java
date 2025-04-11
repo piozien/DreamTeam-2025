@@ -33,8 +33,7 @@ public class AuthController {
         User user = userService.login(request);
         Map<String, String> response = new HashMap<>();
         response.put("email", user.getEmail());
-        response.put("firstName", user.getFirstName());
-        response.put("lastName", user.getLastName());
+        response.put("Name", user.getName());
         return ResponseEntity.ok(response);
     }
 }

@@ -39,6 +39,7 @@ public class Project {
     private Set<Task> tasks;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "project_status")
     private ProjectStatus projectStatus;
 
     public void addMember(UUID userID, ProjectMember member) {
