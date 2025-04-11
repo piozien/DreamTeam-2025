@@ -5,14 +5,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
+import tech.project.schedule.model.enums.GlobalRole;
+import tech.project.schedule.model.enums.ProjectStatus;
 import tech.project.schedule.model.enums.ProjectUserRole;
+import tech.project.schedule.model.enums.TaskStatus;
 import tech.project.schedule.model.project.Project;
 import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.model.project.ProjectMember;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.ProjectRepository;
 
-import java.time.LocalDate;
+import java.util.Map;
+import java.util.UUID;
 
 
 @Service
@@ -22,18 +26,193 @@ public class ProjectService {
 
     @Transactional
     public Project createProject(Project project, User user) {
-        if(!projectRepository.existsByName(project.getName())) {
+        if (projectRepository.existsByName(project.getName())) {
             throw new ApiException("Project with name " + project.getName() + " already exists.", HttpStatus.CONFLICT);
         }
-        project.setStartDate(LocalDate.now());
-        //user.getId(), new ProjectMember(user, ProjectUserRole.PM)
-//        project.setMembers();
-        return projectRepository.save(project);
+        if (project.getStartDate() == null) {
+            throw new ApiException("Start date is required", HttpStatus.BAD_REQUEST);
+        }
+        
+        ProjectMember setPM = new ProjectMember(user, ProjectUserRole.PM);
+        Project newProject = projectRepository.save(project);
+        setPM.setProject(newProject);
+
+        newProject.addMember(user.getId(), setPM);
+
+        return projectRepository.save(newProject);
     }
 
+    @Transactional
+    public Project updateProject(UUID projectId, Project updatedProject, User user) {
+        Project existingProject = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
 
+        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
+        boolean isPM = existingProject.getMembers().containsKey(user.getId()) &&
+                ProjectUserRole.PM.equals(existingProject.getMembers().get(user.getId()).getRole());
 
+        if (!isAdmin && !isPM) {
+            throw new ApiException("You cannot edit this project", HttpStatus.FORBIDDEN);
+        }
+        if (updatedProject.getName() != null) {
+            if (!updatedProject.getName().equals(existingProject.getName())
+                    && projectRepository.existsByName(updatedProject.getName())) {
+                throw new ApiException("Project with name " + updatedProject.getName() + " already exists.", HttpStatus.CONFLICT);
+            }
+        }
+        if (updatedProject.getDescription() != null) {
+            existingProject.setDescription(updatedProject.getDescription());
+        }
+        if (updatedProject.getStartDate() != null) {
+            existingProject.setStartDate(updatedProject.getStartDate());
+        }
+        if (updatedProject.getEndDate() != null) {
+            existingProject.setEndDate(updatedProject.getEndDate());
+        }
 
+        if (updatedProject.getProjectStatus() != null) {
+            if(ProjectStatus.COMPLETED.equals(updatedProject.getProjectStatus())) {
+                if(existingProject.getTasks() != null && !existingProject.getTasks().isEmpty() && 
+                   !existingProject.getTasks().stream().allMatch(task -> task.getStatus().equals(TaskStatus.FINISHED))){
+                    throw new ApiException("Project has unfinished tasks", HttpStatus.CONFLICT);
+                }
+            }
+            existingProject.setProjectStatus(updatedProject.getProjectStatus());
+        }
 
+        return projectRepository.save(existingProject);
+    }
 
+    @Transactional
+    public void deleteProject(UUID projectId, User user) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
+                
+        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
+        boolean isPM = project.getMembers().containsKey(user.getId()) &&
+                ProjectUserRole.PM.equals(project.getMembers().get(user.getId()).getRole());
+        
+        if (!isAdmin && !isPM) {
+            throw new ApiException("You cannot delete this project", HttpStatus.FORBIDDEN);
+        }
+        
+        projectRepository.deleteById(projectId);
+    }
+    
+    public Project getProjectById(UUID projectId, User user) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
+                
+        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
+        boolean isMember = project.getMembers().containsKey(user.getId());
+        
+        if (!isAdmin && !isMember) {
+            throw new ApiException("You are not a member of this project", HttpStatus.FORBIDDEN);
+        }
+        
+        return project;
+    }
+    
+    @Transactional
+    public ProjectMember addMemberToProject(UUID projectId, User user, ProjectUserRole role, User currentUser) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
+                
+        boolean isAdmin = currentUser.getGlobalRole() == GlobalRole.ADMIN;
+        boolean isPM = project.getMembers().containsKey(currentUser.getId()) &&
+                ProjectUserRole.PM.equals(project.getMembers().get(currentUser.getId()).getRole());
+        
+        if (!isAdmin && !isPM) {
+            throw new ApiException("You cannot add members to this project", HttpStatus.FORBIDDEN);
+        }
+        
+        if (project.getMembers().containsKey(user.getId())) {
+            throw new ApiException("User is already a member of this project", HttpStatus.CONFLICT);
+        }
+        
+        ProjectMember newMember = new ProjectMember(user, role);
+        newMember.setProject(project);
+        project.addMember(user.getId(), newMember);
+        
+        projectRepository.save(project);
+        return newMember;
+    }
+    
+    @Transactional
+    public void removeMemberFromProject(UUID projectId, UUID userId, User currentUser) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
+                
+        boolean isAdmin = currentUser.getGlobalRole() == GlobalRole.ADMIN;
+        boolean isPM = project.getMembers().containsKey(currentUser.getId()) &&
+                ProjectUserRole.PM.equals(project.getMembers().get(currentUser.getId()).getRole());
+        
+        if (!isAdmin && !isPM) {
+            throw new ApiException("You cannot remove members from this project", HttpStatus.FORBIDDEN);
+        }
+        
+        if (!project.getMembers().containsKey(userId)) {
+            throw new ApiException("User is not a member of this project", HttpStatus.NOT_FOUND);
+        }
+        
+        if (ProjectUserRole.PM.equals(project.getMembers().get(userId).getRole())) {
+            long pmCount = project.getMembers().values().stream()
+                    .filter(member -> ProjectUserRole.PM.equals(member.getRole()))
+                    .count();
+            
+            if (pmCount <= 1) {
+                throw new ApiException("Cannot remove the last Project Manager", HttpStatus.CONFLICT);
+            }
+        }
+        
+        project.getMembers().remove(userId);
+        projectRepository.save(project);
+    }
+    
+    @Transactional
+    public ProjectMember updateMemberRole(UUID projectId, UUID userId, ProjectUserRole newRole, User currentUser) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
+                
+        boolean isAdmin = currentUser.getGlobalRole() == GlobalRole.ADMIN;
+        boolean isPM = project.getMembers().containsKey(currentUser.getId()) &&
+                ProjectUserRole.PM.equals(project.getMembers().get(currentUser.getId()).getRole());
+        
+        if (!isAdmin && !isPM) {
+            throw new ApiException("You cannot update member roles in this project", HttpStatus.FORBIDDEN);
+        }
+        
+        ProjectMember member = project.getMembers().get(userId);
+        if (member == null) {
+            throw new ApiException("User is not a member of this project", HttpStatus.NOT_FOUND);
+        }
+        
+        if (ProjectUserRole.PM.equals(member.getRole()) && !ProjectUserRole.PM.equals(newRole)) {
+            long pmCount = project.getMembers().values().stream()
+                    .filter(m -> ProjectUserRole.PM.equals(m.getRole()))
+                    .count();
+            
+            if (pmCount <= 1) {
+                throw new ApiException("Cannot downgrade the last Project Manager", HttpStatus.CONFLICT);
+            }
+        }
+        
+        member.setRole(newRole);
+        projectRepository.save(project);
+        return member;
+    }
+    
+    public Map<UUID, ProjectMember> getProjectMembers(UUID projectId, User currentUser) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
+                
+        boolean isMember = project.getMembers().containsKey(currentUser.getId());
+        boolean isAdmin = currentUser.getGlobalRole() == GlobalRole.ADMIN;
+        
+        if (!isAdmin && !isMember) {
+            throw new ApiException("You are not a member of this project", HttpStatus.FORBIDDEN);
+        }
+        
+        return project.getMembers();
+    }
 }

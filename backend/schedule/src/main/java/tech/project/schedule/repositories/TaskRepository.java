@@ -2,15 +2,14 @@ package tech.project.schedule.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import tech.project.schedule.model.project.Project;
+import tech.project.schedule.model.task.Task;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface ProjectRepository extends JpaRepository<Project, UUID> {
-
-    Optional<Project> findById(UUID id);
-
+public interface TaskRepository extends JpaRepository<Task, UUID> {
     boolean existsByName(String name);
+    Task findByName(String taskName);
+
+    Task getTaskById(UUID taskId);
 }
