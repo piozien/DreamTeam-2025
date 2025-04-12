@@ -46,11 +46,11 @@ public class Project {
         this.members.put(userID, member);
     }
 
-    public Project(String name, String description, LocalDate startDate) {
+    public Project(String name, String description, LocalDate startDate, LocalDate endDate) {
         this.name = name;
         this.description = description;
         this.startDate = startDate;
-        this.projectStatus = ProjectStatus.PLANNED;
+        this.endDate = (endDate != null) ? endDate : null;
         this.members = new HashMap<>();
         this.tasks = new HashSet<>();
     }

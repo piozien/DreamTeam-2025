@@ -16,6 +16,7 @@ import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.ProjectRepository;
 import tech.project.schedule.services.utils.GetProjectRole;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,13 @@ public class ProjectService {
         }
         if (project.getStartDate() == null) {
             throw new ApiException("Start date is required", HttpStatus.BAD_REQUEST);
+        }
+        
+        LocalDate today = LocalDate.now();
+        if (project.getStartDate().isAfter(today)) {
+            project.setProjectStatus(ProjectStatus.PLANNED);
+        } else {
+            project.setProjectStatus(ProjectStatus.IN_PROGRESS);
         }
         
         ProjectMember setPM = new ProjectMember(user, ProjectUserRole.PM);
