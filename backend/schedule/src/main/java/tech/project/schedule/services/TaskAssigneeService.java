@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
+import tech.project.schedule.model.enums.GlobalRole;
 import tech.project.schedule.model.enums.ProjectUserRole;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskAssignee;
@@ -14,7 +15,9 @@ import tech.project.schedule.repositories.TaskRepository;
 import tech.project.schedule.services.utils.GetProjectRole;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.HashSet;
 
 @Service
 @RequiredArgsConstructor
@@ -31,10 +34,17 @@ public class TaskAssigneeService {
         if(!isPM){
             throw new ApiException("You dont have permission to add assignees to this task.", HttpStatus.FORBIDDEN);
         }
-        // ToDo: Fix the assignee to be added
-        // ToDo: ADD CHECK IF USER IS A MEMBER OF THE PROJECT
-        if(task.getAssignees().contains(userToBeAdded)){
-            throw new ApiException("This member is already assigned to this task", HttpStatus.FORBIDDEN);
+        
+        ProjectUserRole userRole = GetProjectRole.getProjectRole(userToBeAdded, task.getProject());
+        if (userRole == null) {
+            throw new ApiException("User is not a member of this project", HttpStatus.BAD_REQUEST);
+        }
+
+        boolean isAlreadyAssigned = task.getAssignees().stream()
+                .anyMatch(assignee -> assignee.getUser().getId().equals(userToBeAdded.getId()));
+                
+        if(isAlreadyAssigned){
+            throw new ApiException("This member is already assigned to this task", HttpStatus.CONFLICT);
         }
 
         TaskAssignee newAssignee = new TaskAssignee();
@@ -47,30 +57,54 @@ public class TaskAssigneeService {
     }
 
     @Transactional
-    public TaskAssignee removeMemberFromTask(UUID taskId, User user, TaskAssignee assigneeToBeRemoved){
+    public void removeAssigneeFromTask(UUID taskId, UUID assigneeId, User currentUser) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
-        boolean isPM = GetProjectRole.getProjectRole(user, task.getProject()) == ProjectUserRole.PM;
-        if(!isPM){
-            throw new ApiException("You dont have permission to remove assignees from this task.", HttpStatus.FORBIDDEN);
+                
+        boolean isPM = GetProjectRole.getProjectRole(currentUser, task.getProject()) == ProjectUserRole.PM;
+        if (!isPM) {
+            throw new ApiException("You don't have permission to remove assignees from this task", HttpStatus.FORBIDDEN);
         }
-        if(!task.getAssignees().contains(assigneeToBeRemoved)){
-            throw new ApiException("This member is not a part of this task.");
-        }
-
-
-        task.getAssignees().remove(assigneeToBeRemoved);
+        
+        TaskAssignee assigneeToRemove = task.getAssignees().stream()
+                .filter(assignee -> assignee.getId().equals(assigneeId))
+                .findFirst()
+                .orElseThrow(() -> new ApiException("Assignee not found", HttpStatus.NOT_FOUND));
+        
+        task.getAssignees().remove(assigneeToRemove);
         taskRepository.save(task);
-
-        return assigneeToBeRemoved;
+        taskAssigneeRepository.delete(assigneeToRemove);
     }
 
-    public List<TaskAssignee> getAllAssigneesByTaskId(UUID taskId) {
+    public List<TaskAssignee> getAllAssigneesByTaskId(UUID taskId, User user) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+                
+        ProjectUserRole role = GetProjectRole.getProjectRole(user, task.getProject());
+        boolean isPM = role == ProjectUserRole.PM;
+        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
+        
+        if (!isPM && !isAdmin) {
+            throw new ApiException("Only Project Managers and Admins can view all assignees", HttpStatus.FORBIDDEN);
+        }
+        
         return taskAssigneeRepository.findAllByTask_Id(taskId);
     }
 
-    public List<TaskAssignee> getAllAssigneesByUserId(UUID userId) {
-        return taskAssigneeRepository.findAllByUser_Id(userId);
+    
+    public Set<TaskAssignee> getTaskAssignees(UUID taskId, User user) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+                
+        ProjectUserRole role = GetProjectRole.getProjectRole(user, task.getProject());
+        boolean isAssignee = task.getAssignees().stream()
+                .anyMatch(assignee -> assignee.getUser().getId().equals(user.getId()));
+                
+        if (role == null && !isAssignee) {
+            throw new ApiException("You don't have permission to view assignees for this task", HttpStatus.FORBIDDEN);
+        }
+        
+        return new HashSet<>(task.getAssignees());
     }
 
 }

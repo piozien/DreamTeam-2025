@@ -16,6 +16,8 @@ import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.ProjectRepository;
 import tech.project.schedule.services.utils.GetProjectRole;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -115,7 +117,7 @@ public class ProjectService {
     }
     
     @Transactional
-    public ProjectMember addMemberToProject(UUID projectId, User user, ProjectUserRole role, User currentUser) {
+    public ProjectMember addMemberToProject(UUID projectId, User user, ProjectUserRole role) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
                 
@@ -211,5 +213,24 @@ public class ProjectService {
         }
         
         return project.getMembers();
+    }
+    
+    public List<Project> getUserProjects(User user) {
+        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
+        
+        if (isAdmin) {
+            return projectRepository.findAll();
+        }
+        
+        List<Project> userProjects = new ArrayList<>();
+        List<Project> allProjects = projectRepository.findAll();
+        
+        for (Project project : allProjects) {
+            if (project.getMembers() != null && project.getMembers().containsKey(user.getId())) {
+                userProjects.add(project);
+            }
+        }
+        
+        return userProjects;
     }
 }

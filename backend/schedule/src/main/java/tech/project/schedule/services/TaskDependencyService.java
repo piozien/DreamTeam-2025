@@ -11,7 +11,10 @@ import tech.project.schedule.repositories.TaskDependencyRepository;
 import tech.project.schedule.repositories.TaskRepository;
 import tech.project.schedule.services.utils.PmAndAssigneeCheck;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,15 +24,16 @@ public class TaskDependencyService {
     private final TaskDependencyRepository taskDependencyRepository;
 
 
-    public void addTaskDependency(UUID taskId, UUID dependsOnTaskId, User user) {
+    @Transactional
+    public void addDependency(UUID taskId, UUID dependencyId, User user) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
 
-        Task dependsOnTask = taskRepository.findById(dependsOnTaskId)
-                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+        Task dependsOnTask = taskRepository.findById(dependencyId)
+                .orElseThrow(() -> new ApiException("Dependency task not found", HttpStatus.NOT_FOUND));
 
         TaskDependency existingDependency = taskDependencyRepository
-                .findByTaskIdAndDependsOnTaskId(taskId, dependsOnTaskId);
+                .findByTaskIdAndDependsOnTaskId(taskId, dependencyId);
 
         if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)){
             throw new ApiException("You are not allowed to add dependencies", HttpStatus.FORBIDDEN);
@@ -50,7 +54,8 @@ public class TaskDependencyService {
     }
 
 
-    public void removeTaskDependency(UUID taskId, UUID dependsOnTaskId, User user) {
+    @Transactional
+    public void removeDependency(UUID taskId, UUID dependencyId, User user) {
 
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
@@ -60,7 +65,7 @@ public class TaskDependencyService {
         }
 
         TaskDependency taskDependency = taskDependencyRepository
-                .findByTaskIdAndDependsOnTaskId(taskId, dependsOnTaskId);
+                .findByTaskIdAndDependsOnTaskId(taskId, dependencyId);
 
         if (taskDependency == null) {
             throw new ApiException("Dependency not found", HttpStatus.NOT_FOUND);
@@ -72,11 +77,12 @@ public class TaskDependencyService {
         taskDependencyRepository.delete(taskDependency);
     }
 
-    public void updateTaskDependency(UUID taskId, UUID dependsOnTaskId, User user) {
+    @Transactional
+    public void updateTaskDependency(UUID taskId, UUID dependencyId, User user) {
         Task newTask = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
         TaskDependency taskDependency = taskDependencyRepository
-                .findByTaskIdAndDependsOnTaskId(taskId, dependsOnTaskId);
+                .findByTaskIdAndDependsOnTaskId(taskId, dependencyId);
 
         if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)){
             throw new ApiException("You are not allowed to add dependencies", HttpStatus.FORBIDDEN);
@@ -87,6 +93,22 @@ public class TaskDependencyService {
         }
         taskDependency.setDependsOnTask(newTask);
         taskDependencyRepository.save(taskDependency);
+    }
+    
+    public Set<Task> getTaskDependencies(UUID taskId, User user) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+                
+        if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)){
+            throw new ApiException("You are not allowed to view dependencies", HttpStatus.FORBIDDEN);
+        }
+        
+        Set<Task> dependencies = new HashSet<>();
+        task.getDependencies().forEach(dependency -> {
+            dependencies.add(dependency.getDependsOnTask());
+        });
+        
+        return dependencies;
     }
 
 }

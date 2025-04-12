@@ -43,9 +43,14 @@ public class ProjectMapper {
         }
         
         return new ProjectDTO(
+                project.getId(),
                 project.getName(),
                 project.getDescription(),
-                project.getStartDate()
+                project.getStartDate(),
+                project.getEndDate(),
+                project.getProjectStatus(),
+                memberDTOs,
+                taskIds
         );
     }
     

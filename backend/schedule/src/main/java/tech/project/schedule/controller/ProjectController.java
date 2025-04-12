@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tech.project.schedule.dto.project.AddProjectMemberDTO;
 import tech.project.schedule.dto.project.ProjectDTO;
 import tech.project.schedule.dto.project.ProjectMemberDTO;
+import tech.project.schedule.dto.project.UpdateProjectMemberRoleDTO;
 import tech.project.schedule.dto.mappers.ProjectMapper;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.enums.ProjectUserRole;
@@ -88,19 +90,15 @@ public class ProjectController {
     @PostMapping("/{projectId}/members")
     public ResponseEntity<ProjectMemberDTO> addMember(
             @PathVariable UUID projectId,
-            @RequestBody Map<String, Object> requestBody,
-            @RequestParam UUID currentUserId
+            @Valid @RequestBody AddProjectMemberDTO memberDTO
     ) {
-        User currentUser = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-        
-        UUID userId = UUID.fromString((String) requestBody.get("userId"));
-        ProjectUserRole role = ProjectUserRole.valueOf((String) requestBody.get("role"));
+        UUID userId = memberDTO.userId();
+        ProjectUserRole role = memberDTO.role();
         
         User userToAdd = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
         
-        ProjectMember addedMember = projectService.addMemberToProject(projectId, userToAdd, role, currentUser);
+        ProjectMember addedMember = projectService.addMemberToProject(projectId, userToAdd, role);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(ProjectMapper.memberToDTO(addedMember));
     }
@@ -123,13 +121,13 @@ public class ProjectController {
     public ResponseEntity<ProjectMemberDTO> updateMemberRole(
             @PathVariable UUID projectId,
             @PathVariable UUID userId,
-            @RequestBody Map<String, String> requestBody,
+            @Valid @RequestBody UpdateProjectMemberRoleDTO roleDTO,
             @RequestParam UUID currentUserId
     ) {
         User currentUser = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
         
-        ProjectUserRole newRole = ProjectUserRole.valueOf(requestBody.get("role"));
+        ProjectUserRole newRole = roleDTO.role();
         
         ProjectMember updatedMember = projectService.updateMemberRole(projectId, userId, newRole, currentUser);
         
@@ -154,8 +152,19 @@ public class ProjectController {
         
         return ResponseEntity.ok(memberDTOs);
     }
-
-
-
     
+    @GetMapping
+    public ResponseEntity<List<ProjectDTO>> getUserProjects(
+            @RequestParam UUID userId
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        
+        List<Project> projects = projectService.getUserProjects(user);
+        List<ProjectDTO> projectDTOs = projects.stream()
+                .map(ProjectMapper::projectToDTO)
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(projectDTOs);
+    }
 }

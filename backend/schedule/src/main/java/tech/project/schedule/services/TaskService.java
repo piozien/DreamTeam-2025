@@ -10,10 +10,11 @@ import tech.project.schedule.model.enums.TaskStatus;
 import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.user.User;
-import tech.project.schedule.repositories.TaskCommentRepository;
 import tech.project.schedule.services.utils.GetProjectRole;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 import tech.project.schedule.repositories.ProjectRepository;
@@ -26,7 +27,6 @@ import tech.project.schedule.repositories.TaskRepository;
 public class TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
-    private final TaskCommentRepository taskCommentRepository;
 
     @Transactional
     public Task createTask(Task task, User user){
@@ -125,5 +125,17 @@ public class TaskService {
         }
         
         return task;
+    }
+    
+    public List<Task> getTasksByProject(UUID projectId, User user) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
+        
+        ProjectUserRole role = GetProjectRole.getProjectRole(user, project);
+        if (role == null) {
+            throw new ApiException("You don't have permission to view tasks in this project", HttpStatus.FORBIDDEN);
+        }
+        
+        return new ArrayList<>(project.getTasks());
     }
 }
