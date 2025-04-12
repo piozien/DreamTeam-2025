@@ -32,6 +32,7 @@ public class TaskAssigneeService {
             throw new ApiException("You dont have permission to add assignees to this task.", HttpStatus.FORBIDDEN);
         }
         // ToDo: Fix the assignee to be added
+        // ToDo: ADD CHECK IF USER IS A MEMBER OF THE PROJECT
         if(task.getAssignees().contains(userToBeAdded)){
             throw new ApiException("This member is already assigned to this task", HttpStatus.FORBIDDEN);
         }

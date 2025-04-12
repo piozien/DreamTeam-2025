@@ -2,6 +2,8 @@ package tech.project.schedule.model.task;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import tech.project.schedule.dto.task.TaskCommentDTO;
+import tech.project.schedule.dto.task.TaskFileDTO;
 import tech.project.schedule.model.user.User;
 
 import java.time.LocalDateTime;
@@ -32,5 +34,15 @@ public class TaskFile {
     @PrePersist
     protected void onCreate() {
         uploadedAt = LocalDateTime.now();
+    }
+
+    public static TaskFileDTO mapToTaskFileDTO(TaskFile file){
+        return new TaskFileDTO(
+                file.getId(),
+                file.getTask().getId(),
+                file.uploadedBy.getId(),
+                file.filePath,
+                file.uploadedAt
+        );
     }
 }

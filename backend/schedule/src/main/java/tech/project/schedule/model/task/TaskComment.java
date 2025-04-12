@@ -2,6 +2,7 @@ package tech.project.schedule.model.task;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import tech.project.schedule.dto.task.TaskCommentDTO;
 import tech.project.schedule.model.user.User;
 
 import java.time.LocalDateTime;
@@ -32,5 +33,15 @@ public class TaskComment {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+    }
+
+    public static TaskCommentDTO mapToTaskCommentDTO(TaskComment comment){
+        return new TaskCommentDTO(
+                comment.getId(),
+                comment.getTask().getId(),
+                comment.getUser().getId(),
+                comment.getComment(),
+                comment.getCreatedAt()
+        );
     }
 }

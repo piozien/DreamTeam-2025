@@ -2,7 +2,6 @@ package tech.project.schedule.dto.mappers;
 
 import tech.project.schedule.dto.project.ProjectDTO;
 import tech.project.schedule.dto.project.ProjectMemberDTO;
-import tech.project.schedule.model.enums.ProjectStatus;
 import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.project.ProjectMember;
 
@@ -10,7 +9,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ProjectMapper {

@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public record TaskDTO(
-        UUID id,
+//        UUID id,
 
         @NotNull(message = "Project ID is required")
         UUID projectId,
@@ -23,7 +23,7 @@ public record TaskDTO(
         @NotNull(message = "Start date is required")
         LocalDate startDate,
 
-        LocalDate endDate,
+//        LocalDate endDate,
 
         @NotNull(message = "Priority is required")
         TaskPriority priority,
@@ -33,9 +33,9 @@ public record TaskDTO(
 
         Set<UUID> assigneeIds,
         Set<TaskCommentDTO> comments,
-        Set<TaskHistoryDTO> history,
+//        Set<TaskHistoryDTO> history,
         Set<TaskFileDTO> files,
-        Set<UUID> dependencyIds,
-        Set<UUID> dependentTaskIds
+        Set<UUID> dependencyIds
+//        Set<UUID> dependentTaskIds
 ) {
 }
