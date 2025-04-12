@@ -7,6 +7,7 @@ import { HelloService } from './shared/services/hello.service';
 import { registerLocaleData } from '@angular/common';
 import localePl from '@angular/common/locales/pl';
 import { LOCALE_ID } from '@angular/core';
+import { AuthService } from './shared/services/auth.service';
 
 registerLocaleData(localePl);
 
@@ -16,6 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(),
     provideHttpClient(withFetch()),
     HelloService,
+    AuthService,
     { provide: LOCALE_ID, useValue: 'pl-PL' }
   ]
 };

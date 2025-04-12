@@ -1,0 +1,38 @@
+<div class="login-container">
+  <h2>Logowanie</h2>
+  
+  <!-- Error message alert -->
+  <div *ngIf="errorMessage" class="alert alert-danger mb-3" role="alert">
+    {{ errorMessage }}
+  </div>
+  
+  <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+    <div class="mb-3">
+      <label for="email" class="form-label">Adres email</label>
+      <input type="email" class="form-control" id="email" name="email" [(ngModel)]="user.email" required
+             [class.is-invalid]="errorMessage && !user.email">
+      <div class="invalid-feedback" *ngIf="errorMessage && !user.email">
+        Adres email jest wymagany
+      </div>
+    </div>
+    
+    <div class="mb-3">
+      <label for="password" class="form-label">Hasło</label>
+      <input type="password" class="form-control" id="password" name="password" [(ngModel)]="user.password" required
+             [class.is-invalid]="errorMessage && !user.password">
+      <div class="invalid-feedback" *ngIf="errorMessage && !user.password">
+        Hasło jest wymagane
+      </div>
+    </div>
+    
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        Zaloguj się
+      </button>
+      <button type="button" class="btn btn-secondary" routerLink="/auth/register" [disabled]="isLoading">
+        Zarejestruj się
+      </button>
+    </div>
+  </form>
+</div>
