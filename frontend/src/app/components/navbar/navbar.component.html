@@ -1,0 +1,31 @@
+<mat-toolbar color="primary">
+    <div class="toolbar-container">
+        <span class="logo">DreamTeam</span>
+        <nav class="nav-links">
+          <a mat-button routerLink="/projects" routerLinkActive="active">Projekty</a>
+          <a mat-button routerLink="/teams" routerLinkActive="active">Zespoły</a>
+          <a mat-button routerLink="/tasks" routerLinkActive="active">Zadania</a>
+          <a mat-button routerLink="/calendar" routerLinkActive="active">Kalendarz</a>
+        </nav>
+        
+        <!-- User action buttons -->
+        <div class="user-actions">
+          <!-- Show when user is NOT logged in -->
+          <ng-container *ngIf="!isLoggedIn">
+            <a mat-button routerLink="/auth/login" routerLinkActive="active">
+              <mat-icon class="me-1">login</mat-icon> Zaloguj się
+            </a>
+          </ng-container>
+          
+          <!-- Show when user is logged in -->
+          <ng-container *ngIf="isLoggedIn">
+            <span class="user-info me-2" *ngIf="currentUser">
+              <mat-icon>person</mat-icon> {{ currentUser.firstName }}
+            </span>
+            <button mat-button (click)="logout()" class="logout-btn">
+              <mat-icon class="me-1">logout</mat-icon> Wyloguj
+            </button>
+          </ng-container>
+        </div>
+    </div>
+</mat-toolbar>
