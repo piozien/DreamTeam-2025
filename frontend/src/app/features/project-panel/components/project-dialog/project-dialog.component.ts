@@ -63,7 +63,7 @@ const MY_DATE_FORMATS = {
         <mat-form-field appearance="fill" class="full-width">
           <mat-label>Data zakończenia</mat-label>
           <input matInput [matDatepicker]="endPicker" [(ngModel)]="project.endDate" 
-                 name="endDate" required [min]="project.startDate" 
+                 name="endDate" [min]="project.startDate" 
                  #endDate="ngModel">
           <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
           <mat-datepicker #endPicker></mat-datepicker>
@@ -106,8 +106,6 @@ export class ProjectDialogComponent {
     name: '',
     description: '',
     startDate: new Date(),
-    endDate: new Date(new Date().setDate(new Date().getDate() + 1)), // Set default end date to tomorrow
-    members: []
   };
 
   constructor(
@@ -124,10 +122,10 @@ export class ProjectDialogComponent {
   }
 
   isValidDateRange(): boolean {
-    if (!this.project.startDate || !this.project.endDate) {
+    if (!this.project.startDate) {
       return false;
     }
-    return this.project.endDate >= this.project.startDate;
+    return !this.project.endDate || this.project.endDate >= this.project.startDate;
   }
 
   onSubmit(): void {

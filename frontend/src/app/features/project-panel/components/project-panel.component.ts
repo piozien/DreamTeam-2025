@@ -8,8 +8,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
-import { Project, ProjectUserRole } from '../../../shared/models/project.model';
+import { Project, ProjectCreate, ProjectUserRole } from '../../../shared/models/project.model';
 import { ProjectService } from '../../../shared/services/project.service';
 import { ProjectDialogComponent } from './project-dialog/project-dialog.component';
 import { Subscription } from 'rxjs';
@@ -40,6 +41,7 @@ const MY_DATE_FORMATS = {
     MatCardModule,
     MatListModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
     MatNativeDateModule
   ],
   providers: [
@@ -106,14 +108,18 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
 
   createProject(projectData: Partial<Project>): void {
     this.isCreating = true;
-    const newProject: Project = {
-      id: '', // Will be set by the service
+    console.log('Project data from dialog:', projectData);
+
+    const newProject: ProjectCreate = {
       name: projectData.name || '',
       description: projectData.description || '',
       startDate: projectData.startDate || new Date(),
-      endDate: projectData.endDate || new Date(),
-      members: []
+      endDate: projectData.endDate
     };
+
+    console.log('Final project object being sent:', newProject);
+    console.log('End date type:', typeof newProject.endDate);
+    console.log('End date value:', newProject.endDate);
 
     this.subscription.add(
       this.projectService.createProject(newProject).subscribe({
@@ -151,10 +157,14 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
   }
 
   selectProject(project: Project): void {
-    this.selectedProject = project;
-  }
-
-  goToHome(): void {
-    this.router.navigate(['/']);
+    console.log('Selecting project:', project);
+    console.log('Navigating to:', '/projects/' + project.id);
+    this.router.navigate(['/projects', project.id])
+      .then(success => {
+        console.log('Navigation result:', success);
+      })
+      .catch(error => {
+        console.error('Navigation error:', error);
+      });
   }
 }

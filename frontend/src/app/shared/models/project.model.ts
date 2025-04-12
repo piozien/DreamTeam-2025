@@ -11,6 +11,12 @@ export enum ProjectUserRole {
   VIEWER = 'viewer'
 }
 
+export enum ProjectStatus {
+  COMPLETED = 'completed',
+  IN_PROGRESS = 'in_progress',
+  PLANNED = 'planned'
+}
+
 export interface ProjectMember {
   id: string;
   projectId: string;
@@ -23,6 +29,14 @@ export interface Project {
   name: string;
   description: string;
   startDate: Date;
-  endDate: Date;
+  endDate?: Date;
   members: ProjectMember[];
+  status: ProjectStatus;
+}
+
+export interface ProjectCreate {
+  name: string;
+  description: string;
+  startDate: Date;
+  endDate?: Date;
 }
