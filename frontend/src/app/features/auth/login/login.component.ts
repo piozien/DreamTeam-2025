@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../../shared/services/auth.service';
-import { User, GlobalRole } from '../../../shared/models/user.model';
+import { UserLogin} from '../../../shared/models/user.model';
 
 @Component({
   selector: 'app-login',
@@ -17,14 +17,9 @@ export class LoginComponent {
   private router = inject(Router);
   private authService = inject(AuthService);
   
-  user: User = {
+  user: UserLogin = {
     email: '', 
     password: '',
-    id: '',
-    userName: '',
-    firstName: '',
-    lastName: '',
-    globalRole: GlobalRole.CLIENT
   };
   
   errorMessage: string = '';
