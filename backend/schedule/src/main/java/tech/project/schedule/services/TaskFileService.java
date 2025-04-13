@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
+import tech.project.schedule.model.enums.GlobalRole;
 import tech.project.schedule.model.enums.ProjectUserRole;
 import tech.project.schedule.model.task.TaskFile;
 import tech.project.schedule.repositories.TaskFileRepository;
@@ -73,7 +74,14 @@ public class TaskFileService {
         taskFileRepository.deleteById(taskFileId);
     }
 
-    public TaskFile getTaskFileByTaskId(UUID taskId) {
+    public TaskFile getTaskFileByTaskId(UUID taskId, User user) {
+        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+        boolean isInProject = task.getProject().getMembers().containsKey(user.getId());
+        if(!isAdmin && !isInProject){
+            throw new ApiException("You dont have permission to view files in this task", HttpStatus.FORBIDDEN);
+        }
         return taskFileRepository.findByTask_Id(taskId);
     }
 

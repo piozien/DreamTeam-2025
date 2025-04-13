@@ -9,17 +9,21 @@ import tech.project.schedule.dto.mappers.TaskMapper;
 import tech.project.schedule.dto.task.TaskAssigneeDTO;
 import tech.project.schedule.dto.task.TaskDTO;
 import tech.project.schedule.dto.task.TaskCommentDTO;
+import tech.project.schedule.dto.task.TaskFileDTO;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.task.TaskComment;
+import tech.project.schedule.model.task.TaskFile;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.TaskCommentRepository;
+import tech.project.schedule.repositories.TaskRepository;
 import tech.project.schedule.repositories.UserRepository;
 import tech.project.schedule.services.TaskService;
 import tech.project.schedule.services.TaskAssigneeService;
 import tech.project.schedule.services.TaskDependencyService;
 import tech.project.schedule.services.TaskCommentService;
+import tech.project.schedule.services.TaskFileService;
 
 import java.util.List;
 import java.util.Set;
@@ -36,6 +40,8 @@ public class TaskController {
     private final TaskDependencyService taskDependencyService;
     private final TaskCommentService taskCommentService;
     private final TaskCommentRepository taskCommentRepository;
+    private final TaskRepository taskRepository;
+    private final TaskFileService taskFileService;
 
     @PostMapping
     public ResponseEntity<TaskDTO> createTask(
@@ -240,13 +246,101 @@ public class TaskController {
 
     @GetMapping("/{taskId}/comments/{commentId}")
     public ResponseEntity<TaskCommentDTO> getComment(
-            @PathVariable UUID taskCommentId,
+            @PathVariable UUID commentId,
+            @RequestParam UUID userId
+    ){
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+
+
+        TaskComment comment = taskCommentService.getCommentById(commentId, user);
+        return ResponseEntity.ok(TaskMapper.commentToDTO(comment));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TaskCommentDTO>> getUserComments(
+            @RequestParam UUID userId,
+            @RequestParam UUID otherUserId
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        User otherUser = userRepository.findById(otherUserId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+
+        List<TaskComment> comments = taskCommentService.getUserComments(user, otherUser);
+        List<TaskCommentDTO> commentDTOs = comments.stream()
+                .map(TaskMapper::commentToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(commentDTOs);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TaskCommentDTO>> getTaskComments(
+            @PathVariable UUID taskId,
+            @RequestParam UUID userId
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+
+        List<TaskComment> comments = taskCommentService.getCommentsForTask(taskId, user);
+        List<TaskCommentDTO> commentDTOs = comments.stream()
+                .map(TaskMapper::commentToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(commentDTOs);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteComment(
+            @PathVariable UUID taskId,
+            @PathVariable UUID commentId,
+            @RequestParam UUID userId
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+
+        taskCommentService.deleteComment(taskId,user, commentId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAllCommentsInTask(
+            @PathVariable UUID taskId,
+            @RequestParam UUID userId
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+
+        taskCommentService.deleteAllCommentsForTask(taskId, user);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping
+    public ResponseEntity<TaskFileDTO> addFile(
+            @PathVariable UUID taskId,
+            @Valid @RequestBody TaskFileDTO taskFileDTO,
+            @RequestParam UUID userId
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+
+        TaskFile file = TaskMapper.dtoToFile(taskFileDTO);
+        TaskFile createdFile = taskFileService.addTaskFile(taskId,user, file);
+        return ResponseEntity.status(HttpStatus.CREATED).body(TaskMapper.fileToDTO(createdFile));
+
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TaskFileDTO>> getTaskFileByTaskId(
+            @PathVariable UUID taskId,
+            @PathVariable UUID fileId,
             @RequestParam UUID userId
     ){
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
 
-        TaskComment comment = taskCommentService.getCommentById(taskCommentId);
-        return null;
+
     }
+
+
 }

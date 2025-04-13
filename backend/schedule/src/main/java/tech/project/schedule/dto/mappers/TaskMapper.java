@@ -3,6 +3,7 @@ package tech.project.schedule.dto.mappers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import tech.project.schedule.dto.task.TaskAssigneeDTO;
 import tech.project.schedule.dto.task.TaskCommentDTO;
 import tech.project.schedule.dto.task.TaskDTO;
@@ -16,11 +17,15 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+//import tech.project.schedule.repositories.TaskRepository;
+//import tech.project.schedule.repositories.UserRepository;
 //import tech.project.schedule.repositories.ProjectRepository;
+
 
 @RequiredArgsConstructor
 public class TaskMapper {
-    // private final ProjectRepository projectRepository;
+
     //todo: do something with all of those sets also couldn't get project from dto because of projectRepository
     public static Task dtoToTask(TaskDTO dto) {
         Task task = new Task();
@@ -71,16 +76,41 @@ public class TaskMapper {
                 dependencyIds
         );
     }
-    // ToDo: Finish assignee to DTO method
-    public static TaskAssigneeDTO assigneeToDTO(TaskAssignee addedAssignee) {
-        return null;
+
+    public static TaskAssigneeDTO assigneeToDTO(TaskAssignee assignee) {
+        return new TaskAssigneeDTO(
+          assignee.getId(),
+          assignee.getTask().getId(),
+          assignee.getUser().getId()
+        );
     }
 
-    public static TaskComment dtoToComment(@Valid TaskCommentDTO taskCommentDTO) {
-        return null;
+    // ToDo: Static methods are a pain
+    public static TaskComment dtoToComment(TaskCommentDTO taskCommentDTO) {
+        TaskComment comment = new TaskComment();
+
+//        comment.setTask();
+//        comment.setUser();
+        comment.setComment(taskCommentDTO.comment());
+        comment.setCreatedAt(taskCommentDTO.createdAt());
+        return comment;
     }
 
     public static TaskCommentDTO commentToDTO(TaskComment createdComment) {
+        return new TaskCommentDTO(
+                createdComment.getId(),
+                createdComment.getTask().getId(),
+                createdComment.getUser().getId(),
+                createdComment.getComment(),
+                createdComment.getCreatedAt()
+        );
+    }
+
+    public static TaskFile dtoToFile(@Valid TaskFileDTO taskFileDTO) {
+        return null;
+    }
+
+    public static TaskFileDTO fileToDTO(TaskFile createdFile) {
         return null;
     }
 }
