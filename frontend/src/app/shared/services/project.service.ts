@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
-import { Project, ProjectCreate } from '../models/project.model';
+import { Project, ProjectCreate, ProjectMemberDTO, ProjectUserRole, AddProjectMemberDTO, UpdateProjectMemberRoleDTO } from '../models/project.model';
 import { User, GlobalRole } from '../models/user.model';
 import { AuthService } from './auth.service';
+import { DatePipe } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,8 @@ export class ProjectService {
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private datePipe: DatePipe
   ) {}
 
   private getUserParams(): HttpParams {
@@ -35,14 +37,62 @@ export class ProjectService {
   }
 
   createProject(project: ProjectCreate): Observable<Project> {
-    return this.http.post<Project>(`${this.apiUrl}`, project, {params: this.getUserParams()});
+    // Klonujemy projekt, aby nie modyfikować oryginalnego obiektu
+    const formattedProject = { ...project };
+    
+    if (formattedProject.startDate) {
+      formattedProject.startDate = this.formatDate(formattedProject.startDate);
+    }
+    
+    if (formattedProject.endDate) {
+      formattedProject.endDate = this.formatDate(formattedProject.endDate);
+    }
+    
+    return this.http.post<Project>(`${this.apiUrl}`, formattedProject, {params: this.getUserParams()});
   }
 
   updateProject(project: Project): Observable<Project> {
-    return this.http.put<Project>(`${this.apiUrl}/${project.id}`, project, {params: this.getUserParams()});
+    // Klonujemy projekt, aby nie modyfikować oryginalnego obiektu
+    const formattedProject = { ...project };
+
+    if (formattedProject.startDate) {
+      formattedProject.startDate = this.formatDate(formattedProject.startDate);
+    }
+    
+    if (formattedProject.endDate) {
+      formattedProject.endDate = this.formatDate(formattedProject.endDate);
+    }
+    
+    return this.http.put<Project>(`${this.apiUrl}/${project.id}`, formattedProject, {params: this.getUserParams()});
   }
 
   deleteProject(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, {params: this.getUserParams()});
+  }
+
+  addProjectMember(projectId: string, memberData: AddProjectMemberDTO): Observable<ProjectMemberDTO> {
+    return this.http.post<ProjectMemberDTO>(`${this.apiUrl}/${projectId}/members`, memberData, {params: this.getUserParams()});
+  }
+
+  removeProjectMember(projectId: string, userId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${projectId}/members/${userId}`, {params: this.getUserParams()});
+  }
+
+  updateMemberRole(projectId: string, userId: string, newRole: ProjectUserRole): Observable<ProjectMemberDTO> {
+    const roleData: UpdateProjectMemberRoleDTO = { role: newRole };
+    return this.http.put<ProjectMemberDTO>(`${this.apiUrl}/${projectId}/members/${userId}`, roleData, {params: this.getUserParams()});
+  }
+
+  getProjectMembers(projectId: string): Observable<Record<string, ProjectMemberDTO>> {
+    return this.http.get<Record<string, ProjectMemberDTO>>(`${this.apiUrl}/${projectId}/members`, {params: this.getUserParams()});
+  }
+  
+  /**
+   * Formatuje obiekt Date do formatu yyyy-mm-dd
+   * @param date obiekt Date do sformatowania
+   * @returns sformatowana data w formacie yyyy-mm-dd
+   */
+  private formatDate(date: Date): any {
+    return this.datePipe.transform(date, 'yyyy-MM-dd');
   }
 }

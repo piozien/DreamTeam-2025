@@ -40,3 +40,19 @@ export interface ProjectCreate {
   startDate: Date;
   endDate?: Date;
 }
+
+export interface ProjectMemberDTO {
+  id: string;
+  projectId: string;
+  userId: string;
+  role: ProjectUserRole;
+}
+
+export interface AddProjectMemberDTO {
+  userId: string;
+  role: ProjectUserRole;
+}
+
+export interface UpdateProjectMemberRoleDTO {
+  role: ProjectUserRole;
+}
