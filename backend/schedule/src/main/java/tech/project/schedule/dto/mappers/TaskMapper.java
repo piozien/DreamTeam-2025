@@ -8,6 +8,8 @@ import tech.project.schedule.dto.task.TaskAssigneeDTO;
 import tech.project.schedule.dto.task.TaskCommentDTO;
 import tech.project.schedule.dto.task.TaskDTO;
 import tech.project.schedule.dto.task.TaskFileDTO;
+import tech.project.schedule.dto.task.TaskRequestDTO;
+import tech.project.schedule.dto.task.TaskUpdateDTO;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.task.*;
@@ -18,22 +20,36 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-//import tech.project.schedule.repositories.TaskRepository;
-//import tech.project.schedule.repositories.UserRepository;
-//import tech.project.schedule.repositories.ProjectRepository;
-
 
 @RequiredArgsConstructor
 public class TaskMapper {
 
-    //todo: do something with all of those sets also couldn't get project from dto because of projectRepository
-    public static Task dtoToTask(TaskDTO dto) {
+    public static Task requestDtoToTask(TaskRequestDTO dto) {
         Task task = new Task();
-
-
+        
+        Project project = new Project();
+        project.setId(dto.projectId());
+        task.setProject(project);
+        
         task.setName(dto.name());
         task.setDescription(dto.description());
         task.setStartDate(dto.startDate());
+        task.setEndDate(dto.endDate());
+        task.setPriority(dto.priority());
+        task.setStatus(dto.status());
+        return task;
+    }
+    
+    public static Task updateDtoToTask(TaskUpdateDTO dto) {
+        Task task = new Task();
+        
+        if (dto.id() != null) {
+            task.setId(dto.id());
+        }
+        task.setName(dto.name());
+        task.setDescription(dto.description());
+        task.setStartDate(dto.startDate());
+        task.setEndDate(dto.endDate());
         task.setPriority(dto.priority());
         task.setStatus(dto.status());
         return task;
@@ -64,10 +80,12 @@ public class TaskMapper {
                     .collect(Collectors.toSet());
         }
         return new TaskDTO(
+                task.getId(),
                 task.getProject().getId(),
                 task.getName(),
                 task.getDescription(),
                 task.getStartDate(),
+                task.getEndDate(),
                 task.getPriority(),
                 task.getStatus(),
                 assigneeIds,
@@ -85,12 +103,9 @@ public class TaskMapper {
         );
     }
 
-    // ToDo: Static methods are a pain
     public static TaskComment dtoToComment(TaskCommentDTO taskCommentDTO) {
         TaskComment comment = new TaskComment();
 
-//        comment.setTask();
-//        comment.setUser();
         comment.setComment(taskCommentDTO.comment());
         comment.setCreatedAt(taskCommentDTO.createdAt());
         return comment;
@@ -107,10 +122,21 @@ public class TaskMapper {
     }
 
     public static TaskFile dtoToFile(@Valid TaskFileDTO taskFileDTO) {
-        return null;
+        TaskFile file = new TaskFile();
+        if (taskFileDTO.id() != null) {
+            file.setId(taskFileDTO.id());
+        }
+        file.setFilePath(taskFileDTO.filePath());
+        return file;
     }
 
     public static TaskFileDTO fileToDTO(TaskFile createdFile) {
-        return null;
+        return new TaskFileDTO(
+            createdFile.getId(),
+            createdFile.getTask().getId(),
+            createdFile.getUploadedBy().getId(),
+            createdFile.getFilePath(),
+            createdFile.getUploadedAt()
+        );
     }
 }

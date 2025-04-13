@@ -1,7 +1,5 @@
 package tech.project.schedule.dto.task;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import tech.project.schedule.model.enums.TaskPriority;
 import tech.project.schedule.model.enums.TaskStatus;
 
@@ -9,7 +7,7 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
-public record TaskDTO(
+public record TaskUpdateDTO(
         UUID id,
         UUID projectId,
         String name,
@@ -22,5 +20,4 @@ public record TaskDTO(
         Set<TaskCommentDTO> comments,
         Set<TaskFileDTO> files,
         Set<UUID> dependencyIds
-) {
-}
+) {}

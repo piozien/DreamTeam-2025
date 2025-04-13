@@ -15,6 +15,7 @@ import tech.project.schedule.model.user.User;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.services.utils.PmAndAssigneeCheck;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -27,26 +28,56 @@ public class TaskFileService {
     public TaskFile addTaskFile(UUID taskId, User user, TaskFile file) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
-        if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId,user)){
-            throw new ApiException("You dont have permission to add files");
+        
+        if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)){
+            throw new ApiException("You don't have permission to add files", HttpStatus.FORBIDDEN);
         }
+        
         if(file.getFilePath() == null){
             throw new ApiException("File path is null", HttpStatus.BAD_REQUEST);
         }
-        taskFileRepository.setFilePath(taskId, file.getFilePath());
-        task.getFiles().add(file);
+        
+        file.setTask(task);
+        file.setUploadedBy(user);
+        
+        TaskFile savedFile = taskFileRepository.save(file);
+        
+        if (task.getFiles() == null) {
+            task.setFiles(new java.util.HashSet<>());
+        }
+        task.getFiles().add(savedFile);
         taskRepository.save(task);
-        return file;
+        
+        return savedFile;
     }
 
     public void updateFilePathByTaskId(UUID taskId, String newFilePath, User user) {
-        if (!taskFileRepository.existsById(taskId)) {
-            throw new ApiException("TaskFile with task ID " + taskId + " not found", HttpStatus.NOT_FOUND);
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+                
+        if (PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)) {
+            throw new ApiException("You don't have permission to update files on this task", HttpStatus.FORBIDDEN);
         }
-        if (PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId,user)) {
-            throw new ApiException("You dont have permission to update files on this task");
+        
+        taskFileRepository.setFilePathByTaskId(taskId, newFilePath);
+    }
+    
+    public void updateFilePath(UUID taskId, UUID fileId, String newFilePath, User user) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+                
+        TaskFile file = taskFileRepository.findById(fileId)
+                .orElseThrow(() -> new ApiException("File not found", HttpStatus.NOT_FOUND));
+                
+        if (!file.getTask().getId().equals(taskId)) {
+            throw new ApiException("File does not belong to this task", HttpStatus.BAD_REQUEST);
         }
-        taskFileRepository.setFilePath(taskId, newFilePath);
+        
+        if (PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)) {
+            throw new ApiException("You don't have permission to update files on this task", HttpStatus.FORBIDDEN);
+        }
+        
+        taskFileRepository.setFilePathById(fileId, newFilePath);
     }
 
     public boolean doesFileExist(String filePath) {
@@ -64,25 +95,52 @@ public class TaskFileService {
         taskFileRepository.delete(taskFile);
     }
 
-    public void deleteTaskFileById(UUID taskFileId, UUID taskId, User user) {
-        if (!taskFileRepository.existsById(taskFileId)) {
-            throw new ApiException("TaskFile with ID " + taskFileId + " not found", HttpStatus.NOT_FOUND);
+    public void deleteTaskFile(UUID taskId, UUID fileId, User user) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+                
+        TaskFile file = taskFileRepository.findById(fileId)
+                .orElseThrow(() -> new ApiException("File not found", HttpStatus.NOT_FOUND));
+                
+        if (!file.getTask().getId().equals(taskId)) {
+            throw new ApiException("File does not belong to this task", HttpStatus.BAD_REQUEST);
         }
-        if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId,user)) {
-            throw new ApiException("You dont have permission to delete files on this task");
+        
+        if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)) {
+            throw new ApiException("You don't have permission to delete files on this task", HttpStatus.FORBIDDEN);
         }
-        taskFileRepository.deleteById(taskFileId);
+        
+        task.getFiles().remove(file);
+        taskRepository.save(task);
+        
+        taskFileRepository.deleteById(fileId);
     }
 
-    public TaskFile getTaskFileByTaskId(UUID taskId, User user) {
+    public List<TaskFile> getTaskFiles(UUID taskId, User user) {
         boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
         boolean isInProject = task.getProject().getMembers().containsKey(user.getId());
+        
         if(!isAdmin && !isInProject){
-            throw new ApiException("You dont have permission to view files in this task", HttpStatus.FORBIDDEN);
+            throw new ApiException("You don't have permission to view files in this task", HttpStatus.FORBIDDEN);
         }
-        return taskFileRepository.findByTask_Id(taskId);
+        
+        return taskFileRepository.findAllByTaskId(taskId);
+    }
+    
+    public TaskFile getTaskFileById(UUID taskId, UUID fileId, User user) {
+        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+        boolean isInProject = task.getProject().getMembers().containsKey(user.getId());
+        
+        if(!isAdmin && !isInProject){
+            throw new ApiException("You don't have permission to view files in this task", HttpStatus.FORBIDDEN);
+        }
+        
+        return taskFileRepository.findById(fileId)
+                .orElseThrow(() -> new ApiException("File not found", HttpStatus.NOT_FOUND));
     }
 
     public TaskFile getTaskFileByPath(String filePath) {
