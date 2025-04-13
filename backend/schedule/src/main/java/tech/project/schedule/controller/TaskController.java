@@ -8,14 +8,18 @@ import org.springframework.web.bind.annotation.*;
 import tech.project.schedule.dto.mappers.TaskMapper;
 import tech.project.schedule.dto.task.TaskAssigneeDTO;
 import tech.project.schedule.dto.task.TaskDTO;
+import tech.project.schedule.dto.task.TaskCommentDTO;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskAssignee;
+import tech.project.schedule.model.task.TaskComment;
 import tech.project.schedule.model.user.User;
+import tech.project.schedule.repositories.TaskCommentRepository;
 import tech.project.schedule.repositories.UserRepository;
 import tech.project.schedule.services.TaskService;
 import tech.project.schedule.services.TaskAssigneeService;
 import tech.project.schedule.services.TaskDependencyService;
+import tech.project.schedule.services.TaskCommentService;
 
 import java.util.List;
 import java.util.Set;
@@ -30,6 +34,8 @@ public class TaskController {
     private final UserRepository userRepository;
     private final TaskAssigneeService taskAssigneeService;
     private final TaskDependencyService taskDependencyService;
+    private final TaskCommentService taskCommentService;
+    private final TaskCommentRepository taskCommentRepository;
 
     @PostMapping
     public ResponseEntity<TaskDTO> createTask(
@@ -89,12 +95,12 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-        
+
         List<Task> tasks = taskService.getTasksByProject(projectId, user);
         List<TaskDTO> taskDTOs = tasks.stream()
                 .map(TaskMapper::taskToDTO)
                 .collect(Collectors.toList());
-                
+
         return ResponseEntity.ok(taskDTOs);
     }
 
@@ -106,7 +112,7 @@ public class TaskController {
     ) {
         User currUser = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-        
+
         UUID userId = assigneeDTO.userId();
         User userToAdd = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
@@ -114,7 +120,7 @@ public class TaskController {
         TaskAssignee addedAssignee = taskAssigneeService.assignMemberToTask(taskId, currUser, userToAdd);
         return ResponseEntity.status(HttpStatus.CREATED).body(TaskMapper.assigneeToDTO(addedAssignee));
     }
-    
+
     @DeleteMapping("/{taskId}/assignees/{assigneeId}")
     public ResponseEntity<Void> removeAssignee(
             @PathVariable UUID taskId,
@@ -123,11 +129,11 @@ public class TaskController {
     ) {
         User currUser = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-                
+
         taskAssigneeService.removeAssigneeFromTask(taskId, assigneeId, currUser);
         return ResponseEntity.noContent().build();
     }
-    
+
     @GetMapping("/{taskId}/assignees")
     public ResponseEntity<Set<TaskAssigneeDTO>> getTaskAssignees(
             @PathVariable UUID taskId,
@@ -135,15 +141,15 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-                
+
         Set<TaskAssignee> assignees = taskAssigneeService.getTaskAssignees(taskId, user);
         Set<TaskAssigneeDTO> assigneeDTOs = assignees.stream()
                 .map(TaskMapper::assigneeToDTO)
                 .collect(Collectors.toSet());
-                
+
         return ResponseEntity.ok(assigneeDTOs);
     }
-    
+
     @PostMapping("/{taskId}/dependencies/{dependencyId}")
     public ResponseEntity<Void> addDependency(
             @PathVariable UUID taskId,
@@ -152,11 +158,11 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-                
+
         taskDependencyService.addDependency(taskId, dependencyId, user);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-    
+
     @DeleteMapping("/{taskId}/dependencies/{dependencyId}")
     public ResponseEntity<Void> removeDependency(
             @PathVariable UUID taskId,
@@ -165,11 +171,11 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-                
+
         taskDependencyService.removeDependency(taskId, dependencyId, user);
         return ResponseEntity.noContent().build();
     }
-    
+
     @GetMapping("/{taskId}/dependencies")
     public ResponseEntity<Set<TaskDTO>> getTaskDependencies(
             @PathVariable UUID taskId,
@@ -177,15 +183,15 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-                
+
         Set<Task> dependencies = taskDependencyService.getTaskDependencies(taskId, user);
         Set<TaskDTO> dependencyDTOs = dependencies.stream()
                 .map(TaskMapper::taskToDTO)
                 .collect(Collectors.toSet());
-                
+
         return ResponseEntity.ok(dependencyDTOs);
     }
-    
+
     @PutMapping("/{taskId}/dependencies/{dependencyId}")
     public ResponseEntity<Void> updateDependency(
             @PathVariable UUID taskId,
@@ -194,11 +200,11 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-                
+
         taskDependencyService.updateTaskDependency(taskId, dependencyId, user);
         return ResponseEntity.ok().build();
     }
-    
+
     @GetMapping("/{taskId}/all-assignees")
     public ResponseEntity<List<TaskAssigneeDTO>> getAllTaskAssignees(
             @PathVariable UUID taskId,
@@ -206,12 +212,41 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-                
+
         List<TaskAssignee> assignees = taskAssigneeService.getAllAssigneesByTaskId(taskId, user);
         List<TaskAssigneeDTO> assigneeDTOs = assignees.stream()
                 .map(TaskMapper::assigneeToDTO)
                 .collect(Collectors.toList());
-                
+
         return ResponseEntity.ok(assigneeDTOs);
+    }
+
+    @PostMapping("/{taskId}/comments/")
+    public ResponseEntity<TaskCommentDTO> addComment(
+        @PathVariable UUID taskId,
+        @Valid @RequestBody TaskCommentDTO taskCommentDTO,
+        @RequestParam UUID userId
+    ){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+
+        TaskComment comment = TaskMapper.dtoToComment(taskCommentDTO);
+
+        TaskComment createdComment = taskCommentService.addComment(taskId, user, comment);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(TaskMapper.commentToDTO(createdComment));
+
+    }
+
+    @GetMapping("/{taskId}/comments/{commentId}")
+    public ResponseEntity<TaskCommentDTO> getComment(
+            @PathVariable UUID taskCommentId,
+            @RequestParam UUID userId
+    ){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+
+        TaskComment comment = taskCommentService.getCommentById(taskCommentId);
+        return null;
     }
 }

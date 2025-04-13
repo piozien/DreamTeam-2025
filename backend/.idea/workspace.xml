@@ -4,8 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="" />
-    <list id="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" name="Changes by tomci" comment="" />
+    <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/config/DateTimeConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/ProjectController.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/ProjectController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/TaskController.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/TaskController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/mappers/ProjectMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/mappers/ProjectMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" afterDir="false" />
+    </list>
+    <list id="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" name="Changes by tomci" comment="">
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/TaskController.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/TaskController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/mappers/TaskMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/mappers/TaskMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskCommentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskCommentService.java" afterDir="false" />
+    </list>
     <list id="09b865cc-bab5-44d0-bb58-d68cb411adc5" name="Changes by zient" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,6 +40,38 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="LineStatusTrackerManager">
+    <file path="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/TaskController.java">
+      <ranges>
+        <range start1="10" end1="10" start2="10" end2="11" changelist="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" />
+        <range start1="13" end1="13" start2="14" end2="15" changelist="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" />
+        <range start1="14" end1="14" start2="16" end2="17" changelist="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" />
+        <range start1="18" end1="18" start2="21" end2="22" changelist="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" />
+        <range start1="32" end1="32" start2="36" end2="38" changelist="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" />
+        <range start1="91" end1="92" start2="97" end2="98" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="96" end1="97" start2="102" end2="103" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="108" end1="109" start2="114" end2="115" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="116" end1="117" start2="122" end2="123" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="125" end1="126" start2="131" end2="132" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="129" end1="130" start2="135" end2="136" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="137" end1="138" start2="143" end2="144" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="142" end1="143" start2="148" end2="149" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="145" end1="146" start2="151" end2="152" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="154" end1="155" start2="160" end2="161" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="158" end1="159" start2="164" end2="165" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="167" end1="168" start2="173" end2="174" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="171" end1="172" start2="177" end2="178" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="179" end1="180" start2="185" end2="186" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="184" end1="185" start2="190" end2="191" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="187" end1="188" start2="193" end2="194" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="196" end1="197" start2="202" end2="203" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="200" end1="201" start2="206" end2="207" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="208" end1="209" start2="214" end2="215" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="213" end1="214" start2="219" end2="220" changelist="9ea44284-c0d1-4fbf-98bb-15b50503457c" />
+        <range start1="216" end1="216" start2="222" end2="251" changelist="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" />
+      </ranges>
+    </file>
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
@@ -102,8 +147,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.26053.27" />
-        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.26053.27" />
+        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.25659.39" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.25659.39" />
       </set>
     </attachedChunks>
   </component>
@@ -125,6 +170,7 @@
       <workItem from="1743354663320" duration="754000" />
       <workItem from="1743356045027" duration="6478000" />
       <workItem from="1744449696915" duration="9549000" />
+      <workItem from="1744530828429" duration="9514000" />
     </task>
     <servers />
   </component>

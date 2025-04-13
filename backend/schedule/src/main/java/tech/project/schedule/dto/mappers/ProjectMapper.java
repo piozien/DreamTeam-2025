@@ -2,6 +2,7 @@ package tech.project.schedule.dto.mappers;
 
 import tech.project.schedule.dto.project.ProjectDTO;
 import tech.project.schedule.dto.project.ProjectMemberDTO;
+import tech.project.schedule.dto.project.ProjectUpdateDTO;
 import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.project.ProjectMember;
 
@@ -17,6 +18,21 @@ public class ProjectMapper {
         Project project = new Project();
 
         
+        project.setName(dto.name());
+        project.setDescription(dto.description());
+        project.setStartDate(dto.startDate());
+        project.setEndDate(dto.endDate());
+        project.setProjectStatus(dto.projectStatus());
+        
+        return project;
+    }
+    
+    public static Project updateDtoToProject(ProjectUpdateDTO dto) {
+        Project project = new Project();
+        
+        if (dto.id() != null) {
+            project.setId(dto.id());
+        }
         project.setName(dto.name());
         project.setDescription(dto.description());
         project.setStartDate(dto.startDate());

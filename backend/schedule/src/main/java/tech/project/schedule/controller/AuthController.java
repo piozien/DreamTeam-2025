@@ -5,14 +5,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import tech.project.schedule.dto.auth.HealthResponseDTO;
 import tech.project.schedule.dto.auth.LoginRequest;
 import tech.project.schedule.dto.auth.LoginResponseDTO;
 import tech.project.schedule.dto.auth.RegistrationRequest;
 import tech.project.schedule.dto.auth.RegistrationResponseDTO;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.services.UserService;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -31,5 +35,13 @@ public class AuthController {
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequest request) {
         User user = userService.login(request);
         return ResponseEntity.ok(new LoginResponseDTO(user.getId(), user.getEmail(), user.getName(), user.getUsername()));
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<HealthResponseDTO> healthCheck() {
+        return ResponseEntity.ok(new HealthResponseDTO(
+            "UP",
+            LocalDateTime.now()
+        ));
     }
 }

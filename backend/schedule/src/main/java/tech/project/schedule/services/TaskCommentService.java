@@ -65,5 +65,9 @@ public class TaskCommentService {
         return taskCommentRepository.findAllByUser_Id(userId);
     }
 
+    public TaskComment getCommentById(UUID commentId) {
+        return taskCommentRepository.findById(commentId).orElseThrow(() -> new ApiException("Comment not found", HttpStatus.NOT_FOUND));
+    }
+
 }
 

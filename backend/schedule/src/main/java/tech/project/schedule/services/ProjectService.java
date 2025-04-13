@@ -69,6 +69,7 @@ public class ProjectService {
                     && projectRepository.existsByName(updatedProject.getName())) {
                 throw new ApiException("Project with name " + updatedProject.getName() + " already exists.", HttpStatus.CONFLICT);
             }
+            existingProject.setName(updatedProject.getName());
         }
         if (updatedProject.getDescription() != null) {
             existingProject.setDescription(updatedProject.getDescription());
@@ -81,9 +82,9 @@ public class ProjectService {
         }
 
         if (updatedProject.getProjectStatus() != null) {
-            if(ProjectStatus.COMPLETED.equals(updatedProject.getProjectStatus())) {
-                if(existingProject.getTasks() != null && !existingProject.getTasks().isEmpty() && 
-                   !existingProject.getTasks().stream().allMatch(task -> task.getStatus().equals(TaskStatus.FINISHED))){
+            if (ProjectStatus.COMPLETED.equals(updatedProject.getProjectStatus())) {
+                if (existingProject.getTasks() != null && !existingProject.getTasks().isEmpty() && 
+                    !existingProject.getTasks().stream().allMatch(task -> task.getStatus().equals(TaskStatus.FINISHED))) {
                     throw new ApiException("Project has unfinished tasks", HttpStatus.CONFLICT);
                 }
             }

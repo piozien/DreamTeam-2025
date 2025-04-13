@@ -1,5 +1,6 @@
 package tech.project.schedule.dto.mappers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import tech.project.schedule.dto.task.TaskAssigneeDTO;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class TaskMapper {
-//    private final ProjectRepository projectRepository;
+    // private final ProjectRepository projectRepository;
     //todo: do something with all of those sets also couldn't get project from dto because of projectRepository
     public static Task dtoToTask(TaskDTO dto) {
         Task task = new Task();
@@ -72,6 +73,14 @@ public class TaskMapper {
     }
     // ToDo: Finish assignee to DTO method
     public static TaskAssigneeDTO assigneeToDTO(TaskAssignee addedAssignee) {
+        return null;
+    }
+
+    public static TaskComment dtoToComment(@Valid TaskCommentDTO taskCommentDTO) {
+        return null;
+    }
+
+    public static TaskCommentDTO commentToDTO(TaskComment createdComment) {
         return null;
     }
 }
