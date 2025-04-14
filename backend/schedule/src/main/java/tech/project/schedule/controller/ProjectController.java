@@ -73,22 +73,7 @@ public class ProjectController {
         
         return ResponseEntity.ok(ProjectMapper.projectToDTO(updatedProject));
     }
-    
-    @PatchMapping("/{projectId}")
-    public ResponseEntity<ProjectDTO> partialUpdateProject(
-            @PathVariable UUID projectId, 
-            @RequestBody ProjectUpdateDTO projectUpdateDTO, 
-            @RequestParam UUID userId
-    ) {
-        User currentUser = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-        
-        Project project = ProjectMapper.updateDtoToProject(projectUpdateDTO);
-        
-        Project updatedProject = projectService.updateProject(projectId, project, currentUser);
-        
-        return ResponseEntity.ok(ProjectMapper.projectToDTO(updatedProject));
-    }
+
 
     @DeleteMapping("/{projectId}")
     public ResponseEntity<Void> deleteProject(

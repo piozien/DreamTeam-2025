@@ -143,7 +143,19 @@ public class TaskFileService {
                 .orElseThrow(() -> new ApiException("File not found", HttpStatus.NOT_FOUND));
     }
 
-    public TaskFile getTaskFileByPath(String filePath) {
-        return taskFileRepository.findByFilePath(filePath);
+    public TaskFile getTaskFileByPath(String filePath, User user) {
+        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
+        if(filePath == null){
+            throw new ApiException("File path cannot be empty", HttpStatus.BAD_REQUEST);
+        }
+        TaskFile file = taskFileRepository.findByFilePath(filePath);
+        if(!doesFileExist(filePath)){
+            throw new ApiException("File with file path: " + filePath + " does not exist.", HttpStatus.NOT_FOUND);
+        }
+
+        if(!isAdmin){
+            throw new ApiException("You don't have permission to view files by path", HttpStatus.FORBIDDEN);
+        }
+        return file;
     }
 }

@@ -2,18 +2,14 @@ package tech.project.schedule.dto.mappers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 import tech.project.schedule.dto.task.TaskAssigneeDTO;
 import tech.project.schedule.dto.task.TaskCommentDTO;
 import tech.project.schedule.dto.task.TaskDTO;
 import tech.project.schedule.dto.task.TaskFileDTO;
 import tech.project.schedule.dto.task.TaskRequestDTO;
 import tech.project.schedule.dto.task.TaskUpdateDTO;
-import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.task.*;
-import tech.project.schedule.model.user.User;
 
 import java.util.HashSet;
 import java.util.Set;

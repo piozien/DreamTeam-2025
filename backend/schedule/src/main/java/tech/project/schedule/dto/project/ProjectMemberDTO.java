@@ -7,6 +7,6 @@ public record ProjectMemberDTO(
         UUID id,
         UUID projectId,
         UUID userId,
-        ProjectUserRole role
+        String name, ProjectUserRole role
 ) {
 }
