@@ -231,15 +231,9 @@ public class ProjectService {
             return projectRepository.findAll();
         }
         
-        List<Project> userProjects = new ArrayList<>();
-        List<Project> allProjects = projectRepository.findAll();
-        
-        for (Project project : allProjects) {
-            if (project.getMembers() != null && project.getMembers().containsKey(user.getId())) {
-                userProjects.add(project);
-            }
-        }
-        
-        return userProjects;
+        return user.getProjectMembers().stream()
+                .map(ProjectMember::getProject)
+                .distinct()
+                .toList();
     }
 }

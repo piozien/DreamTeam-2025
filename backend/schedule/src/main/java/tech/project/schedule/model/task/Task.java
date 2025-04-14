@@ -2,6 +2,7 @@ package tech.project.schedule.model.task;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tech.project.schedule.model.enums.TaskPriority;
 import tech.project.schedule.model.enums.TaskStatus;
@@ -24,6 +25,7 @@ public class Task {
 
     @ManyToOne
     @JoinColumn(name = "project_id", nullable = false)
+    @EqualsAndHashCode.Exclude
     private Project project;
 
     @Column(nullable = false)
@@ -47,21 +49,27 @@ public class Task {
 
     // ToDo: reference to ProejctMembers int the Project
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
     private Set<TaskAssignee> assignees;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
     private Set<TaskComment> comments;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
     private Set<TaskHistory> history;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
     private Set<TaskFile> files;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
     private Set<TaskDependency> dependencies;
 
     @OneToMany(mappedBy = "dependsOnTask", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
     private Set<TaskDependency> dependentTasks;
 
     public void addAssignee(TaskAssignee assignee) {this.assignees.add(assignee);}

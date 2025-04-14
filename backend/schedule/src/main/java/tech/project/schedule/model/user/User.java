@@ -2,6 +2,7 @@ package tech.project.schedule.model.user;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tech.project.schedule.model.notification.Notification;
 import tech.project.schedule.model.enums.GlobalRole;
@@ -42,24 +43,31 @@ public class User {
     private GlobalRole globalRole;
 
     @OneToMany(mappedBy = "user")
+    @EqualsAndHashCode.Exclude
     private Set<ProjectMember> projectMembers;
 
     @OneToMany(mappedBy = "user")
+    @EqualsAndHashCode.Exclude
     private Set<TaskAssignee> taskAssignments;
 
     @OneToMany(mappedBy = "user")
+    @EqualsAndHashCode.Exclude
     private Set<TaskComment> taskComments;
 
     @OneToMany(mappedBy = "changedBy")
+    @EqualsAndHashCode.Exclude
     private Set<TaskHistory> taskHistories;
 
     @OneToMany(mappedBy = "uploadedBy")
+    @EqualsAndHashCode.Exclude
     private Set<TaskFile> taskFiles;
 
     @OneToMany(mappedBy = "user")
+    @EqualsAndHashCode.Exclude
     private Set<ProjectMember> projects;
 
     @OneToMany(mappedBy = "user")
+    @EqualsAndHashCode.Exclude
     private Set<Notification> notifications;
 
     public User(String firstName, String lastName,
