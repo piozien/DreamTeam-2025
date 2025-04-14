@@ -67,4 +67,12 @@ export class AuthService {
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
   }
+
+  getAllUsers(): Observable<User[]> {
+    const currentUser = this.currentUserSubject.value;
+    if (!currentUser) {
+      throw new Error('User must be logged in to fetch all users');
+    }
+    return this.http.get<User[]>(`${this.apiUrl}/all-users?userId=${currentUser.id}`);
+  }
 }

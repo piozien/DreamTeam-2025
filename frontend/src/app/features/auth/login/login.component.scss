@@ -10,7 +10,7 @@ $border-color: #e0e0e0;
 .login-container {
   max-width: 500px;
   margin: 4rem auto;
-  padding: 2.5rem;
+  padding: 2.5rem 3rem;
   border-radius: 8px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   background-color: #fff;
@@ -40,13 +40,17 @@ h2 {
 .form-label {
   font-weight: 500;
   color: $text-color;
+  display: block;
+  margin-bottom: 0.75rem;
+  margin-top: 1.25rem;
 }
 
 .form-control {
   border: 1px solid $border-color;
-  padding: 0.75rem;
+  padding: 0.85rem;
   border-radius: 4px;
   transition: all 0.3s;
+  margin-bottom: 1.5rem;
   
   &:focus {
     border-color: $primary-color;

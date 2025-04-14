@@ -6,9 +6,9 @@ export enum GlobalRole {
 }
 
 export enum ProjectUserRole {
-  PM = 'pm',
-  MEMBER = 'member',
-  VIEWER = 'viewer'
+  PM = 'PM',
+  MEMBER = 'MEMBER',
+  CLIENT = 'CLIENT'
 }
 
 export enum ProjectStatus {
@@ -45,6 +45,7 @@ export interface ProjectMemberDTO {
   id: string;
   projectId: string;
   userId: string;
+  name: string;  // User name field returned by the backend
   role: ProjectUserRole;
 }
 

@@ -1,0 +1,148 @@
+<div class="project-view-container">
+  <div class="back-button-container">
+    <button mat-button style="color: black;" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Powrót do listy projektów
+    </button>
+  </div>
+
+  <ng-container *ngIf="loading">
+    <div class="loading-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+      <span>Ładowanie projektu...</span>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!loading && error">
+    <div class="error-message">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error }}</span>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!loading && !error && project">
+    <div class="project-header">
+      <h1>{{ project.name }}</h1>
+      <div class="project-status">
+        <span class="status-label" [ngClass]="'status-' + project.status">
+          {{ getStatusDisplayName(project.status) }}
+        </span>
+      </div>
+    </div>
+
+    <mat-tab-group animationDuration="0ms">
+      <!-- Project Overview Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">info</mat-icon>
+          Przegląd projektu
+        </ng-template>
+        
+        <div class="tab-content">
+          <mat-card>
+            <mat-card-content>
+              <div class="project-details">
+                <div class="detail-section">
+                  <div class="section-header">
+                    <h3>Szczegóły projektu</h3>
+                    <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="openEditDialog()" [disabled]="isEditing">
+                      <mat-icon>edit</mat-icon>
+                      Edytuj Projekt
+                    </button>
+                  </div>
+                  <div class="detail-item">
+                    <span class="label">Opis:</span>
+                    <span class="value">{{ project.description }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="label">Data rozpoczęcia:</span>
+                    <span class="value">{{ project.startDate | date:'longDate':'':'pl-PL' }}</span>
+                  </div>
+                  <div class="detail-item" *ngIf="project.endDate">
+                    <span class="label">Data zakończenia:</span>
+                    <span class="value">{{ project.endDate | date:'longDate':'':'pl-PL' }}</span>
+                  </div>
+                </div>
+
+                <div class="detail-section">
+                  <div class="section-header">
+                    <h3>Członkowie projektu</h3>
+                    <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="openAddMemberDialog()" [disabled]="isAddingMember">
+                      <mat-icon>person_add</mat-icon>
+                      Dodaj członka
+                    </button>
+                  </div>
+                  
+                  <div class="team-members" *ngIf="projectMembers && projectMembers.length > 0; else noMembers">
+                    <div class="member-card" *ngFor="let member of projectMembers">
+                      <div class="member-info-container">
+                        <div class="member-avatar">
+                          <mat-icon>person</mat-icon>
+                        </div>
+                        <div class="member-info">
+                          <div class="member-name">{{ member.user?.name }}</div>
+                          <div class="member-role">{{ getRoleDisplayName(member.role) }}</div>
+                        </div>
+                      </div>
+                      <div class="member-actions">
+                        <button mat-icon-button color="primary" (click)="openEditRoleDialog(member)" matTooltip="Zmień rolę" [disabled]="isPerformingMemberAction">
+                          <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="confirmRemoveMember(member)" matTooltip="Usuń członka" [disabled]="isPerformingMemberAction">
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <ng-template #noMembers>
+                    <div class="no-data">Brak członków w tym projekcie</div>
+                  </ng-template>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <!-- Tasks Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">task_alt</mat-icon>
+          Zadania
+        </ng-template>
+        
+        <div class="tab-content">
+          <mat-card>
+            <mat-card-content>
+              <div class="coming-soon">
+                <mat-icon>construction</mat-icon>
+                <h3>Funkcjonalność w trakcie budowy</h3>
+                <p>Moduł zarządzania zadaniami będzie dostępny wkrótce.</p>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <!-- Calendar Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">calendar_today</mat-icon>
+          Kalendarz
+        </ng-template>
+        
+        <div class="tab-content">
+          <mat-card>
+            <mat-card-content>
+              <div class="coming-soon">
+                <mat-icon>construction</mat-icon>
+                <h3>Funkcjonalność w trakcie budowy</h3>
+                <p>Widok kalendarza projektu będzie dostępny wkrótce.</p>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </ng-container>
+</div>

@@ -71,16 +71,35 @@ export class ProjectService {
   }
 
   addProjectMember(projectId: string, memberData: AddProjectMemberDTO): Observable<ProjectMemberDTO> {
-    return this.http.post<ProjectMemberDTO>(`${this.apiUrl}/${projectId}/members`, memberData, {params: this.getUserParams()});
+    console.log('Adding project member:', projectId, memberData);
+    const currentUser = this.authService.getCurrentUser();
+    let params = new HttpParams();
+    if (currentUser) {
+      params = params.set('currentUserId', currentUser.id);
+    }
+    console.log('Adding member with params:', params.toString());
+    return this.http.post<ProjectMemberDTO>(`${this.apiUrl}/${projectId}/members`, memberData, { params: params });
   }
 
   removeProjectMember(projectId: string, userId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${projectId}/members/${userId}`, {params: this.getUserParams()});
+    const currentUser = this.authService.getCurrentUser();
+    let params = new HttpParams();
+    if (currentUser) {
+      params = params.set('currentUserId', currentUser.id);
+    }
+    console.log('Removing member with params:', params.toString());
+    return this.http.delete<void>(`${this.apiUrl}/${projectId}/members/${userId}`, {params: params});
   }
 
   updateMemberRole(projectId: string, userId: string, newRole: ProjectUserRole): Observable<ProjectMemberDTO> {
     const roleData: UpdateProjectMemberRoleDTO = { role: newRole };
-    return this.http.put<ProjectMemberDTO>(`${this.apiUrl}/${projectId}/members/${userId}`, roleData, {params: this.getUserParams()});
+    const currentUser = this.authService.getCurrentUser();
+    let params = new HttpParams();
+    if (currentUser) {
+      params = params.set('currentUserId', currentUser.id);
+    }
+    console.log('Updating member role with params:', params.toString());
+    return this.http.put<ProjectMemberDTO>(`${this.apiUrl}/${projectId}/members/${userId}`, roleData, {params: params});
   }
 
   getProjectMembers(projectId: string): Observable<Record<string, ProjectMemberDTO>> {

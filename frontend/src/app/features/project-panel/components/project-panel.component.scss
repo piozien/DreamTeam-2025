@@ -94,25 +94,51 @@
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
     border-bottom: 1px solid #bdbdbd;
+    position: relative;
 
     mat-card-title {
       margin: 0;
       font-size: 1.25rem;
       font-weight: 500;
+      margin-right: 80px; /* Make room for action buttons */
       color: #1a237e;
     }
 
-    .delete-button {
-      margin-top: -8px;
-      margin-right: -8px;
-
-      &:hover {
-        background-color: rgba(244, 67, 54, 0.1);
+    .card-actions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 8px;
+      
+      .view-button {
+        background-color: #bbdefb;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        
+        &:hover {
+          background-color: #90caf9;
+        }
+        
+        ::ng-deep {
+          .mat-icon {
+            color: #1565c0;
+            font-weight: bold;
+          }
+        }
       }
-
-      ::ng-deep {
-        .mat-icon {
-          color: #f44336;
+      
+      .delete-button {
+        background-color: #ffcdd2;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        
+        &:hover {
+          background-color: #ef9a9a;
+        }
+        
+        ::ng-deep {
+          .mat-icon {
+            color: #f44336;
+          }
         }
       }
     }
