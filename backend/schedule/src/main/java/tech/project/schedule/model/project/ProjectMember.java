@@ -2,6 +2,7 @@ package tech.project.schedule.model.project;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.model.enums.ProjectUserRole;
@@ -19,6 +20,7 @@ public class ProjectMember {
 
     @ManyToOne
     @JoinColumn(name = "project_id", nullable = false)
+    @EqualsAndHashCode.Exclude
     private Project project;
 
 // one-sided coverage will probably be better

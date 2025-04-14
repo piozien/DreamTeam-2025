@@ -2,6 +2,7 @@ package tech.project.schedule.model.project;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tech.project.schedule.model.enums.ProjectStatus;
 import tech.project.schedule.model.task.Task;
@@ -32,10 +33,12 @@ public class Project {
     private LocalDate endDate;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @EqualsAndHashCode.Exclude
     private Map<UUID, ProjectMember> members;
     // ToDo: if members is null add PrePersist and PreUpdate
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
     private Set<Task> tasks;
 
     @Enumerated(EnumType.STRING)
