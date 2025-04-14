@@ -92,15 +92,19 @@ public class ProjectController {
     @PostMapping("/{projectId}/members")
     public ResponseEntity<ProjectMemberDTO> addMember(
             @PathVariable UUID projectId,
-            @Valid @RequestBody AddProjectMemberDTO memberDTO
+            @Valid @RequestBody AddProjectMemberDTO memberDTO,
+            @RequestParam UUID currentUserId
+
     ) {
         UUID userId = memberDTO.userId();
         ProjectUserRole role = memberDTO.role();
         
         User userToAdd = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        User principal = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
         
-        ProjectMember addedMember = projectService.addMemberToProject(projectId, userToAdd, role);
+        ProjectMember addedMember = projectService.addMemberToProject(projectId, userToAdd, role, principal);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(ProjectMapper.memberToDTO(addedMember));
     }

@@ -126,12 +126,12 @@ public class ProjectService {
     }
     
     @Transactional
-    public ProjectMember addMemberToProject(UUID projectId, User user, ProjectUserRole role) {
+    public ProjectMember addMemberToProject(UUID projectId, User user, ProjectUserRole role, User principal) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
                 
 
-        boolean isPM = GetProjectRole.getProjectRole(user, project) == ProjectUserRole.PM;
+        boolean isPM = GetProjectRole.getProjectRole(principal, project) == ProjectUserRole.PM;
 
         if (!isPM) {
             throw new ApiException("You cannot add members to this project", HttpStatus.FORBIDDEN);
