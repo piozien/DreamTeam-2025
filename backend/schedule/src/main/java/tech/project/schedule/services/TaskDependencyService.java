@@ -48,7 +48,6 @@ public class TaskDependencyService {
         taskDependency.setDependsOnTask(dependsOnTask);
 
         task.getDependencies().add(taskDependency);
-        taskDependencyRepository.save(taskDependency);
 
         taskDependencyRepository.save(taskDependency);
     }

@@ -8,7 +8,7 @@ import tech.project.schedule.model.user.User;
 
 public class GetProjectRole {
     public static ProjectUserRole getProjectRole(User user, Project project) {
-        if(user.getGlobalRole() == GlobalRole.ADMIN){
+        if(user.getGlobalRole() != null && GlobalRole.ADMIN.equals(user.getGlobalRole())){
             return ProjectUserRole.PM;
         }
         ProjectMember member = project.getMembers().get(user.getId());

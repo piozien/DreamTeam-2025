@@ -179,7 +179,7 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{taskId}/dependencies")
+    @GetMapping("dependencies/{taskId}/dependencies")
     public ResponseEntity<Set<TaskDTO>> getTaskDependencies(
             @PathVariable UUID taskId,
             @RequestParam UUID userId
