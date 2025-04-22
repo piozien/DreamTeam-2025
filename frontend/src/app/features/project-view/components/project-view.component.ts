@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -15,13 +15,23 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatSortModule, MatSort } from '@angular/material/sort';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 import { Project, ProjectStatus, ProjectUserRole, ProjectMemberDTO, AddProjectMemberDTO } from '../../../shared/models/project.model';
+import { Task, TaskPriority, TaskStatus } from '../../../shared/models/task.model';
 import { User } from '../../../shared/models/user.model';
 import { ProjectService } from '../../../shared/services/project.service';
+import { TaskService } from '../../../shared/services/task.service';
+import { AuthService } from '../../../shared/services/auth.service';
 // Import dialog components - they'll be referenced through the dialog service
 import { ProjectDialogComponent } from '../../../features/project-panel/components/project-dialog/project-dialog.component';
 import { MemberDialogComponent } from './member-dialog/member-dialog.component';
+import { TaskDialogComponent } from './task-dialog/task-dialog.component';
 
 @Component({
   selector: 'app-project-view',
@@ -44,18 +54,33 @@ import { MemberDialogComponent } from './member-dialog/member-dialog.component';
     MatInputModule,
     MatSelectModule,
     MatTooltipModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatMenuModule,
+    MatChipsModule,
+    MatBadgeModule,
+    MatTableModule,
+    MatSortModule,
+    MatPaginatorModule
   ],
 })
-export class ProjectViewComponent implements OnInit, OnDestroy {
+export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
   projectId: string | null = null;
   project: Project | null = null;
   projectMembers: any[] = [];
+  tasks: Task[] = [];
   loading = true;
   error: string | null = null;
   isEditing = false;
   isAddingMember = false;
+  isAddingTask = false;
   isPerformingMemberAction = false;
+  isLoadingTasks = false;
+  
+  // Table related properties
+  displayedColumns: string[] = ['name', 'status', 'priority', 'startDate', 'endDate', 'assignees', 'actions'];
+  dataSource = new MatTableDataSource<Task>([]);
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
   
   private subscription: Subscription = new Subscription();
   
@@ -63,6 +88,8 @@ export class ProjectViewComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private projectService: ProjectService,
+    private taskService: TaskService,
+    private authService: AuthService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {}
@@ -94,6 +121,7 @@ export class ProjectViewComponent implements OnInit, OnDestroy {
               this.projectMembers = project.members;
             }
             this.loadProjectMembers(id);
+            this.loadTasks();
           } else {
             this.error = 'Nie znaleziono projektu';
           }
@@ -106,6 +134,74 @@ export class ProjectViewComponent implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  loadTasks(): void {
+    if (!this.project || !this.project.id) {
+      console.error('Project not loaded or missing ID');
+      return;
+    }
+
+    const userId = this.authService.getCurrentUser()?.id;
+    if (!userId) {
+      console.error('No current user found');
+      return;
+    }
+
+    this.isLoadingTasks = true;
+    this.subscription.add(
+      this.taskService.getTasksByProject(this.project.id, userId).subscribe({
+        next: (tasks) => {
+          console.log('Tasks loaded:', tasks);
+          this.tasks = tasks;
+          // Update the data source with the new tasks
+          if (!this.dataSource) {
+            this.dataSource = new MatTableDataSource<Task>(this.tasks);
+          } else {
+            this.dataSource.data = this.tasks;
+          }
+          
+          // Apply paginator and sort if already available
+          if (this.paginator && this.dataSource) {
+            this.dataSource.paginator = this.paginator;
+          }
+          if (this.sort && this.dataSource) {
+            this.dataSource.sort = this.sort;
+          }
+          
+          this.isLoadingTasks = false;
+        },
+        error: (error) => {
+          console.error('Error loading tasks:', error);
+          this.isLoadingTasks = false;
+          this.snackBar.open('Problem z zaladowaniem zadań', 'Zamknij', { duration: 3000 });
+        }
+      })
+    );
+  }
+
+  /**
+   * After view init lifecycle hook - sets up the table sorting and pagination
+   */
+  ngAfterViewInit(): void {
+    if (this.dataSource && this.paginator && this.sort) {
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
+    }
+  }
+
+  /**
+   * Applies a filter to the task table
+   */
+  applyFilter(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value;
+    if (this.dataSource) {
+      this.dataSource.filter = filterValue.trim().toLowerCase();
+      
+      if (this.dataSource.paginator) {
+        this.dataSource.paginator.firstPage();
+      }
+    }
   }
 
   loadProjectMembers(projectId: string): void {
@@ -141,6 +237,177 @@ export class ProjectViewComponent implements OnInit, OnDestroy {
       case ProjectStatus.COMPLETED: return 'Zakończony';
       default: return status as string;
     }
+  }
+  
+  getTaskStatusDisplayName(status: TaskStatus): string {
+    switch (status) {
+      case TaskStatus.TO_DO: return 'Do zrobienia';
+      case TaskStatus.IN_PROGRESS: return 'W trakcie';
+      case TaskStatus.FINISHED: return 'Zakończone';
+      default: return status as string;
+    }
+  }
+  
+  getTaskPriorityDisplayName(priority: TaskPriority): string {
+    switch (priority) {
+      case TaskPriority.OPTIONAL: return 'Opcjonalny';
+      case TaskPriority.IMPORTANT: return 'Ważny';
+      case TaskPriority.CRITICAL: return 'Krytyczny';
+      default: return priority as string;
+    }
+  }
+  
+  getStatusColorClass(status: TaskStatus): string {
+    switch (status) {
+      case TaskStatus.TO_DO: return 'status-todo';
+      case TaskStatus.IN_PROGRESS: return 'status-in-progress';
+      case TaskStatus.FINISHED: return 'status-done';
+      default: return '';
+    }
+  }
+  
+  getPriorityColorClass(priority: TaskPriority): string {
+    switch (priority) {
+      case TaskPriority.OPTIONAL: return 'priority-optional';
+      case TaskPriority.IMPORTANT: return 'priority-important';
+      case TaskPriority.CRITICAL: return 'priority-critical';
+      default: return '';
+    }
+  }
+
+  openAddTaskDialog(): void {
+    if (!this.projectId) return;
+    
+    this.isAddingTask = true;
+    
+    const dialogRef = this.dialog.open(TaskDialogComponent, {
+      width: '500px',
+      data: {
+        title: 'Dodaj nowe zadanie',
+        submitButton: 'Dodaj',
+        projectId: this.projectId
+      }
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      this.isAddingTask = false;
+      
+      if (result && this.projectId) {
+        const userId = this.authService.getCurrentUser()?.id || '';
+        
+        console.log('Attempting to create task with data:', JSON.stringify(result, null, 2));
+        console.log('Using userId:', userId);
+        
+        this.subscription.add(
+          this.taskService.createTask(result, userId).subscribe({
+            next: (createdTask) => {
+              console.log('Task created successfully:', createdTask);
+              this.tasks = [...this.tasks, createdTask];
+              if (this.dataSource) {
+                this.dataSource.data = this.tasks;
+              }
+              this.snackBar.open('Zadanie zostało utworzone', 'Zamknij', { duration: 3000 });
+            },
+            error: (error) => {
+              console.error('Error creating task:', error);
+              console.error('Response body:', error.error);
+              this.snackBar.open(`Problem z utworzeniem zadania: ${error.status} ${error.statusText}`, 'Zamknij', { duration: 3000 });
+            }
+          })
+        );
+      }
+    });
+  }
+  
+  openEditTaskDialog(task: Task): void {
+    if (!this.projectId) return;
+    
+    const dialogRef = this.dialog.open(TaskDialogComponent, {
+      width: '500px',
+      data: {
+        title: 'Edytuj zadanie',
+        submitButton: 'Zapisz',
+        projectId: this.projectId
+      }
+    });
+    
+    // Pre-fill the form with current task data
+    const dialogComponent = dialogRef.componentInstance;
+    dialogComponent.task = {
+      id: task.id,
+      name: task.name,
+      description: task.description,
+      startDate: task.startDate,
+      endDate: task.endDate,
+      priority: task.priority,
+      status: task.status
+    };
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.projectId) {
+        const userId = this.authService.getCurrentUser()?.id || '';
+        const updatedTask = {
+          ...result,
+          id: task.id
+        };
+        
+        this.subscription.add(
+          this.taskService.updateTask(task.id, updatedTask, userId).subscribe({
+            next: (updatedTaskResponse) => {
+              // Update the task in the tasks array
+              this.tasks = this.tasks.map(t => t.id === updatedTaskResponse.id ? updatedTaskResponse : t);
+              // Update the data source with the updated tasks
+              if (this.dataSource) {
+                this.dataSource.data = this.tasks;
+              }
+              this.snackBar.open('Zadanie zostało zaktualizowane', 'Zamknij', { duration: 3000 });
+            },
+            error: (error) => {
+              console.error('Error updating task:', error);
+              this.snackBar.open('Problem z aktualizacją zadania', 'Zamknij', { duration: 3000 });
+            }
+          })
+        );
+      }
+    });
+  }
+  
+  confirmDeleteTask(task: Task): void {
+    if (confirm(`Czy na pewno chcesz usunąć zadanie: ${task.name}?`)) {
+      const userId = this.authService.getCurrentUser()?.id || '';
+      
+      this.subscription.add(
+        this.taskService.deleteTask(task.id, userId).subscribe({
+          next: () => {
+            this.tasks = this.tasks.filter(t => t.id !== task.id);
+            // Update the data source with the filtered tasks
+            if (this.dataSource) {
+              this.dataSource.data = this.tasks;
+            }
+            this.snackBar.open('Zadanie zostało usunięte', 'Zamknij', { duration: 3000 });
+          },
+          error: (error) => {
+            console.error('Error deleting task:', error);
+            this.snackBar.open('Problem z usunięciem zadania', 'Zamknij', { duration: 3000 });
+          }
+        })
+      );
+    }
+  }
+  
+  getAssigneeNames(task: Task): string {
+    if (!task.assigneeIds || task.assigneeIds.length === 0) {
+      return 'Brak przypisanych osób';
+    }
+    
+    const assignees = task.assigneeIds
+      .map(id => {
+        const member = this.projectMembers.find(m => m.user?.id === id);
+        return member ? member.user.name : 'Nieznany';
+      })
+      .join(', ');
+    
+    return assignees || 'Brak przypisanych osób';
   }
 
   getRoleDisplayName(role: ProjectUserRole): string {

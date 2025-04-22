@@ -1,0 +1,37 @@
+.form-container {
+  display: flex;
+  flex-direction: column;
+  min-width: 300px;
+  margin-top: 10px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.date-container {
+  display: flex;
+  gap: 16px;
+}
+
+.date-field {
+  flex: 1;
+}
+
+.status-priority-container {
+  display: flex;
+  gap: 16px;
+}
+
+.status-field,
+.priority-field {
+  flex: 1;
+}
+
+mat-dialog-content {
+  min-height: 200px;
+}
+
+mat-dialog-actions {
+  margin-top: 16px;
+}
