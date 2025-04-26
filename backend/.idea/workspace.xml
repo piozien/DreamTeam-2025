@@ -5,9 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/enums/NotificationStatus.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/websocket/WebsocketConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/ProjectController.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/ProjectController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/notification/Notification.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/notification/Notification.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/NotificationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/NotificationService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskAssigneeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskAssigneeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskService.java" afterDir="false" />
     </list>
     <list id="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" name="Changes by tomci" comment="" />
     <list id="09b865cc-bab5-44d0-bb58-d68cb411adc5" name="Changes by zient" comment="" />
@@ -21,6 +28,7 @@
       <list>
         <option value="Interface" />
         <option value="Class" />
+        <option value="Enum" />
       </list>
     </option>
   </component>
@@ -50,9 +58,9 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;Spring Boot.ScheduleApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;project&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;notifications&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/bundam/Desktop/git_uwm/DreamTeam-2025/backend&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/tomci/Desktop/UWM GIT/DreamTeam-2025/backend&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -106,8 +114,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.25659.39" />
-        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.25659.39" />
+        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.26053.27" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.26053.27" />
       </set>
     </attachedChunks>
   </component>
@@ -136,6 +144,8 @@
       <workItem from="1744570602114" duration="104000" />
       <workItem from="1744618697345" duration="9396000" />
       <workItem from="1744628667188" duration="717000" />
+      <workItem from="1745672609483" duration="1392000" />
+      <workItem from="1745674026508" duration="9258000" />
     </task>
     <servers />
   </component>
