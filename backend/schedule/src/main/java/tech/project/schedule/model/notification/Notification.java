@@ -1,7 +1,8 @@
 package tech.project.schedule.model.notification;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.user.User;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,12 @@ import java.util.UUID;
 @Entity
 @Table(name = "Notifications")
 @Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@ToString
 public class Notification {
      /**
      * Unique identifier for the notification.
@@ -33,6 +40,9 @@ public class Notification {
     /**
      * The content of the notification message.
      */
+    @Column(nullable = false)
+    private NotificationStatus status;
+
     @Column(nullable = false)
     private String message;
 
