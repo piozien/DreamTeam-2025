@@ -18,7 +18,6 @@ public record RegistrationRequest(
     @NotBlank String username,
     @NotBlank String firstName,
     @NotBlank String lastName,
-    @NotBlank String password,
     @Email @NotBlank String email,
     GlobalRole role
 ) {}

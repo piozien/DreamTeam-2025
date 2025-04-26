@@ -5,14 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_26_04_2025_22_12_[Changes]/shelved.patch" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_26_04_2025_22_12__Changes_.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_26_04_2025_22_13_[Changes]/shelved.patch" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_26_04_2025_22_13__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/schedule/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/ScheduleApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/ScheduleApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/config/WebConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/config/WebConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/ProjectController.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/ProjectController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/TaskController.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/TaskController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/auth/LoginRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/auth/LoginRequest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/auth/RegistrationRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/auth/RegistrationRequest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/user/UserDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/user/UserDTO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/user/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/user/User.java" afterDir="false" />
@@ -50,30 +52,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Maven.schedule [clean].executor": "Run",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.ScheduleApplication.executor": "Run",
-    "git-widget-placeholder": "admin-panel",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/uwm/rok3/semestr6/DreamTeam-2025/backend",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Maven.schedule [clean].executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.ScheduleApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;admin-panel&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/uwm/rok3/semestr6/DreamTeam-2025/backend&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration default="true" type="AZURE_FUNCTION_SUPPORT" factoryName="Run Functions">
       <option name="appName" />
