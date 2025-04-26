@@ -10,8 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.dto.auth.LoginRequest;
 import tech.project.schedule.dto.auth.RegistrationRequest;
 import tech.project.schedule.exception.ApiException;
+import tech.project.schedule.model.enums.UserStatus;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
+
+import java.util.UUID;
 
 
 @Service
@@ -109,5 +112,23 @@ public class UserService {
         String resetLink = frontendResetBaseUrl + "/set-password?email=" + user.getEmail();
         String mailText = String.format(MailContent.PASSWORD_RESET_BODY, resetLink);
         mailService.sendRegistrationConfirmation(user.getEmail(), MailContent.PASSWORD_RESET_SUBJECT, mailText);
+    }
+
+    @Transactional
+    public void blockUser(UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new ApiException("User not found with provided id",
+                        HttpStatus.NOT_FOUND));
+        user.setUserStatus(UserStatus.BLOCKED);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void authorizeUser(UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new ApiException("User not found with provided id",
+                        HttpStatus.NOT_FOUND));
+        user.setUserStatus(UserStatus.AUTHORIZED);
+        userRepository.save(user);
     }
 }

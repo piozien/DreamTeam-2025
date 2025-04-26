@@ -3,17 +3,12 @@ package tech.project.schedule.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.security.config.Customizer;
 
-/**
- * Configuration class for web security and cross-origin resource sharing (CORS).
- * Sets up security filters, password encoding, and defines allowed origins for CORS.
- * This configuration is designed for development purposes with minimal security restrictions.
- */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
@@ -27,23 +22,21 @@ public class WebConfig implements WebMvcConfigurer {
         return new BCryptPasswordEncoder();
     }
 
-     /**
-     * Configures the security filter chain.
-     * Currently set to disable CSRF protection and allow all requests.
-     * 
-     * @param http The HttpSecurity to configure
-     * @return The built SecurityFilterChain
-     * @throws Exception if an error occurs during configuration
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
+                        .requestMatchers("/api/auth/**", "/login**", "/error**").permitAll()
+                        .anyRequest().authenticated()
                 )
-                .cors(Customizer.withDefaults());
-
+                .oauth2Login(oauth2 -> oauth2
+                        .defaultSuccessUrl("/api/auth/oauth2-success", true)
+                )
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/")
+                )
+                .cors(); // Enable CORS
         return http.build();
     }
 
@@ -58,5 +51,10 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins("http://localhost:4200")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*");
+    }
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
