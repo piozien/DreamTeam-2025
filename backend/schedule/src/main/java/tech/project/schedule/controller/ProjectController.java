@@ -18,6 +18,7 @@ import tech.project.schedule.model.project.ProjectMember;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
 import tech.project.schedule.services.ProjectService;
+import tech.project.schedule.utils.UserUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +51,7 @@ public class ProjectController {
         
         User currentUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(currentUser);
         
         Project project = ProjectMapper.dtoToProject(projectDTO);
         
@@ -74,6 +76,7 @@ public class ProjectController {
         
         User currentUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(currentUser);
         
         Project project = projectService.getProjectById(projectId, currentUser);
         
@@ -97,6 +100,7 @@ public class ProjectController {
     ) {
         User currentUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(currentUser);
         
         Project project = ProjectMapper.dtoToProject(projectDTO);
         
@@ -120,6 +124,7 @@ public class ProjectController {
         
         User currentUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(currentUser);
         
         projectService.deleteProject(projectId, currentUser);
         
@@ -221,6 +226,7 @@ public class ProjectController {
     ) {
         User currentUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(currentUser);
         
         Map<UUID, ProjectMember> members = projectService.getProjectMembers(projectId, currentUser);
         

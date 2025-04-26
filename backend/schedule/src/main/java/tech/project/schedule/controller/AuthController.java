@@ -10,6 +10,7 @@ import tech.project.schedule.dto.auth.LoginRequest;
 import tech.project.schedule.dto.auth.LoginResponseDTO;
 import tech.project.schedule.dto.auth.RegistrationRequest;
 import tech.project.schedule.dto.auth.RegistrationResponseDTO;
+import tech.project.schedule.dto.auth.SetPasswordRequest;
 import tech.project.schedule.dto.user.UserDTO;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.user.User;
@@ -19,6 +20,7 @@ import tech.project.schedule.services.UserService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import tech.project.schedule.utils.UserUtils;
 
 /**
  * Controller responsible for managing authentication processes and user operations.
@@ -40,7 +42,26 @@ public class AuthController {
      * @return ResponseEntity containing the registration result message
      */
     @PostMapping("/register")
-    public ResponseEntity<RegistrationResponseDTO> register(@Valid @RequestBody RegistrationRequest request) {
+    public ResponseEntity<RegistrationResponseDTO> register(@RequestParam(required = false) UUID adminId,
+                                                            @Valid @RequestBody RegistrationRequest request) {
+        // TEMPORARY: Allow registration of the first user as ADMIN if there are no users in the system
+        if (userRepository.count() == 0) {
+    RegistrationRequest adminRequest = new RegistrationRequest(
+        request.username(),
+        request.firstName(),
+        request.lastName(),
+        request.password(),
+        request.email(),
+        tech.project.schedule.model.enums.GlobalRole.ADMIN
+    );
+    String result = userService.register(adminRequest);
+    return ResponseEntity.ok(new RegistrationResponseDTO("First admin registered! (temporary logic, remove after init)"));
+}
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new ApiException("Admin user not found", HttpStatus.NOT_FOUND));
+        if (admin.getGlobalRole() != tech.project.schedule.model.enums.GlobalRole.ADMIN) {
+            throw new ApiException("Only ADMIN can register new users", HttpStatus.FORBIDDEN);
+        }
         String result = userService.register(request);
         return ResponseEntity.ok(new RegistrationResponseDTO(result));
     }
@@ -56,6 +77,50 @@ public class AuthController {
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequest request) {
         User user = userService.login(request);
         return ResponseEntity.ok(new LoginResponseDTO(user.getId(), user.getEmail(), user.getName(), user.getUsername()));
+    }
+
+    /*
+     * Allows a user to set a new password after registration using a link sent by email.
+     *
+     * @param request SetPasswordRequest containing email and new password
+     * @return ResponseEntity with success message
+     */
+    /*
+     * Endpoint to request password reset link (email).
+     * Only AUTHORIZED or UNAUTHORIZED users can request password reset.
+     * BLOCKED users receive 403.
+     */
+    /**
+     * Unifies password reset and privacy: always return OK, only send mail for eligible users.
+     */
+    @PostMapping("/request-password-reset")
+public ResponseEntity<String> requestPasswordReset(@RequestBody SetPasswordRequest request) {
+    // Always return OK for privacy (do not leak user existence/status)
+    userRepository.findByEmail(request.email()).ifPresent(user -> {
+        if (user.getUserStatus() != tech.project.schedule.model.enums.UserStatus.BLOCKED) {
+            userService.sendPasswordResetEmail(user);
+        }
+    });
+    return ResponseEntity.ok("If the email exists and is eligible, a password reset link has been sent.");
+}
+
+    /*
+     * Endpoint to set new password (from link).
+     * BLOCKED users cannot set new password.
+     */
+    /**
+     * Sets a new password for a user, used for both registration and forgotten password.
+     * Only AUTHORIZED or UNAUTHORIZED users can set password. BLOCKED users cannot.
+     */
+    @PostMapping("/set-password")
+    public ResponseEntity<String> setPassword(@Valid @RequestBody SetPasswordRequest request) {
+        User user = userRepository.findByEmail(request.email())
+            .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        if (user.getUserStatus() == tech.project.schedule.model.enums.UserStatus.BLOCKED) {
+            throw new ApiException("Blocked users cannot change password", HttpStatus.FORBIDDEN);
+        }
+        userService.setPassword(request.email(), request.newPassword());
+        return ResponseEntity.ok("Password has been set successfully.");
     }
     
     /**
@@ -86,6 +151,10 @@ public class AuthController {
         // ToDo: User will have account status GlobalRole.Admin can display inactive users
         User currentUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(currentUser);
+        if (currentUser.getUserStatus() == tech.project.schedule.model.enums.UserStatus.BLOCKED) {
+            throw new ApiException("User is blocked and cannot perform this action", HttpStatus.FORBIDDEN);
+        }
         
         // Retrieve all users from the repository
         List<User> users = userRepository.findAll();
@@ -98,10 +167,31 @@ public class AuthController {
                         user.getLastName(),
                         user.getUsername(),
                         user.getEmail(),
-                        user.getGlobalRole()
+                        user.getGlobalRole(),
+                        user.getUserStatus()
                 ))
                 .toList();
 
         return ResponseEntity.ok(userDTOs);
+    }
+
+    /**
+     * Blocks (soft-deletes) a user by email. Only ADMIN can perform this action.
+     *
+     * @param adminId UUID of the admin performing the action
+     * @param email   Email of the user to block
+     * @return ResponseEntity with result message
+     */
+    @PostMapping("/block-user")
+    public ResponseEntity<String> blockUser(
+            @RequestParam UUID adminId,
+            @RequestParam String email) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new ApiException("Admin user not found", HttpStatus.NOT_FOUND));
+        if (admin.getGlobalRole() != tech.project.schedule.model.enums.GlobalRole.ADMIN) {
+            throw new ApiException("Only ADMIN can block users", HttpStatus.FORBIDDEN);
+        }
+        userService.blockUser(email);
+        return ResponseEntity.ok("User blocked successfully.");
     }
 }

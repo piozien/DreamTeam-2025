@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import tech.project.schedule.utils.UserUtils;
 
 /**
  * Controller responsible for managing task-related operations.
@@ -61,6 +62,7 @@ public class TaskController {
             @RequestParam UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         Task task = TaskMapper.requestDtoToTask(taskRequestDTO);
 
@@ -83,6 +85,7 @@ public class TaskController {
             @RequestParam UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
         Task task = taskService.getTaskById(taskId, user);
 
         return ResponseEntity.ok(TaskMapper.taskToDTO(task));
@@ -105,6 +108,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
         Task task = TaskMapper.updateDtoToTask(taskUpdateDTO);
         Task updatedTask = taskService.updateTask(task, taskId, user);
 
@@ -127,6 +131,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
         taskService.deleteTask(taskId, user);
         return ResponseEntity.noContent().build();
     }
@@ -146,6 +151,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         List<Task> tasks = taskService.getTasksByProject(projectId, user);
         List<TaskDTO> taskDTOs = tasks.stream()
@@ -172,6 +178,7 @@ public class TaskController {
     ) {
         User currUser = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(currUser);
 
         UUID userId = assigneeDTO.userId();
         User userToAdd = userRepository.findById(userId)
@@ -198,6 +205,7 @@ public class TaskController {
     ) {
         User currUser = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(currUser);
 
         taskAssigneeService.removeAssigneeFromTask(taskId, assigneeId, currUser);
         return ResponseEntity.noContent().build();
@@ -218,6 +226,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         Set<TaskAssignee> assignees = taskAssigneeService.getTaskAssignees(taskId, user);
         Set<TaskAssigneeDTO> assigneeDTOs = assignees.stream()
@@ -244,6 +253,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         taskDependencyService.addDependency(taskId, dependencyId, user);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -266,6 +276,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         taskDependencyService.removeDependency(taskId, dependencyId, user);
         return ResponseEntity.noContent().build();
@@ -286,6 +297,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         Set<Task> dependencies = taskDependencyService.getTaskDependencies(taskId, user);
         Set<TaskDTO> dependencyDTOs = dependencies.stream()
@@ -312,6 +324,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         taskDependencyService.updateTaskDependency(taskId, dependencyId, user);
         return ResponseEntity.ok().build();
@@ -332,6 +345,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         List<TaskAssignee> assignees = taskAssigneeService.getAllAssigneesByTaskId(taskId, user);
         List<TaskAssigneeDTO> assigneeDTOs = assignees.stream()
@@ -358,6 +372,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         TaskComment comment = TaskMapper.dtoToComment(taskCommentDTO);
 
@@ -382,6 +397,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         TaskComment comment = taskCommentService.getCommentById(commentId, user);
         return ResponseEntity.ok(TaskMapper.commentToDTO(comment));
@@ -402,6 +418,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
         User otherUser = userRepository.findById(otherUserId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
 
@@ -427,6 +444,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         List<TaskComment> comments = taskCommentService.getCommentsForTask(taskId, user);
         List<TaskCommentDTO> commentDTOs = comments.stream()
@@ -452,6 +470,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         taskCommentService.deleteComment(taskId, user, commentId);
         return ResponseEntity.noContent().build();
@@ -472,6 +491,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         taskCommentService.deleteAllCommentsForTask(taskId, user);
         return ResponseEntity.noContent().build();
@@ -494,6 +514,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         TaskFile file = TaskMapper.dtoToFile(taskFileDTO);
         TaskFile createdFile = taskFileService.addTaskFile(taskId, user, file);
@@ -518,6 +539,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         TaskFile file = taskFileService.getTaskFileById(taskId, fileId, user);
         return ResponseEntity.ok(TaskMapper.fileToDTO(file));
@@ -538,6 +560,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         List<TaskFile> files = taskFileService.getTaskFiles(taskId, user);
         List<TaskFileDTO> fileDTOs = files.stream()
@@ -563,6 +586,7 @@ public class TaskController {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
 
         taskFileService.deleteTaskFile(taskId, fileId, user);
         return ResponseEntity.noContent().build();
