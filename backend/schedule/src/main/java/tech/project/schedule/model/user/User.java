@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tech.project.schedule.model.notification.Notification;
 import tech.project.schedule.model.enums.GlobalRole;
+import tech.project.schedule.model.enums.UserStatus;
 import tech.project.schedule.model.project.ProjectMember;
 import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.task.TaskComment;
@@ -121,16 +122,6 @@ public class User {
     @EqualsAndHashCode.Exclude
     private Set<Notification> notifications;
 
-    /**
-     * Creates a new user with basic personal information.
-     * Sets the default global role to CLIENT.
-     * 
-     * @param firstName The user's first name
-     * @param lastName The user's last name
-     * @param email The user's email address
-     * @param password The user's password
-     * @param username The user's chosen username
-     */
     public User(String firstName, String lastName,
                 String email, String password,
                 String username) {
@@ -141,5 +132,6 @@ public class User {
         this.username = username;
         this.globalRole = GlobalRole.CLIENT;
         this.name = firstName + " " + lastName;
+        this.userStatus = UserStatus.UNAUTHORIZED;
     }
 }
