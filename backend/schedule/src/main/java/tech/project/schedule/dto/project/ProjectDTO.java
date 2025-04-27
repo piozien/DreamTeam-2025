@@ -9,6 +9,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Data Transfer Object that represents a project in the scheduling system.
+ * Contains project details including identification, scheduling information,
+ * associated members and tasks. The required fields are name and start date.
+ */
 public record ProjectDTO(
         UUID id,
         
