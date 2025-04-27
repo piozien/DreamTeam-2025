@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
-import tech.project.schedule.model.enums.*;
-import tech.project.schedule.model.notification.Notification;
+import tech.project.schedule.model.enums.GlobalRole;
+import tech.project.schedule.model.enums.ProjectStatus;
+import tech.project.schedule.model.enums.ProjectUserRole;
+import tech.project.schedule.model.enums.TaskStatus;
 import tech.project.schedule.model.project.Project;
 import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.model.project.ProjectMember;
@@ -24,7 +26,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
-    private final NotificationService notificationService;
     private final ProjectRepository projectRepository;
 
     @Transactional
@@ -145,14 +146,6 @@ public class ProjectService {
         project.addMember(user.getId(), newMember);
         
         projectRepository.save(project);
-        notificationService.sendNotification(
-                newMember.getUser().getId(),
-                Notification.builder()
-                        .user(newMember.getUser())
-                        .status(NotificationStatus.PROJECT_MEMBER_ADDED)
-                        .message("You have been added to this project: " + newMember.getProject().getName())
-                        .build()
-        );
         return newMember;
     }
     
