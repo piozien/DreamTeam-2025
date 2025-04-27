@@ -34,9 +34,11 @@ public class SecurityConfig implements WebMvcConfigurer {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+            .sessionManagement(sess -> sess.sessionCreationPolicy
+                    (SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/request-password-reset", "/api/auth/set-password", "/login**", "/error**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/request-password-reset",
+                        "/api/auth/set-password", "/login**", "/error**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
