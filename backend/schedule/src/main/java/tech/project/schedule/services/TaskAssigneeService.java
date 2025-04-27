@@ -6,9 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.enums.GlobalRole;
-import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.enums.ProjectUserRole;
-import tech.project.schedule.model.notification.Notification;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.user.User;
@@ -27,7 +25,6 @@ public class TaskAssigneeService {
 
     private final TaskRepository taskRepository;
     private final TaskAssigneeRepository taskAssigneeRepository;
-    private final NotificationService notificationService;
 
     @Transactional
     public TaskAssignee assignMemberToTask(UUID taskId, User user, User userToBeAdded){
@@ -57,15 +54,7 @@ public class TaskAssigneeService {
         taskRepository.save(task);
         
         TaskAssignee savedAssignee = taskAssigneeRepository.save(newAssignee);
-        notificationService.sendNotification(
-                savedAssignee.getUser().getId(),
-                Notification.builder()
-                        .user(savedAssignee.getUser())
-                        .status(NotificationStatus.TASK_ASSIGNEE_ADDED)
-                        .message("You have been assigned to " + savedAssignee.getTask().getName()+ ".")
-                        .build()
 
-        );
         return savedAssignee;
     }
 

@@ -1,22 +1,17 @@
 package tech.project.schedule.services;
 
 import lombok.RequiredArgsConstructor;
-import org.hibernate.jdbc.Expectation;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.exception.ApiException;
-import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.enums.ProjectUserRole;
 import tech.project.schedule.model.enums.TaskStatus;
-import tech.project.schedule.model.notification.Notification;
 import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.task.Task;
-import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.services.utils.GetProjectRole;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -30,7 +25,6 @@ import tech.project.schedule.repositories.TaskRepository;
 @Service
 @RequiredArgsConstructor
 public class TaskService {
-    private final NotificationService notificationService;
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
 
@@ -103,19 +97,8 @@ public class TaskService {
             }
             existingTask.setStatus(updatedTask.getStatus());
         }
-        var saved = taskRepository.save(existingTask);
-        NotificationStatus statusNot = existingTask.getStatus() == TaskStatus.FINISHED  ? NotificationStatus.TASK_COMPLETED : NotificationStatus.TASK_UPDATED;
-        for(TaskAssignee assignee :  existingTask.getAssignees()) {
-            notificationService.sendNotification(
-                    assignee.getUser().getId(),
-                    Notification.builder()
-                            .user(assignee.getUser())
-                            .status(statusNot)
-                            .message("Task " + existingTask.getName() + " has been updated.")
-                            .build()
-            );
-        }
-        return saved;
+
+        return taskRepository.save(existingTask);
     }
 
     @Transactional
