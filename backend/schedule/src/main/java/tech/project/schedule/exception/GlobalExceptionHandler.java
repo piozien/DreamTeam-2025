@@ -9,9 +9,24 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * Global exception handler for centralized exception processing across the application.
+ * Intercepts exceptions thrown during request processing and converts them to
+ * standardized API responses with appropriate HTTP status codes and error details.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+      /**
+     * Handles ApiException instances by converting them into structured error responses.
+     * Creates a consistent error response format with timestamp, status code, error type,
+     * error message, and request path information.
+     *
+     * @param ex The ApiException that was thrown
+     * @param request The web request during which the exception was thrown
+     * @return ResponseEntity containing error details and appropriate HTTP status code
+     */
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<Object> handleApiException(ApiException ex, WebRequest request) {
         Map<String, Object> body = new HashMap<>();
