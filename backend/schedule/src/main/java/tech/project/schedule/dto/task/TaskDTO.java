@@ -9,6 +9,12 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Data Transfer Object that represents a task in the scheduling system.
+ * Contains comprehensive task information including identification, scheduling details,
+ * priority and status, as well as relationships to assigned users, comments, files,
+ * and task dependencies.
+ */
 public record TaskDTO(
         UUID id,
         UUID projectId,
