@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.dto.auth.LoginRequest;
@@ -22,9 +22,8 @@ import java.util.UUID;
 
 
 public class UserService {
-    // ToDo: add JWT tokens
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
     /**
      * Base URL for the frontend password reset page, injected from application.properties or environment.

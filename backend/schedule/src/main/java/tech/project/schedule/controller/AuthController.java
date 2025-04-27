@@ -18,6 +18,8 @@ import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
 import tech.project.schedule.services.UserService;
+import tech.project.schedule.security.JwtUtil;
+import java.util.Map;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +35,10 @@ import tech.project.schedule.utils.UserUtils;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+    
+    private final UserService userService;
+    private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
 
     @GetMapping("/oauth2-success")
@@ -73,8 +79,6 @@ public class AuthController {
         return ResponseEntity.ok(userDto);
     }
 
-    private final UserService userService;
-    private final UserRepository userRepository;
 
       /**
      * Registers a new user in the system.
@@ -116,7 +120,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequest request) {
         User user = userService.login(request);
-        return ResponseEntity.ok(new LoginResponseDTO(user.getId(), user.getEmail(), user.getName(), user.getUsername()));
+        String token = jwtUtil.generateToken(user.getEmail(), Map.of(
+                "userId", user.getId().toString(),
+                "role", user.getGlobalRole().name(),
+                "status", user.getUserStatus().name()
+        ));
+        return ResponseEntity.ok(new LoginResponseDTO(token, user.getId(), user.getEmail(), user.getFirstName() + " " + user.getLastName(), user.getUsername()));
     }
 
     /*
