@@ -26,6 +26,8 @@ import java.util.Optional;
 import java.util.UUID;
 import tech.project.schedule.utils.UserUtils;
 
+import org.springframework.web.servlet.view.RedirectView;
+
 /**
  * Controller responsible for managing authentication processes and user operations.
  * Provides endpoints for user registration, login, system health checking,
@@ -42,43 +44,56 @@ public class AuthController {
 
 
     @GetMapping("/oauth2-success")
-    public ResponseEntity<?> oauth2Success(
-            @AuthenticationPrincipal OidcUser principal) {
+    public RedirectView oauth2Success(@AuthenticationPrincipal OidcUser principal) { // Change return type
         if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
+            // Redirect to login page with an error maybe?
+            return new RedirectView("http://localhost:4200/auth/login?error=oauth_failed");
         }
         String email = principal.getEmail();
         String firstName = principal.getGivenName();
         String lastName = principal.getFamilyName();
-        String username = email.substring(0, email.indexOf("@"));
+        // Use email prefix or another logic for username if needed
+        String username = principal.getPreferredUsername() != null ? principal.getPreferredUsername() : email.split("@")[0];
 
+        // Find or create user logic (keep as is)
         Optional<tech.project.schedule.model.user.User> userOpt = userRepository.findByEmail(email);
         tech.project.schedule.model.user.User user;
         if (userOpt.isPresent()) {
             user = userOpt.get();
+            // Optionally update user details if they changed in Google
+            user.setFirstName(firstName != null ? firstName : user.getFirstName());
+            user.setLastName(lastName != null ? lastName : user.getLastName());
+            // Ensure status is AUTHORIZED if they login successfully
+            if (user.getUserStatus() == tech.project.schedule.model.enums.UserStatus.UNAUTHORIZED) {
+                user.setUserStatus(tech.project.schedule.model.enums.UserStatus.AUTHORIZED);
+            }
+            userRepository.save(user);
         } else {
             user = new tech.project.schedule.model.user.User(
                     firstName != null ? firstName : "",
                     lastName != null ? lastName : "",
                     email,
-                    "",
+                    "", // No password needed for OAuth users initially
                     username
             );
-            user.setUserStatus(tech.project.schedule.model.enums.UserStatus.AUTHORIZED);
+            user.setUserStatus(tech.project.schedule.model.enums.UserStatus.AUTHORIZED); // New users via OAuth are authorized
+            user.setGlobalRole(tech.project.schedule.model.enums.GlobalRole.CLIENT); // Default role
             userRepository.save(user);
         }
+
+        // Generate token (keep as is)
         String token = jwtUtil.generateToken(user.getEmail(), Map.of(
                 "userId", user.getId().toString(),
                 "role", user.getGlobalRole().name(),
-                "status", user.getUserStatus().name()
-        ));
-        return ResponseEntity.ok(Map.of(
-                "token", token,
-                "id", user.getId(),
-                "email", user.getEmail(),
+                "status", user.getUserStatus().name(),
+                // Optionally include name directly in token if useful for frontend
                 "name", user.getFirstName() + " " + user.getLastName(),
-                "username", user.getUsername()
+                "preferred_username", user.getUsername()
         ));
+
+        // Redirect back to frontend with the token
+        String redirectUrl = "http://localhost:4200/auth/oauth-callback?token=" + token;
+        return new RedirectView(redirectUrl);
     }
 
 
