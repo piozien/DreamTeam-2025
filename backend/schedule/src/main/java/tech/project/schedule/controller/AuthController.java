@@ -58,7 +58,7 @@ public class AuthController {
             user = userOpt.get();
         } else {
             user = new tech.project.schedule.model.user.User(
-                    firstName != null ? firstName : username,
+                    firstName != null ? firstName : "",
                     lastName != null ? lastName : "",
                     email,
                     "",
@@ -67,16 +67,18 @@ public class AuthController {
             user.setUserStatus(tech.project.schedule.model.enums.UserStatus.AUTHORIZED);
             userRepository.save(user);
         }
-        UserDTO userDto = new tech.project.schedule.dto.user.UserDTO(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getGlobalRole(),
-                user.getUserStatus()
-        );
-        return ResponseEntity.ok(userDto);
+        String token = jwtUtil.generateToken(user.getEmail(), Map.of(
+                "userId", user.getId().toString(),
+                "role", user.getGlobalRole().name(),
+                "status", user.getUserStatus().name()
+        ));
+        return ResponseEntity.ok(Map.of(
+                "token", token,
+                "id", user.getId(),
+                "email", user.getEmail(),
+                "name", user.getFirstName() + " " + user.getLastName(),
+                "username", user.getUsername()
+        ));
     }
 
 

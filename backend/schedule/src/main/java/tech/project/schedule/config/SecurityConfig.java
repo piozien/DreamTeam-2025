@@ -34,13 +34,15 @@ public class SecurityConfig implements WebMvcConfigurer {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/oauth2-success", "/api/auth/request-password-reset", "/api/auth/set-password", "/login**", "/error**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/request-password-reset", "/api/auth/set-password", "/login**", "/error**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
-                .defaultSuccessUrl("/api/auth/oauth2-success", true)
+                .successHandler((request, response, authentication) -> {
+                    response.sendRedirect("/api/auth/oauth2-success");
+                })
             )
             .logout(logout -> logout.logoutSuccessUrl("/"))
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
