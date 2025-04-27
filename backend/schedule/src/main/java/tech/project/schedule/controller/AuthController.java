@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.*;
 import tech.project.schedule.dto.auth.HealthResponseDTO;
 import tech.project.schedule.dto.auth.LoginRequest;
@@ -16,9 +18,11 @@ import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
 import tech.project.schedule.services.UserService;
-
+import tech.project.schedule.security.JwtUtil;
+import java.util.Map;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import tech.project.schedule.utils.UserUtils;
 
@@ -31,9 +35,52 @@ import tech.project.schedule.utils.UserUtils;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-
+    
     private final UserService userService;
     private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
+
+
+    @GetMapping("/oauth2-success")
+    public ResponseEntity<?> oauth2Success(
+            @AuthenticationPrincipal OidcUser principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
+        }
+        String email = principal.getEmail();
+        String firstName = principal.getGivenName();
+        String lastName = principal.getFamilyName();
+        String username = email.substring(0, email.indexOf("@"));
+
+        Optional<tech.project.schedule.model.user.User> userOpt = userRepository.findByEmail(email);
+        tech.project.schedule.model.user.User user;
+        if (userOpt.isPresent()) {
+            user = userOpt.get();
+        } else {
+            user = new tech.project.schedule.model.user.User(
+                    firstName != null ? firstName : "",
+                    lastName != null ? lastName : "",
+                    email,
+                    "",
+                    username
+            );
+            user.setUserStatus(tech.project.schedule.model.enums.UserStatus.AUTHORIZED);
+            userRepository.save(user);
+        }
+        String token = jwtUtil.generateToken(user.getEmail(), Map.of(
+                "userId", user.getId().toString(),
+                "role", user.getGlobalRole().name(),
+                "status", user.getUserStatus().name()
+        ));
+        return ResponseEntity.ok(Map.of(
+                "token", token,
+                "id", user.getId(),
+                "email", user.getEmail(),
+                "name", user.getFirstName() + " " + user.getLastName(),
+                "username", user.getUsername()
+        ));
+    }
+
 
       /**
      * Registers a new user in the system.
@@ -50,7 +97,6 @@ public class AuthController {
         request.username(),
         request.firstName(),
         request.lastName(),
-        request.password(),
         request.email(),
         tech.project.schedule.model.enums.GlobalRole.ADMIN
     );
@@ -76,7 +122,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequest request) {
         User user = userService.login(request);
-        return ResponseEntity.ok(new LoginResponseDTO(user.getId(), user.getEmail(), user.getName(), user.getUsername()));
+        String token = jwtUtil.generateToken(user.getEmail(), Map.of(
+                "userId", user.getId().toString(),
+                "role", user.getGlobalRole().name(),
+                "status", user.getUserStatus().name()
+        ));
+        return ResponseEntity.ok(new LoginResponseDTO(token, user.getId(), user.getEmail(), user.getFirstName() + " " + user.getLastName(), user.getUsername()));
     }
 
     /*
@@ -148,18 +199,20 @@ public ResponseEntity<String> requestPasswordReset(@RequestBody SetPasswordReque
     public ResponseEntity<List<UserDTO>> getAllUsers(
             @RequestParam UUID userId
     ) {
-        // ToDo: User will have account status GlobalRole.Admin can display inactive users
         User currentUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
         UserUtils.assertAuthorized(currentUser);
         if (currentUser.getUserStatus() == tech.project.schedule.model.enums.UserStatus.BLOCKED) {
             throw new ApiException("User is blocked and cannot perform this action", HttpStatus.FORBIDDEN);
         }
-        
-        // Retrieve all users from the repository
+
         List<User> users = userRepository.findAll();
-        
-        // Map User entities to UserDTO objects to expose only necessary information
+        if (currentUser.getGlobalRole() != tech.project.schedule.model.enums.GlobalRole.ADMIN) {
+            users = users.stream()
+                    .filter(user -> user.getUserStatus() == tech.project.schedule.model.enums.UserStatus.AUTHORIZED)
+                    .toList();
+        }
+
         List<UserDTO> userDTOs = users.stream()
                 .map(user -> new UserDTO(
                         user.getId(),
@@ -168,7 +221,7 @@ public ResponseEntity<String> requestPasswordReset(@RequestBody SetPasswordReque
                         user.getUsername(),
                         user.getEmail(),
                         user.getGlobalRole(),
-                        user.getUserStatus()
+                        currentUser.getGlobalRole() == tech.project.schedule.model.enums.GlobalRole.ADMIN ? user.getUserStatus() : null
                 ))
                 .toList();
 

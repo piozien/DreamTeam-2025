@@ -1,0 +1,370 @@
+Index: schedule/src/main/resources/application.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># Server Configuration\r\nserver.port=${SERVER_PORT:8080}\r\n\r\n# Database Configuration\r\nspring.datasource.url=${DB_URL}\r\nspring.datasource.username=${DB_USERNAME}\r\nspring.datasource.password=${DB_PASSWORD}\r\nspring.datasource.driver-class-name=org.postgresql.Driver\r\nspring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect\r\n\r\nspring.datasource.properties.ssl=true\r\nspring.datasource.properties.sslmode=require\r\n\r\n\r\n# JPA Configuration\r\nspring.jpa.hibernate.ddl-auto=update\r\nspring.jpa.show-sql=true\r\nspring.jpa.properties.hibernate.format_sql=true\r\n\r\n# Logging Configuration\r\nlogging.level.org.hibernate.SQL=DEBUG\r\nlogging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE\r\nlogging.level.tech.project.schedule=DEBUG\r\nlogging.level.org.springframework=DEBUG\r\n\r\n# Server Error Handling\r\nserver.error.include-message=always\r\nserver.error.include-binding-errors=always\r\n\r\n# CORS Configuration (based on your Angular frontend)\r\nspring.web.cors.allowed-origins=http://localhost:4200\r\nspring.web.cors.allowed-methods=GET,POST,PUT,DELETE,OPTIONS\r\nspring.web.cors.allowed-headers=*\r\nspring.web.cors.allow-credentials=true\r\n\r\n# Active Profile\r\nspring.profiles.active=dev\r\n\r\n# Debug mode\r\ndebug=true\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/schedule/src/main/resources/application.properties b/schedule/src/main/resources/application.properties
+--- a/schedule/src/main/resources/application.properties	(revision 4e0f6feaf4e45700e8a4cd08d0636de7ae1a6ad9)
++++ b/schedule/src/main/resources/application.properties	(date 1745698353222)
+@@ -33,9 +33,18 @@
+ spring.web.cors.allowed-headers=*
+ spring.web.cors.allow-credentials=true
+ 
+-# Active Profile
+-spring.profiles.active=dev
+-
+ # Debug mode
+ debug=true
+ 
++# Google OAuth2 Client
++spring.security.oauth2.client.registration.google.client-id=604871735498-5k70tjcr7ddac71ruv2cqgu7s87l0rl2.apps.googleusercontent.com
++spring.security.oauth2.client.registration.google.client-secret=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
++spring.security.oauth2.client.registration.google.scope=openid,profile,email
++spring.security.oauth2.client.registration.google.redirect-uri={baseUrl}/login/oauth2/code/{registrationId}
++
++spring.security.oauth2.client.provider.google.authorization-uri=https://accounts.google.com/o/oauth2/v2/auth
++spring.security.oauth2.client.provider.google.token-uri=https://oauth2.googleapis.com/token
++spring.security.oauth2.client.provider.google.user-info-uri=https://openidconnect.googleapis.com/v1/userinfo
++spring.security.oauth2.client.provider.google.user-name-attribute=sub
++spring.security.oauth2.client.provider.google.issuer-uri=https://accounts.google.com
++
+Index: schedule/src/main/java/tech/project/schedule/ScheduleApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package tech.project.schedule;\r\n\r\nimport org.springframework.boot.SpringApplication;\r\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\r\n\r\n@SpringBootApplication\r\npublic class ScheduleApplication {\r\n\r\n\tpublic static void main(String[] args) {\r\n\t\tSpringApplication.run(ScheduleApplication.class, args);\r\n\t}\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/schedule/src/main/java/tech/project/schedule/ScheduleApplication.java b/schedule/src/main/java/tech/project/schedule/ScheduleApplication.java
+--- a/schedule/src/main/java/tech/project/schedule/ScheduleApplication.java	(revision 4e0f6feaf4e45700e8a4cd08d0636de7ae1a6ad9)
++++ b/schedule/src/main/java/tech/project/schedule/ScheduleApplication.java	(date 1745698353236)
+@@ -3,6 +3,7 @@
+ import org.springframework.boot.SpringApplication;
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
+ 
++
+ @SpringBootApplication
+ public class ScheduleApplication {
+ 
+@@ -11,3 +12,4 @@
+ 	}
+ 
+ }
++
+Index: schedule/src/main/java/tech/project/schedule/controller/AuthController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package tech.project.schedule.controller;\r\n\r\nimport jakarta.validation.Valid;\r\nimport lombok.RequiredArgsConstructor;\r\nimport org.springframework.http.HttpStatus;\r\nimport org.springframework.http.ResponseEntity;\r\nimport org.springframework.web.bind.annotation.*;\r\nimport tech.project.schedule.dto.auth.HealthResponseDTO;\r\nimport tech.project.schedule.dto.auth.LoginRequest;\r\nimport tech.project.schedule.dto.auth.LoginResponseDTO;\r\nimport tech.project.schedule.dto.auth.RegistrationRequest;\r\nimport tech.project.schedule.dto.auth.RegistrationResponseDTO;\r\nimport tech.project.schedule.dto.user.UserDTO;\r\nimport tech.project.schedule.exception.ApiException;\r\nimport tech.project.schedule.model.user.User;\r\nimport tech.project.schedule.repositories.UserRepository;\r\nimport tech.project.schedule.services.UserService;\r\n\r\nimport java.time.LocalDateTime;\r\nimport java.util.List;\r\nimport java.util.UUID;\r\n\r\n/**\r\n * Controller responsible for managing authentication processes and user operations.\r\n * Provides endpoints for user registration, login, system health checking,\r\n * and retrieving the list of all users.\r\n */\r\n@RestController\r\n@RequestMapping(\"/api/auth\")\r\n@RequiredArgsConstructor\r\npublic class AuthController {\r\n\r\n    private final UserService userService;\r\n    private final UserRepository userRepository;\r\n\r\n      /**\r\n     * Registers a new user in the system.\r\n     * \r\n     * @param request Object containing user registration data\r\n     * @return ResponseEntity containing the registration result message\r\n     */\r\n    @PostMapping(\"/register\")\r\n    public ResponseEntity<RegistrationResponseDTO> register(@Valid @RequestBody RegistrationRequest request) {\r\n        String result = userService.register(request);\r\n        return ResponseEntity.ok(new RegistrationResponseDTO(result));\r\n    }\r\n    \r\n\r\n    /**\r\n     * Authenticates a user and creates a session.\r\n     * \r\n     * @param request Object containing login credentials (email/username and password)\r\n     * @return ResponseEntity containing information about the authenticated user\r\n     */\r\n    @PostMapping(\"/login\")\r\n    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequest request) {\r\n        User user = userService.login(request);\r\n        return ResponseEntity.ok(new LoginResponseDTO(user.getId(), user.getEmail(), user.getName(), user.getUsername()));\r\n    }\r\n    \r\n    /**\r\n     * Provides information about the application's operational status.\r\n     * Used for monitoring and health checking of the system.\r\n     * \r\n     * @return ResponseEntity containing current system status and timestamp\r\n     */\r\n    @GetMapping(\"/health\")\r\n    public ResponseEntity<HealthResponseDTO> healthCheck() {\r\n        return ResponseEntity.ok(new HealthResponseDTO(\r\n                \"UP\",\r\n                LocalDateTime.now()\r\n        ));\r\n    }\r\n\r\n    /**\r\n     * Retrieves a list of all users in the system.\r\n     * \r\n     * @param userId Identifier of the user making the request\r\n     * @return ResponseEntity containing a list of all users as DTOs\r\n     * @throws ApiException when the requesting user is not found\r\n     */\r\n    @GetMapping(\"/all-users\")\r\n    public ResponseEntity<List<UserDTO>> getAllUsers(\r\n            @RequestParam UUID userId\r\n    ) {\r\n        // ToDo: User will have account status GlobalRole.Admin can display inactive users\r\n        User currentUser = userRepository.findById(userId)\r\n                .orElseThrow(() -> new ApiException(\"User not found\", HttpStatus.NOT_FOUND));\r\n        \r\n        // Retrieve all users from the repository\r\n        List<User> users = userRepository.findAll();\r\n        \r\n        // Map User entities to UserDTO objects to expose only necessary information\r\n        List<UserDTO> userDTOs = users.stream()\r\n                .map(user -> new UserDTO(\r\n                        user.getId(),\r\n                        user.getFirstName(),\r\n                        user.getLastName(),\r\n                        user.getUsername(),\r\n                        user.getEmail(),\r\n                        user.getGlobalRole()\r\n                ))\r\n                .toList();\r\n\r\n        return ResponseEntity.ok(userDTOs);\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/schedule/src/main/java/tech/project/schedule/controller/AuthController.java b/schedule/src/main/java/tech/project/schedule/controller/AuthController.java
+--- a/schedule/src/main/java/tech/project/schedule/controller/AuthController.java	(revision 4e0f6feaf4e45700e8a4cd08d0636de7ae1a6ad9)
++++ b/schedule/src/main/java/tech/project/schedule/controller/AuthController.java	(date 1745698374215)
+@@ -4,6 +4,8 @@
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.ResponseEntity;
++import org.springframework.security.core.annotation.AuthenticationPrincipal;
++import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+ import org.springframework.web.bind.annotation.*;
+ import tech.project.schedule.dto.auth.HealthResponseDTO;
+ import tech.project.schedule.dto.auth.LoginRequest;
+@@ -15,9 +17,9 @@
+ import tech.project.schedule.model.user.User;
+ import tech.project.schedule.repositories.UserRepository;
+ import tech.project.schedule.services.UserService;
+-
+ import java.time.LocalDateTime;
+ import java.util.List;
++import java.util.Optional;
+ import java.util.UUID;
+ 
+ /**
+@@ -30,6 +32,44 @@
+ @RequiredArgsConstructor
+ public class AuthController {
+ 
++
++    @GetMapping("/oauth2-success")
++    public ResponseEntity<?> oauth2Success(
++            @AuthenticationPrincipal OidcUser principal) {
++        if (principal == null) {
++            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
++        }
++        String email = principal.getEmail();
++        String firstName = principal.getGivenName();
++        String lastName = principal.getFamilyName();
++        String username = email.substring(0, email.indexOf("@"));
++
++        Optional<tech.project.schedule.model.user.User> userOpt = userRepository.findByEmail(email);
++        tech.project.schedule.model.user.User user;
++        if (userOpt.isPresent()) {
++            user = userOpt.get();
++        } else {
++            user = new tech.project.schedule.model.user.User(
++                    firstName != null ? firstName : username,
++                    lastName != null ? lastName : "",
++                    email,
++                    "",
++                    username
++            );
++            userRepository.save(user);
++        }
++        UserDTO userDto = new tech.project.schedule.dto.user.UserDTO(
++                user.getId(),
++                user.getFirstName(),
++                user.getLastName(),
++                user.getUsername(),
++                user.getEmail(),
++                user.getGlobalRole(),
++                user.getUserStatus()
++        );
++        return ResponseEntity.ok(userDto);
++    }
++
+     private final UserService userService;
+     private final UserRepository userRepository;
+ 
+@@ -98,7 +138,8 @@
+                         user.getLastName(),
+                         user.getUsername(),
+                         user.getEmail(),
+-                        user.getGlobalRole()
++                        user.getGlobalRole(),
++                        user.getUserStatus()
+                 ))
+                 .toList();
+ 
+Index: schedule/src/main/java/tech/project/schedule/model/user/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package tech.project.schedule.model.user;\r\n\r\nimport jakarta.persistence.*;\r\nimport lombok.Data;\r\nimport lombok.EqualsAndHashCode;\r\nimport lombok.NoArgsConstructor;\r\nimport tech.project.schedule.model.notification.Notification;\r\nimport tech.project.schedule.model.enums.GlobalRole;\r\nimport tech.project.schedule.model.project.ProjectMember;\r\nimport tech.project.schedule.model.task.TaskAssignee;\r\nimport tech.project.schedule.model.task.TaskComment;\r\nimport tech.project.schedule.model.task.TaskFile;\r\nimport tech.project.schedule.model.task.TaskHistory;\r\n\r\nimport java.util.Set;\r\nimport java.util.UUID;\r\n\r\n@Entity\r\n@Table(name = \"Users\")\r\n@Data\r\n@NoArgsConstructor\r\npublic class User {\r\n    @Id\r\n    @GeneratedValue(strategy = GenerationType.UUID)\r\n    private UUID id;\r\n\r\n    private String firstName;\r\n\r\n    private String lastName;\r\n    \r\n    @Column(nullable = false)\r\n    private String name;\r\n\r\n    @Column(nullable = false, unique = true)\r\n    private String email;\r\n\r\n    private String password;\r\n\r\n    private String username;\r\n\r\n    @Enumerated(EnumType.STRING)\r\n    @Column(name = \"global_role\", nullable = false)\r\n    private GlobalRole globalRole;\r\n\r\n    @OneToMany(mappedBy = \"user\")\r\n    @EqualsAndHashCode.Exclude\r\n    private Set<ProjectMember> projectMembers;\r\n\r\n    @OneToMany(mappedBy = \"user\")\r\n    @EqualsAndHashCode.Exclude\r\n    private Set<TaskAssignee> taskAssignments;\r\n\r\n    @OneToMany(mappedBy = \"user\")\r\n    @EqualsAndHashCode.Exclude\r\n    private Set<TaskComment> taskComments;\r\n\r\n    @OneToMany(mappedBy = \"changedBy\")\r\n    @EqualsAndHashCode.Exclude\r\n    private Set<TaskHistory> taskHistories;\r\n\r\n    @OneToMany(mappedBy = \"uploadedBy\")\r\n    @EqualsAndHashCode.Exclude\r\n    private Set<TaskFile> taskFiles;\r\n\r\n    @OneToMany(mappedBy = \"user\")\r\n    @EqualsAndHashCode.Exclude\r\n    private Set<ProjectMember> projects;\r\n\r\n    @OneToMany(mappedBy = \"user\")\r\n    @EqualsAndHashCode.Exclude\r\n    private Set<Notification> notifications;\r\n\r\n    public User(String firstName, String lastName,\r\n                String email, String password,\r\n                String username) {\r\n        this.firstName = firstName;\r\n        this.lastName = lastName;\r\n        this.email = email;\r\n        this.password = password;\r\n        this.username = username;\r\n        this.globalRole = GlobalRole.CLIENT;\r\n        this.name = firstName + \" \" + lastName;\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/schedule/src/main/java/tech/project/schedule/model/user/User.java b/schedule/src/main/java/tech/project/schedule/model/user/User.java
+--- a/schedule/src/main/java/tech/project/schedule/model/user/User.java	(revision 4e0f6feaf4e45700e8a4cd08d0636de7ae1a6ad9)
++++ b/schedule/src/main/java/tech/project/schedule/model/user/User.java	(date 1745698348146)
+@@ -6,6 +6,7 @@
+ import lombok.NoArgsConstructor;
+ import tech.project.schedule.model.notification.Notification;
+ import tech.project.schedule.model.enums.GlobalRole;
++import tech.project.schedule.model.enums.UserStatus;
+ import tech.project.schedule.model.project.ProjectMember;
+ import tech.project.schedule.model.task.TaskAssignee;
+ import tech.project.schedule.model.task.TaskComment;
+@@ -70,6 +71,10 @@
+     @EqualsAndHashCode.Exclude
+     private Set<Notification> notifications;
+ 
++    @Enumerated(EnumType.STRING)
++    @Column(name = "user_status", nullable = false)
++    private UserStatus userStatus = UserStatus.NONAUTHORIZED;
++
+     public User(String firstName, String lastName,
+                 String email, String password,
+                 String username) {
+@@ -80,5 +85,6 @@
+         this.username = username;
+         this.globalRole = GlobalRole.CLIENT;
+         this.name = firstName + " " + lastName;
++        this.userStatus = UserStatus.NONAUTHORIZED;
+     }
+ }
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"9ea44284-c0d1-4fbf-98bb-15b50503457c\" name=\"Changes\" comment=\"\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/ProjectController.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/ProjectController.java\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java\" afterDir=\"false\" />\r\n    </list>\r\n    <list id=\"34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1\" name=\"Changes by tomci\" comment=\"\" />\r\n    <list id=\"09b865cc-bab5-44d0-bb58-d68cb411adc5\" name=\"Changes by zient\" comment=\"\" />\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"Interface\" />\r\n        <option value=\"Class\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\r\n      <map>\r\n        <entry key=\"$PROJECT_DIR$/..\" value=\"project\" />\r\n      </map>\r\n    </option>\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$/..\" />\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 6\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2uLYeNGTdOLxV6AvZUnNPQccuBD\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">{\r\n  &quot;keyToString&quot;: {\r\n    &quot;Maven.schedule [clean].executor&quot;: &quot;Run&quot;,\r\n    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,\r\n    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,\r\n    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,\r\n    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,\r\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\r\n    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,\r\n    &quot;Spring Boot.ScheduleApplication.executor&quot;: &quot;Run&quot;,\r\n    &quot;git-widget-placeholder&quot;: &quot;project&quot;,\r\n    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,\r\n    &quot;last_opened_file_path&quot;: &quot;/Users/bundam/Desktop/git_uwm/DreamTeam-2025/backend&quot;,\r\n    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,\r\n    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,\r\n    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,\r\n    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,\r\n    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,\r\n    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,\r\n    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,\r\n    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,\r\n    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;\r\n  }\r\n}</component>\r\n  <component name=\"RunManager\">\r\n    <configuration default=\"true\" type=\"AZURE_FUNCTION_SUPPORT\" factoryName=\"Run Functions\">\r\n      <option name=\"appName\" />\r\n      <option name=\"appServicePlanName\" />\r\n      <option name=\"appServicePlanResourceGroup\" />\r\n      <option name=\"appSettingsKey\" value=\"71f6163a-98fb-4978-a7cb-e228d6f606c6\" />\r\n      <option name=\"artifact\" />\r\n      <option name=\"debugOptions\" />\r\n      <option name=\"deployment\" />\r\n      <option name=\"deploymentStagingDirectoryPath\" />\r\n      <option name=\"funcPath\" />\r\n      <option name=\"functionHostArguments\" />\r\n      <option name=\"hostJsonPath\" />\r\n      <option name=\"insightsName\" />\r\n      <option name=\"instrumentationKey\" />\r\n      <option name=\"javaVersion\" />\r\n      <option name=\"localSettingsJsonPath\" />\r\n      <option name=\"moduleName\" />\r\n      <option name=\"os\" />\r\n      <option name=\"pricingTier\" />\r\n      <option name=\"providerMap\">\r\n        <map />\r\n      </option>\r\n      <option name=\"region\" />\r\n      <option name=\"resourceGroup\" />\r\n      <option name=\"stagingFolder\" />\r\n      <option name=\"subscription\" />\r\n      <method v=\"2\">\r\n        <option name=\"Make\" enabled=\"true\" />\r\n      </method>\r\n    </configuration>\r\n    <configuration name=\"ScheduleApplication\" type=\"SpringBootApplicationConfigurationType\" factoryName=\"Spring Boot\" nameIsGenerated=\"true\">\r\n      <module name=\"schedule\" />\r\n      <option name=\"SPRING_BOOT_MAIN_CLASS\" value=\"tech.project.schedule.ScheduleApplication\" />\r\n      <method v=\"2\">\r\n        <option name=\"Make\" enabled=\"true\" />\r\n      </method>\r\n    </configuration>\r\n  </component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.25659.39\" />\r\n        <option value=\"bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.25659.39\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"9ea44284-c0d1-4fbf-98bb-15b50503457c\" name=\"Changes\" comment=\"\" />\r\n      <created>1742029415650</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1742029415650</updated>\r\n      <workItem from=\"1742029417000\" duration=\"2762000\" />\r\n      <workItem from=\"1742032669322\" duration=\"2425000\" />\r\n      <workItem from=\"1742060550674\" duration=\"1799000\" />\r\n      <workItem from=\"1742063403075\" duration=\"512000\" />\r\n      <workItem from=\"1742124560107\" duration=\"438000\" />\r\n      <workItem from=\"1742205802987\" duration=\"5133000\" />\r\n      <workItem from=\"1742216884819\" duration=\"880000\" />\r\n      <workItem from=\"1743354663320\" duration=\"754000\" />\r\n      <workItem from=\"1743356045027\" duration=\"6478000\" />\r\n      <workItem from=\"1744449696915\" duration=\"9549000\" />\r\n      <workItem from=\"1744530828429\" duration=\"9514000\" />\r\n      <workItem from=\"1744556496725\" duration=\"9255000\" />\r\n      <workItem from=\"1744566819455\" duration=\"3392000\" />\r\n      <workItem from=\"1744570334812\" duration=\"200000\" />\r\n      <workItem from=\"1744570602114\" duration=\"104000\" />\r\n      <workItem from=\"1744618697345\" duration=\"9396000\" />\r\n      <workItem from=\"1744628667188\" duration=\"717000\" />\r\n    </task>\r\n    <servers />\r\n  </component>\r\n  <component name=\"TypeScriptGeneratedFilesManager\">\r\n    <option name=\"version\" value=\"3\" />\r\n  </component>\r\n  <component name=\"UnknownFeatures\">\r\n    <option featureType=\"com.intellij.fileTypeFactory\" implementationName=\".env\" />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"OPEN_GENERIC_TABS\">\r\n      <map>\r\n        <entry key=\"b1d7fd7b-b757-431c-8560-93708dee48bc\" value=\"TOOL_WINDOW\" />\r\n      </map>\r\n    </option>\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n        <entry key=\"b1d7fd7b-b757-431c-8560-93708dee48bc\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 4e0f6feaf4e45700e8a4cd08d0636de7ae1a6ad9)
++++ b/.idea/workspace.xml	(date 1745698353255)
+@@ -5,9 +5,13 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
++      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/ProjectController.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/ProjectController.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/schedule/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/pom.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/ScheduleApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/ScheduleApplication.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/config/WebConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/config/WebConfig.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/AuthController.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" afterDir="false" />
+     </list>
+     <list id="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" name="Changes by tomci" comment="" />
+     <list id="09b865cc-bab5-44d0-bb58-d68cb411adc5" name="Changes by zient" comment="" />
+Index: .idea/compiler.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"CompilerConfiguration\">\r\n    <annotationProcessing>\r\n      <profile default=\"true\" name=\"Default\" enabled=\"true\" />\r\n      <profile name=\"Annotation profile for schedule\" enabled=\"true\">\r\n        <sourceOutputDir name=\"target/generated-sources/annotations\" />\r\n        <sourceTestOutputDir name=\"target/generated-test-sources/test-annotations\" />\r\n        <outputRelativeToContentRoot value=\"true\" />\r\n        <processorPath useClasspath=\"false\">\r\n          <entry name=\"$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar\" />\r\n          <entry name=\"$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar\" />\r\n        </processorPath>\r\n        <module name=\"schedule\" />\r\n      </profile>\r\n    </annotationProcessing>\r\n  </component>\r\n  <component name=\"JavacSettings\">\r\n    <option name=\"ADDITIONAL_OPTIONS_OVERRIDE\">\r\n      <module name=\"schedule\" options=\"-parameters\" />\r\n    </option>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/compiler.xml b/.idea/compiler.xml
+--- a/.idea/compiler.xml	(revision 4e0f6feaf4e45700e8a4cd08d0636de7ae1a6ad9)
++++ b/.idea/compiler.xml	(date 1745698353263)
+@@ -9,7 +9,6 @@
+         <outputRelativeToContentRoot value="true" />
+         <processorPath useClasspath="false">
+           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+         </processorPath>
+         <module name="schedule" />
+       </profile>
+Index: schedule/src/main/java/tech/project/schedule/config/WebConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package tech.project.schedule.config;\r\n\r\nimport org.springframework.context.annotation.Bean;\r\nimport org.springframework.context.annotation.Configuration;\r\nimport org.springframework.security.config.annotation.web.builders.HttpSecurity;\r\nimport org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;\r\nimport org.springframework.security.web.SecurityFilterChain;\r\nimport org.springframework.web.servlet.config.annotation.CorsRegistry;\r\nimport org.springframework.web.servlet.config.annotation.WebMvcConfigurer;\r\nimport org.springframework.security.config.Customizer;\r\n\r\n@Configuration\r\npublic class WebConfig implements WebMvcConfigurer {\r\n\r\n    @Bean\r\n    public BCryptPasswordEncoder passwordEncoder() {\r\n        return new BCryptPasswordEncoder();\r\n    }\r\n\r\n    @Bean\r\n    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {\r\n        http\r\n                .csrf(csrf -> csrf.disable())\r\n                .authorizeHttpRequests(auth -> auth\r\n                        .anyRequest().permitAll()\r\n                )\r\n                .cors(Customizer.withDefaults());\r\n\r\n        return http.build();\r\n    }\r\n\r\n    @Override\r\n    public void addCorsMappings(CorsRegistry registry) {\r\n        registry.addMapping(\"/**\")\r\n                .allowedOrigins(\"http://localhost:4200\")\r\n                .allowedMethods(\"GET\", \"POST\", \"PUT\", \"DELETE\", \"OPTIONS\")\r\n                .allowedHeaders(\"*\");\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/schedule/src/main/java/tech/project/schedule/config/WebConfig.java b/schedule/src/main/java/tech/project/schedule/config/WebConfig.java
+--- a/schedule/src/main/java/tech/project/schedule/config/WebConfig.java	(revision 4e0f6feaf4e45700e8a4cd08d0636de7ae1a6ad9)
++++ b/schedule/src/main/java/tech/project/schedule/config/WebConfig.java	(date 1745698353270)
+@@ -3,29 +3,31 @@
+ import org.springframework.context.annotation.Bean;
+ import org.springframework.context.annotation.Configuration;
+ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
++import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+ import org.springframework.security.web.SecurityFilterChain;
+ import org.springframework.web.servlet.config.annotation.CorsRegistry;
+ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+-import org.springframework.security.config.Customizer;
+ 
++@EnableWebSecurity
+ @Configuration
+ public class WebConfig implements WebMvcConfigurer {
+ 
+     @Bean
+-    public BCryptPasswordEncoder passwordEncoder() {
+-        return new BCryptPasswordEncoder();
+-    }
+-
+-    @Bean
+-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
++    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+         http
+                 .csrf(csrf -> csrf.disable())
+                 .authorizeHttpRequests(auth -> auth
+-                        .anyRequest().permitAll()
++                        .requestMatchers("/api/auth/**", "/login**", "/error**").permitAll()
++                        .anyRequest().authenticated()
++                )
++                .oauth2Login(oauth2 -> oauth2
++                        .defaultSuccessUrl("/api/auth/oauth2-success", true)
+                 )
+-                .cors(Customizer.withDefaults());
+-
++                .logout(logout -> logout
++                        .logoutSuccessUrl("/")
++                )
++                .cors(); // Enable CORS
+         return http.build();
+     }
+ 
+@@ -36,4 +38,9 @@
+                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                 .allowedHeaders("*");
+     }
+-}
++
++    @Bean
++    public BCryptPasswordEncoder passwordEncoder() {
++        return new BCryptPasswordEncoder();
++    }
++}
+\ No newline at end of file
+Index: schedule/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n\t\t xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\r\n\t<modelVersion>4.0.0</modelVersion>\r\n\t<parent>\r\n\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t<artifactId>spring-boot-starter-parent</artifactId>\r\n\t\t<version>3.4.4</version>\r\n\t\t<relativePath/>\r\n\t</parent>\r\n\t<groupId>tech.project</groupId>\r\n\t<artifactId>schedule</artifactId>\r\n\t<version>0.0.1-SNAPSHOT</version>\r\n\t<name>schedule</name>\r\n\t<description>Scheduling program</description>\r\n\t<url/>\r\n\t<licenses>\r\n\t\t<license/>\r\n\t</licenses>\r\n\t<developers>\r\n\t\t<developer/>\r\n\t</developers>\r\n\t<scm>\r\n\t\t<connection/>\r\n\t\t<developerConnection/>\r\n\t\t<tag/>\r\n\t\t<url/>\r\n\t</scm>\r\n\t<properties>\r\n\t\t<java.version>21</java.version>\r\n\t</properties>\r\n\t<dependencies>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-data-jpa</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-mail</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-security</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-validation</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-web</artifactId>\r\n\t\t</dependency>\r\n\r\n\t\t<!-- Environment Configuration -->\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-configuration-processor</artifactId>\r\n\t\t\t<optional>true</optional>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>me.paulschwarz</groupId>\r\n\t\t\t<artifactId>spring-dotenv</artifactId>\r\n\t\t\t<version>4.0.0</version>\r\n\t\t</dependency>\r\n\r\n\t\t<!-- PostgreSQL Driver -->\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.postgresql</groupId>\r\n\t\t\t<artifactId>postgresql</artifactId>\r\n\t\t\t<scope>runtime</scope>\r\n\t\t</dependency>\r\n\r\n\t\t<dependency>\r\n\t\t\t<groupId>com.h2database</groupId>\r\n\t\t\t<artifactId>h2</artifactId>\r\n\t\t\t<scope>runtime</scope>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.projectlombok</groupId>\r\n\t\t\t<artifactId>lombok</artifactId>\r\n\t\t\t<optional>true</optional>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-test</artifactId>\r\n\t\t\t<scope>test</scope>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.security</groupId>\r\n\t\t\t<artifactId>spring-security-test</artifactId>\r\n\t\t\t<scope>test</scope>\r\n\t\t</dependency>\r\n\t</dependencies>\r\n\r\n\t<build>\r\n\t\t<plugins>\r\n\t\t\t<plugin>\r\n\t\t\t\t<groupId>org.apache.maven.plugins</groupId>\r\n\t\t\t\t<artifactId>maven-compiler-plugin</artifactId>\r\n\t\t\t\t<configuration>\r\n\t\t\t\t\t<annotationProcessorPaths>\r\n\t\t\t\t\t\t<path>\r\n\t\t\t\t\t\t\t<groupId>org.projectlombok</groupId>\r\n\t\t\t\t\t\t\t<artifactId>lombok</artifactId>\r\n\t\t\t\t\t\t\t<version>${lombok.version}</version>\r\n\t\t\t\t\t\t</path>\r\n\t\t\t\t\t</annotationProcessorPaths>\r\n\t\t\t\t</configuration>\r\n\t\t\t</plugin>\r\n\t\t\t<plugin>\r\n\t\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t\t<artifactId>spring-boot-maven-plugin</artifactId>\r\n\t\t\t\t<configuration>\r\n\t\t\t\t\t<excludes>\r\n\t\t\t\t\t\t<exclude>\r\n\t\t\t\t\t\t\t<groupId>org.projectlombok</groupId>\r\n\t\t\t\t\t\t\t<artifactId>lombok</artifactId>\r\n\t\t\t\t\t\t</exclude>\r\n\t\t\t\t\t</excludes>\r\n\t\t\t\t</configuration>\r\n\t\t\t</plugin>\r\n\t\t</plugins>\r\n\t</build>\r\n\r\n</project>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/schedule/pom.xml b/schedule/pom.xml
+--- a/schedule/pom.xml	(revision 4e0f6feaf4e45700e8a4cd08d0636de7ae1a6ad9)
++++ b/schedule/pom.xml	(date 1745698353278)
+@@ -44,6 +44,10 @@
+ 		</dependency>
+ 		<dependency>
+ 			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-oauth2-client</artifactId>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
+ 			<artifactId>spring-boot-starter-validation</artifactId>
+ 		</dependency>
+ 		<dependency>
+Index: schedule/src/main/java/tech/project/schedule/dto/user/UserDTO.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package tech.project.schedule.dto.user;\r\n\r\nimport tech.project.schedule.model.enums.GlobalRole;\r\n\r\nimport java.util.UUID;\r\n\r\npublic record UserDTO(\r\n        UUID id,\r\n        String firstName,\r\n        String lastName,\r\n        String username,\r\n        String email,\r\n        GlobalRole globalRole\r\n) {\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/schedule/src/main/java/tech/project/schedule/dto/user/UserDTO.java b/schedule/src/main/java/tech/project/schedule/dto/user/UserDTO.java
+--- a/schedule/src/main/java/tech/project/schedule/dto/user/UserDTO.java	(revision 4e0f6feaf4e45700e8a4cd08d0636de7ae1a6ad9)
++++ b/schedule/src/main/java/tech/project/schedule/dto/user/UserDTO.java	(date 1745698372325)
+@@ -4,12 +4,15 @@
+ 
+ import java.util.UUID;
+ 
++import tech.project.schedule.model.enums.UserStatus;
++
+ public record UserDTO(
+         UUID id,
+         String firstName,
+         String lastName,
+         String username,
+         String email,
+-        GlobalRole globalRole
++        GlobalRole globalRole,
++        UserStatus userStatus
+ ) {
+ }
+\ No newline at end of file
+Index: schedule/src/main/java/tech/project/schedule/services/UserService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package tech.project.schedule.services;\r\n\r\nimport lombok.RequiredArgsConstructor;\r\nimport org.springframework.http.HttpStatus;\r\nimport org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;\r\nimport org.springframework.stereotype.Service;\r\nimport org.springframework.transaction.annotation.Transactional;\r\nimport tech.project.schedule.dto.auth.LoginRequest;\r\nimport tech.project.schedule.dto.auth.RegistrationRequest;\r\nimport tech.project.schedule.exception.ApiException;\r\nimport tech.project.schedule.model.user.User;\r\nimport tech.project.schedule.repositories.UserRepository;\r\n\r\n@Service\r\n@RequiredArgsConstructor\r\npublic class UserService {\r\n    // ToDo: add JWT tokens\r\n    private final UserRepository userRepository;\r\n    private final BCryptPasswordEncoder passwordEncoder;\r\n\r\n    private User getUserByEmail(String email) {\r\n        return userRepository.findByEmail(email).orElseThrow(\r\n                () -> new ApiException(\"User not found with provided email\",\r\n                        HttpStatus.NOT_FOUND));\r\n    }\r\n\r\n    public User login(LoginRequest loginRequest) {\r\n        User user = getUserByEmail(loginRequest.getEmail());\r\n        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {\r\n            throw new ApiException(\"Incorrect Password.\", HttpStatus.UNAUTHORIZED);\r\n        }\r\n        return user;\r\n    }\r\n\r\n    @Transactional\r\n    public String register(RegistrationRequest request) {\r\n        //ToDO: email validation, sending confirmation email\r\n\r\n        boolean emailExists = userRepository.findByEmail(request.getEmail()).isPresent();\r\n        if (emailExists) {\r\n            throw new ApiException(\"User already exists.\", HttpStatus.CONFLICT);\r\n        }\r\n        User user = new User(\r\n                request.getFirstName(),\r\n                request.getLastName(),\r\n                request.getEmail(),\r\n                passwordEncoder.encode(request.getPassword()),\r\n                request.getUsername()\r\n        );\r\n        userRepository.save(user);\r\n        return \"Registered successfully\";\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/schedule/src/main/java/tech/project/schedule/services/UserService.java b/schedule/src/main/java/tech/project/schedule/services/UserService.java
+--- a/schedule/src/main/java/tech/project/schedule/services/UserService.java	(revision 4e0f6feaf4e45700e8a4cd08d0636de7ae1a6ad9)
++++ b/schedule/src/main/java/tech/project/schedule/services/UserService.java	(date 1745698377809)
+@@ -47,7 +47,26 @@
+                 passwordEncoder.encode(request.getPassword()),
+                 request.getUsername()
+         );
++        user.setUserStatus(UserStatus.NONAUTHORIZED);
+         userRepository.save(user);
+         return "Registered successfully";
+     }
++
++    @Transactional
++    public void blockUser(Long userId) {
++        User user = userRepository.findById(userId).orElseThrow(
++                () -> new ApiException("User not found with provided id",
++                        HttpStatus.NOT_FOUND));
++        user.setUserStatus(UserStatus.BLOCKED);
++        userRepository.save(user);
++    }
++
++    @Transactional
++    public void authorizeUser(Long userId) {
++        User user = userRepository.findById(userId).orElseThrow(
++                () -> new ApiException("User not found with provided id",
++                        HttpStatus.NOT_FOUND));
++        user.setUserStatus(UserStatus.AUTHORIZED);
++        userRepository.save(user);
++    }
+ }

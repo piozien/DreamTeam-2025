@@ -85,6 +85,5 @@ public class User {
         this.username = username;
         this.globalRole = GlobalRole.CLIENT;
         this.name = firstName + " " + lastName;
-        this.userStatus = UserStatus.UNAUTHORIZED;
     }
 }

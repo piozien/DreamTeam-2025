@@ -8,6 +8,7 @@ import java.util.UUID;
  * following authentication.
  */
 public record LoginResponseDTO(
+        String token,
         UUID id,
         String email,
         String name,
