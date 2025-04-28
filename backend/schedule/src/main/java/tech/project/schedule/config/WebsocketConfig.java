@@ -1,4 +1,4 @@
-package tech.project.schedule.websocket;
+package tech.project.schedule.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

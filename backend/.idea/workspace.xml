@@ -6,7 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/NotificationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/NotificationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/ScheduleApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/ScheduleApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/websocket/WebsocketConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/config/WebsocketConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" afterDir="false" />
     </list>
     <list id="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" name="Changes by tomci" comment="" />
@@ -41,34 +43,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.ScheduleApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Maven.Unknown [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.schedule [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.schedule [install].executor&quot;: &quot;Run&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Spring Boot.ScheduleApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;connect-notif-calendar&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/uwm/rok3/semestr6/DreamTeam-2025/backend&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.ScheduleApplication.executor": "Run",
+    "Maven.Unknown [clean].executor": "Run",
+    "Maven.schedule [clean].executor": "Run",
+    "Maven.schedule [install].executor": "Run",
+    "Maven.schedule [test].executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.ScheduleApplication.executor": "Run",
+    "git-widget-placeholder": "connect-notif-calendar",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/bundam/Desktop/git_uwm/DreamTeam-2025/backend",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
-  <component name="RunManager" selected="Application.ScheduleApplication">
+}]]></component>
+  <component name="RunManager" selected="Spring Boot.ScheduleApplication">
     <configuration default="true" type="AZURE_FUNCTION_SUPPORT" factoryName="Run Functions">
       <option name="appName" />
       <option name="appServicePlanName" />
@@ -100,6 +103,8 @@
       </method>
     </configuration>
     <configuration name="ScheduleApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="ALTERNATIVE_JRE_PATH" value="graalvm-jdk-21" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <option name="MAIN_CLASS_NAME" value="tech.project.schedule.ScheduleApplication" />
       <module name="schedule" />
       <extension name="coverage">
@@ -113,12 +118,33 @@
       </method>
     </configuration>
     <configuration name="ScheduleApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="ALTERNATIVE_JRE_PATH" value="graalvm-jdk-21" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <envs>
+        <env name="DB_URL" value="jdbc:postgresql://dpg-cvknnofgi27c73ba4kpg-a.frankfurt-postgres.render.com/dreambase" />
+        <env name="DB_USERNAME" value="root" />
+        <env name="DB_PASSWORD" value="4uYZ1HE3Rv4ovk83agGM77Mz37wDQuJ8" />
+        <env name="SERVER_PORT" value="8080" />
+        <env name="SPRING_PROFILES_ACTIVE" value="dev" />
+        <env name="FRONTEND_URL" value="http://localhost:4200" />
+        <env name="MAIL_HOST" value="sandbox.smtp.mailtrap.io" />
+        <env name="MAIL_USERNAME" value="f4b9b31f4c7610" />
+        <env name="MAIL_PASSWORD" value="ef4ec5878e244f" />
+        <env name="GOOGLE_CLIENT_ID" value="604871735498-5k70tjcr7ddac71ruv2cqgu7s87l0rl2.apps.googleusercontent.com" />
+        <env name="GOOGLE_CLIENT_SECRET" value="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" />
+        <env name="JWT_SECRET" value="ZJzN9s2EK0Hhyik9rD27PQT5nU/Nt1tNwKMVSrSGR/I=" />
+        <env name="JWT_EXP" value="3600000" />
+      </envs>
       <module name="schedule" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="tech.project.schedule.ScheduleApplication" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="Application.ScheduleApplication" />
+      <item itemvalue="Spring Boot.ScheduleApplication" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Application.ScheduleApplication" />
@@ -163,6 +189,7 @@
       <workItem from="1745747134424" duration="2701000" />
       <workItem from="1745755341658" duration="1992000" />
       <workItem from="1745757902685" duration="3109000" />
+      <workItem from="1745826777374" duration="4654000" />
     </task>
     <servers />
   </component>
