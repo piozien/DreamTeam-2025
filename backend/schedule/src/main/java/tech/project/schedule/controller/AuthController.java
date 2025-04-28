@@ -96,7 +96,6 @@ public class AuthController {
         return new RedirectView(redirectUrl);
     }
 
-
       /**
      * Registers a new user in the system.
      * 

@@ -9,10 +9,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.dto.auth.LoginRequest;
 import tech.project.schedule.dto.auth.RegistrationRequest;
+import tech.project.schedule.dto.user.ChangeGlobalRoleRequest;
 import tech.project.schedule.exception.ApiException;
+import tech.project.schedule.model.enums.GlobalRole;
 import tech.project.schedule.model.enums.UserStatus;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
+
+import java.util.UUID;
 
 /**
  * Service class for managing user authentication and registration.
@@ -139,6 +143,26 @@ public class UserService {
                 () -> new ApiException("User not found with provided id",
                         HttpStatus.NOT_FOUND));
         user.setUserStatus(UserStatus.AUTHORIZED);
+        userRepository.save(user);
+    }
+
+    /**
+     * Changes the global role of a user using a DTO request.
+     * Throws ApiException if user not found or role is invalid.
+     *
+     * @param request DTO containing userId and newRole
+     */
+    @Transactional
+    public void changeGlobalRole(ChangeGlobalRoleRequest request) {
+        User user = userRepository.findById(request.userId)
+                .orElseThrow(() -> new ApiException("User not found with provided id", HttpStatus.NOT_FOUND));
+        try {
+            GlobalRole roleEnum =
+                GlobalRole.valueOf(request.newRole.toUpperCase());
+            user.setGlobalRole(roleEnum);
+        } catch (IllegalArgumentException e) {
+            throw new ApiException("Invalid global role: " + request.newRole, HttpStatus.BAD_REQUEST);
+        }
         userRepository.save(user);
     }
 }
