@@ -52,8 +52,17 @@ public class AuthController {
         String email = principal.getEmail();
         String firstName = principal.getGivenName();
         String lastName = principal.getFamilyName();
-        // Use email prefix or another logic for username if needed
-        String username = principal.getPreferredUsername() != null ? principal.getPreferredUsername() : email.split("@")[0];
+        // Try to get full name if firstName or lastName are missing
+        if ((firstName == null || firstName.isBlank() || lastName == null || lastName.isBlank()) && principal.getAttribute("name") != null) {
+            String[] split = principal.getAttribute("name").split(" ", 2);
+            if (firstName == null || firstName.isBlank()) firstName = split[0];
+            if ((lastName == null || lastName.isBlank()) && split.length > 1) lastName = split[1];
+        }
+        // Use nickname if present, otherwise email as username
+        String username = principal.getPreferredUsername();
+        if (username == null || username.isBlank()) {
+            username = email;
+        }
 
         // Find or create user logic (keep as is)
         Optional<tech.project.schedule.model.user.User> userOpt = userRepository.findByEmail(email);

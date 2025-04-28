@@ -144,15 +144,16 @@ public class ProjectService {
         project.addMember(user.getId(), newMember);
         
         projectRepository.save(project);
+        ProjectMember savedMember = project.getMembers().get(user.getId());
         notificationService.sendNotification(
-                newMember.getUser().getId(),
+                savedMember.getUser().getId(),
                 Notification.builder()
-                        .user(newMember.getUser())
+                        .user(savedMember.getUser())
                         .status(NotificationStatus.PROJECT_MEMBER_ADDED)
                         .message("You have been added to this project: " + newMember.getProject().getName())
                         .build()
         );
-        return newMember;
+        return savedMember;
     }
     
     @Transactional
