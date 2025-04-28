@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.model.notification.Notification;
-import tech.project.schedule.repositories.TaskAssigneeRepository;
 
 import java.util.UUID;
 @Service
