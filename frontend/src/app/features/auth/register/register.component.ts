@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../../shared/services/auth.service';
-import { UserCreate, GlobalRole } from '../../../shared/models/user.model';
+import { UserCreate } from '../../../shared/models/user.model';
+import { GlobalRole } from '../../../shared/enums/global-role.enum';
 
 @Component({
   selector: 'app-register',
@@ -20,7 +21,7 @@ export class RegisterComponent {
   user: UserCreate = {
     email: '', 
     password: '',
-    userName: '',
+    username: '',
     firstName: '',
     lastName: '',
   };
@@ -36,36 +37,40 @@ export class RegisterComponent {
     console.log('Form submitted:', this.user);
     
     // Basic form validation
-    if (!this.user.email || !this.user.password || !this.user.userName || !this.user.firstName || !this.user.lastName) {
+    if (!this.user.email || !this.user.password || !this.user.username || !this.user.firstName || !this.user.lastName) {
       this.errorMessage = 'Wypełnij wszystkie wymagane pola';
       this.isLoading = false;
       return;
     }
     
-    this.authService.register(
-      this.user.userName, 
-      this.user.firstName, 
-      this.user.lastName, 
-      this.user.password, 
-      this.user.email
-    ).subscribe({
+    // Create an object matching what the register method expects (for compatibility)
+    const registerData = {
+      userName: this.user.username,
+      firstName: this.user.firstName,
+      lastName: this.user.lastName,
+      password: this.user.password,
+      email: this.user.email,
+      globalRole: GlobalRole.USER
+    };
+    
+    this.authService.register(registerData).subscribe({
       next: () => {
         console.log('Registration successful');
         this.isLoading = false;
-        this.router.navigate(['/']);
+        this.router.navigate(['/auth/login']);
       },
-      error: (error) => {
-        console.error('Register failed:', error);
+      error: (error: any) => {
+        console.error('Registration failed:', error);
         this.isLoading = false;
         
-        if (error.status === 500) {
-          this.errorMessage = 'Błąd serwera. Spróbuj ponownie później.';
+        if (error.status === 400) {
+          this.errorMessage = 'Nieprawidłowe dane - sprawdź wszystkie pola';
         } else if (error.status === 409) {
-          this.errorMessage = 'Użytkownik o podanym adresie email już istnieje.';
-        } else if (error.status === 400) {
-          this.errorMessage = 'Nieprawidłowe dane. Sprawdź wprowadzone informacje.';
+          this.errorMessage = 'Użytkownik o podanym adresie email już istnieje';
+        } else if (error.status === 403) {
+          this.errorMessage = 'Tylko administrator może tworzyć nowych użytkowników';
         } else {
-          this.errorMessage = 'Wystąpił błąd podczas rejestracji. Spróbuj ponownie.';
+          this.errorMessage = 'Błąd rejestracji. Spróbuj ponownie później.';
         }
       }
     });

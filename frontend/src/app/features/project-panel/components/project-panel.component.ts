@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,6 +14,7 @@ import { Project, ProjectCreate, ProjectUserRole } from '../../../shared/models/
 import { ProjectService } from '../../../shared/services/project.service';
 import { ProjectDialogComponent } from './project-dialog/project-dialog.component';
 import { Subscription } from 'rxjs';
+
 
 const MY_DATE_FORMATS = {
   parse: {

@@ -9,9 +9,9 @@
   <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
     <div class="mb-3">
       <label for="userName" class="form-label">Nazwa użytkownika</label>
-      <input type="text" class="form-control" id="userName" name="userName" [(ngModel)]="user.userName" required
-             [class.is-invalid]="errorMessage && !user.userName">
-      <div class="invalid-feedback" *ngIf="errorMessage && !user.userName">
+      <input type="text" class="form-control" id="userName" name="userName" [(ngModel)]="user.username" required
+             [class.is-invalid]="errorMessage && !user.username">
+      <div class="invalid-feedback" *ngIf="errorMessage && !user.username">
         Nazwa użytkownika jest wymagana
       </div>
     </div>

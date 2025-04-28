@@ -29,7 +29,7 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit(): void {
     // Subscribe to the authentication state changes
-    this.authService.currentUser$.subscribe(user => {
+    this.authService.currentUser$.subscribe((user: User | null) => {
       this.currentUser = user;
       this.isLoggedIn = !!user;
     });

@@ -20,7 +20,7 @@
           <!-- Show when user is logged in -->
           <ng-container *ngIf="isLoggedIn">
             <span class="user-info me-2" *ngIf="currentUser">
-              <mat-icon>person</mat-icon> {{ currentUser.firstName }}
+              <mat-icon>person</mat-icon> {{ currentUser.name }}
             </span>
             <button mat-button (click)="logout()" class="logout-btn">
               <mat-icon class="me-1">logout</mat-icon> Wyloguj

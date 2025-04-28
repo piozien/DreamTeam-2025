@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../../shared/services/auth.service';
-import { UserLogin} from '../../../shared/models/user.model';
+import { UserLogin } from '../../../shared/models/user.model';
 
 @Component({
   selector: 'app-login',
@@ -24,6 +24,7 @@ export class LoginComponent {
   
   errorMessage: string = '';
   isLoading: boolean = false;
+  isGoogleLoading: boolean = false;
   
   onSubmit(): void {
     // Reset any previous error messages
@@ -59,5 +60,16 @@ export class LoginComponent {
         }
       }
     });
+  }
+
+  /**
+   * Initiates Google OAuth login by redirecting to the backend's OAuth endpoint
+   */
+  loginWithGoogle(): void {
+    this.isGoogleLoading = true;
+    this.errorMessage = '';
+    
+    // Call the service method that will redirect to Google OAuth
+    this.authService.loginWithGoogle();
   }
 }

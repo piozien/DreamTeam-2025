@@ -3,7 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Project, ProjectCreate, ProjectMemberDTO, ProjectUserRole, AddProjectMemberDTO, UpdateProjectMemberRoleDTO } from '../models/project.model';
-import { User, GlobalRole } from '../models/user.model';
+import { User } from '../models/user.model';
+import { GlobalRole } from '../enums/global-role.enum';
 import { AuthService } from './auth.service';
 import { DatePipe } from '@angular/common';
 
@@ -20,10 +21,10 @@ export class ProjectService {
   ) {}
 
   private getUserParams(): HttpParams {
-    const currentUser = this.authService.getCurrentUser()
+    const currentUser = this.authService.getUserId();
     let params = new HttpParams();
     if (currentUser) {
-      params = params.set('userId', currentUser.id)
+      params = params.set('userId', currentUser);
     }
     return params;
   }

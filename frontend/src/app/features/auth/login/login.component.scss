@@ -122,3 +122,60 @@ h2 {
   height: 1rem;
   border-width: 0.15em;
 }
+
+// Separator between regular login and social login options
+.separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #777;
+  
+  &:before,
+  &:after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid $border-color;
+  }
+  
+  &:before {
+    margin-right: 1rem;
+  }
+  
+  &:after {
+    margin-left: 1rem;
+  }
+  
+  span {
+    font-size: 0.9rem;
+  }
+}
+
+// Social login buttons
+.social-login {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-google {
+  background-color: #fff;
+  color: #757575;
+  border: 1px solid #ddd;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  
+  &:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+  }
+  
+  i {
+    font-size: 1.2rem;
+  }
+}

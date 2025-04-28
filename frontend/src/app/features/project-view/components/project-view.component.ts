@@ -142,7 +142,7 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    const userId = this.authService.getCurrentUser()?.id;
+    const userId = this.authService.getUserId();
     if (!userId) {
       console.error('No current user found');
       return;
@@ -293,7 +293,7 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
       this.isAddingTask = false;
       
       if (result && this.projectId) {
-        const userId = this.authService.getCurrentUser()?.id || '';
+        const userId = this.authService.getUserId() || '';
         
         console.log('Attempting to create task with data:', JSON.stringify(result, null, 2));
         console.log('Using userId:', userId);
@@ -345,7 +345,7 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
     
     dialogRef.afterClosed().subscribe(result => {
       if (result && this.projectId) {
-        const userId = this.authService.getCurrentUser()?.id || '';
+        const userId = this.authService.getUserId() || '';
         const updatedTask = {
           ...result,
           id: task.id
