@@ -6,13 +6,7 @@ import tech.project.schedule.model.user.User;
 
 import java.util.Optional;
 import java.util.UUID;
-
-/**
- * Repository interface for managing User entities in the database.
- * Extends JpaRepository to inherit standard data operations and provides
- * additional methods for user-specific queries.
- */
-@Repository
+    @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
 
      /**
