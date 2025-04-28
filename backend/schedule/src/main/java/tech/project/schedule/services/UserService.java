@@ -14,9 +14,11 @@ import tech.project.schedule.model.enums.UserStatus;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
 
-import java.util.UUID;
-
-
+/**
+ * Service class for managing user authentication and registration.
+ * Handles user login verification, new user registration, and implements
+ * security measures like password encryption.
+ */
 @Service
 @RequiredArgsConstructor
 
@@ -31,12 +33,27 @@ public class UserService {
     @Value("${frontend.reset.base-url:http://localhost:4200}")
     private String frontendResetBaseUrl;
 
+    /**
+     * Retrieves a user by their email address.
+     * 
+     * @param email The email address to search for
+     * @return The user entity if found
+     * @throws ApiException if no user exists with the provided email
+     */
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(
                 () -> new ApiException("User not found with provided email",
                         HttpStatus.NOT_FOUND));
     }
 
+     /**
+     * Authenticates a user based on email and password.
+     * Verifies that the password matches the stored hash.
+     * 
+     * @param loginRequest DTO containing login credentials
+     * @return The authenticated user entity
+     * @throws ApiException if user not found or password is incorrect
+     */
     public User login(LoginRequest loginRequest) {
         User user = getUserByEmail(loginRequest.email());
         if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
@@ -45,12 +62,6 @@ public class UserService {
         return user;
     }
 
-    /**
-     * Sets a new password for the user identified by email.
-     * @param email The email of the user whose password is to be set
-     * @param newPassword The new password to set (plain text)
-     * @throws ApiException if user is not found
-     */
     @Transactional
     public void setPassword(String email, String newPassword) {
         User user = userRepository.findByEmail(email)

@@ -9,7 +9,11 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
-
+/**
+ * Data Transfer Object specifically designed for task creation requests.
+ * Contains all the necessary fields required to create a new task in the system,
+ * with validation constraints applied to required fields.
+ */
 public record TaskRequestDTO(
         @NotNull(message = "Project ID is required")
         UUID projectId,

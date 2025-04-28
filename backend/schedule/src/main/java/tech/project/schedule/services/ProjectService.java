@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
-import tech.project.schedule.model.enums.*;
-import tech.project.schedule.model.notification.Notification;
+import tech.project.schedule.model.enums.GlobalRole;
+import tech.project.schedule.model.enums.ProjectStatus;
+import tech.project.schedule.model.enums.ProjectUserRole;
+import tech.project.schedule.model.enums.TaskStatus;
 import tech.project.schedule.model.project.Project;
 import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.model.project.ProjectMember;
@@ -20,13 +22,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-
+/**
+ * Service class for managing project-related operations.
+ * Provides business logic for project creation, management, and access control,
+ * enforcing rules regarding project status, member roles, and operation permissions.
+ */
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
-    private final NotificationService notificationService;
     private final ProjectRepository projectRepository;
 
+    /**
+     * Creates a new project with the current user as the Project Manager.
+     * Sets project status based on start date and assigns the creator as PM.
+     *
+     * @param project The project entity to be created
+     * @param user The user creating the project
+     * @return The newly created project
+     * @throws ApiException if a project with the same name exists or required fields are missing
+     */
     @Transactional
     public Project createProject(Project project, User user) {
         if (projectRepository.existsByName(project.getName())) {
@@ -52,6 +66,17 @@ public class ProjectService {
         return projectRepository.save(newProject);
     }
 
+    /**
+     * Updates an existing project's details.
+     * Only Project Managers can update projects, and completion status is only
+     * allowed when all tasks are finished.
+     *
+     * @param projectId The ID of the project to update
+     * @param updatedProject Project entity containing the updated values
+     * @param user The user attempting the update operation
+     * @return The updated project
+     * @throws ApiException if project not found, user lacks permission, or business rules are violated
+     */
     @Transactional
     public Project updateProject(UUID projectId, Project updatedProject, User user) {
         Project existingProject = projectRepository.findById(projectId)
@@ -93,6 +118,14 @@ public class ProjectService {
         return projectRepository.save(existingProject);
     }
 
+    /**
+     * Deletes a project.
+     * Only Project Managers can delete projects.
+     *
+     * @param projectId The ID of the project to delete
+     * @param user The user attempting the delete operation
+     * @throws ApiException if project not found or user lacks permission
+     */
     @Transactional
     public void deleteProject(UUID projectId, User user) {
         Project project = projectRepository.findById(projectId)
@@ -108,7 +141,16 @@ public class ProjectService {
         
         projectRepository.deleteById(projectId);
     }
-    
+
+    /**
+     * Retrieves a project by its ID, with access control.
+     * Only members of the project can view its details.
+     *
+     * @param projectId The ID of the project to retrieve
+     * @param user The user attempting to access the project
+     * @return The requested project
+     * @throws ApiException if project not found or user lacks permission
+     */
     public Project getProjectById(UUID projectId, User user) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
@@ -123,7 +165,18 @@ public class ProjectService {
         
         return project;
     }
-    
+
+    /**
+     * Adds a new member to a project.
+     * Only Project Managers can add members, and users can't be added twice.
+     *
+     * @param projectId The ID of the project
+     * @param user The user to add to the project
+     * @param role The role to assign to the new member
+     * @param principal The user performing the operation
+     * @return The created project member entity
+     * @throws ApiException if project not found, user lacks permission, or user is already a member
+     */
     @Transactional
     public ProjectMember addMemberToProject(UUID projectId, User user, ProjectUserRole role, User principal) {
         Project project = projectRepository.findById(projectId)
@@ -145,17 +198,18 @@ public class ProjectService {
         project.addMember(user.getId(), newMember);
         
         projectRepository.save(project);
-        notificationService.sendNotification(
-                newMember.getUser().getId(),
-                Notification.builder()
-                        .user(newMember.getUser())
-                        .status(NotificationStatus.PROJECT_MEMBER_ADDED)
-                        .message("You have been added to this project: " + newMember.getProject().getName())
-                        .build()
-        );
         return newMember;
     }
-    
+
+    /**
+     * Removes a member from a project.
+     * Only Project Managers can remove members, and the last PM cannot be removed.
+     *
+     * @param projectId The ID of the project
+     * @param userId The ID of the user to remove
+     * @param currentUser The user performing the operation
+     * @throws ApiException if project not found, user lacks permission, user not found, or removing the last PM
+     */
     @Transactional
     public void removeMemberFromProject(UUID projectId, UUID userId, User currentUser) {
         Project project = projectRepository.findById(projectId)
@@ -184,7 +238,18 @@ public class ProjectService {
         project.getMembers().remove(userId);
         projectRepository.save(project);
     }
-    
+
+    /**
+     * Updates a project member's role.
+     * Only Project Managers can update roles, and the last PM cannot be demoted.
+     *
+     * @param projectId The ID of the project
+     * @param userId The ID of the user whose role is being updated
+     * @param newRole The new role to assign
+     * @param currentUser The user performing the operation
+     * @return The updated project member entity
+     * @throws ApiException if project not found, user lacks permission, user not found, or demoting the last PM
+     */
     @Transactional
     public ProjectMember updateMemberRole(UUID projectId, UUID userId, ProjectUserRole newRole, User currentUser) {
         Project project = projectRepository.findById(projectId)
@@ -214,7 +279,16 @@ public class ProjectService {
         projectRepository.save(project);
         return member;
     }
-    
+
+    /**
+     * Retrieves all members of a project.
+     * Only project members, PMs, and admins can view the member list.
+     *
+     * @param projectId The ID of the project
+     * @param currentUser The user attempting to access the member list
+     * @return Map of user IDs to project member entities
+     * @throws ApiException if project not found or user lacks permission
+     */
     public Map<UUID, ProjectMember> getProjectMembers(UUID projectId, User currentUser) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
@@ -231,6 +305,13 @@ public class ProjectService {
         return project.getMembers();
     }
     
+    /**
+     * Retrieves all projects associated with a user.
+     * Admins can see all projects, while regular users see only their own.
+     *
+     * @param user The user whose projects are being retrieved
+     * @return List of projects associated with the user
+     */
     public List<Project> getUserProjects(User user) {
         boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
         

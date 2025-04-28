@@ -7,6 +7,12 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Data Transfer Object specifically designed for task update operations.
+ * Contains all modifiable fields of a task to support partial or complete updates.
+ * Unlike the task creation DTO, validation constraints are not applied since
+ * fields may be intentionally null when not being updated.
+ */
 public record TaskUpdateDTO(
         UUID id,
         UUID projectId,
