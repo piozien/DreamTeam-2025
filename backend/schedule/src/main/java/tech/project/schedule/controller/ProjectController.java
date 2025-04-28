@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import tech.project.schedule.dto.project.AddProjectMemberDTO;
 import tech.project.schedule.dto.project.ProjectDTO;
 import tech.project.schedule.dto.project.ProjectMemberDTO;
-import tech.project.schedule.dto.project.ProjectUpdateDTO;
 import tech.project.schedule.dto.project.UpdateProjectMemberRoleDTO;
 import tech.project.schedule.dto.mappers.ProjectMapper;
 import tech.project.schedule.exception.ApiException;

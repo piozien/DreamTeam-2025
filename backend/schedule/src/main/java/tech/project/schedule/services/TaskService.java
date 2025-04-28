@@ -5,10 +5,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.exception.ApiException;
+import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.enums.ProjectUserRole;
 import tech.project.schedule.model.enums.TaskStatus;
+import tech.project.schedule.model.notification.Notification;
 import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.task.Task;
+import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.services.utils.GetProjectRole;
 import java.time.LocalDate;
@@ -21,27 +24,14 @@ import tech.project.schedule.repositories.ProjectRepository;
 import tech.project.schedule.repositories.TaskRepository;
 
 
-/**
- * Service class for managing tasks within the scheduling system.
- * Provides core functionality for creating, retrieving, updating, and deleting tasks,
- * with appropriate permission checks and business rule validations.
- */
+
 @Service
 @RequiredArgsConstructor
 public class TaskService {
+    private final NotificationService notificationService;
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
 
-    /**
-     * Creates a new task within a project.
-     * Validates that the user has permission to create tasks in the project
-     * and that the task dates are valid relative to the project timeline.
-     *
-     * @param task The task entity to create
-     * @param user The user creating the task
-     * @return The newly created task
-     * @throws ApiException if project not found, user lacks permission, or task dates are invalid
-     */
     @Transactional
     public Task createTask(Task task, User user){
 
@@ -68,17 +58,6 @@ public class TaskService {
         return newTask;
     }
 
-    /**
-     * Updates an existing task with new information.
-     * Only project managers and users assigned to the task can update it.
-     * Manages task completion by automatically setting end date when status changes.
-     *
-     * @param updatedTask The task entity containing updated values
-     * @param taskId The ID of the task to update
-     * @param user The user performing the update
-     * @return The updated task entity
-     * @throws ApiException if task not found, user lacks permission, or update violates business rules
-     */
     @Transactional
     public Task updateTask(Task updatedTask, UUID taskId, User user) {
 
@@ -122,18 +101,21 @@ public class TaskService {
             }
             existingTask.setStatus(updatedTask.getStatus());
         }
-
-        return taskRepository.save(existingTask);
+        var saved = taskRepository.save(existingTask);
+        NotificationStatus statusNot = existingTask.getStatus() == TaskStatus.FINISHED  ? NotificationStatus.TASK_COMPLETED : NotificationStatus.TASK_UPDATED;
+        for(TaskAssignee assignee :  existingTask.getAssignees()) {
+            notificationService.sendNotification(
+                    assignee.getUser().getId(),
+                    Notification.builder()
+                            .user(assignee.getUser())
+                            .status(statusNot)
+                            .message("Task " + existingTask.getName() + " has been updated.")
+                            .build()
+            );
+        }
+        return saved;
     }
 
-    /**
-     * Deletes a task from the system.
-     * Only project managers can delete tasks.
-     *
-     * @param taskId The ID of the task to delete
-     * @param user The user attempting to delete the task
-     * @throws ApiException if task not found or user lacks permission
-     */
     @Transactional
     public void deleteTask(UUID taskId, User user){
         Task task = taskRepository.findById(taskId)
@@ -144,16 +126,7 @@ public class TaskService {
         }
         taskRepository.deleteById(taskId);
     }
-
-    /**
-     * Retrieves a task by its ID.
-     * Only project members and users assigned to the task can view it.
-     *
-     * @param taskId The ID of the task to retrieve
-     * @param user The user requesting the task
-     * @return The requested task entity
-     * @throws ApiException if task not found or user lacks permission
-     */
+    
     public Task getTaskById(UUID taskId, User user) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
@@ -168,16 +141,7 @@ public class TaskService {
         
         return task;
     }
-
-    /**
-     * Retrieves all tasks for a specific project.
-     * Only project members can view project tasks.
-     *
-     * @param projectId The ID of the project
-     * @param user The user requesting the tasks
-     * @return List of tasks in the specified project
-     * @throws ApiException if project not found or user lacks permission
-     */
+    
     public List<Task> getTasksByProject(UUID projectId, User user) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
