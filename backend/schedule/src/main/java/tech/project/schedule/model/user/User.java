@@ -122,6 +122,10 @@ public class User {
     @EqualsAndHashCode.Exclude
     private Set<Notification> notifications;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_status", nullable = false)
+    private UserStatus userStatus = UserStatus.UNAUTHORIZED;
+
     public User(String firstName, String lastName,
                 String email, String password,
                 String username) {
