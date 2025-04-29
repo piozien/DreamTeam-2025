@@ -44,7 +44,7 @@ public class AuthController {
 
 
     @GetMapping("/oauth2-success")
-    public RedirectView oauth2Success(@AuthenticationPrincipal OidcUser principal) { // Change return type
+    public RedirectView oauth2Success(@AuthenticationPrincipal OidcUser principal) {
         if (principal == null) {
             // Redirect to login page with an error maybe?
             return new RedirectView("http://localhost:4200/auth/login?error=oauth_failed");
@@ -53,10 +53,15 @@ public class AuthController {
         String firstName = principal.getGivenName();
         String lastName = principal.getFamilyName();
         // Try to get full name if firstName or lastName are missing
-        if ((firstName == null || firstName.isBlank() || lastName == null || lastName.isBlank()) && principal.getAttribute("name") != null) {
-            String[] split = principal.getAttribute("name").split(" ", 2);
-            if (firstName == null || firstName.isBlank()) firstName = split[0];
-            if ((lastName == null || lastName.isBlank()) && split.length > 1) lastName = split[1];
+        Object nameObj = principal.getAttribute("name");
+        if ((firstName == null || firstName.isBlank() || lastName == null || lastName.isBlank()) && nameObj != null) {
+            String nameAttr = nameObj.toString();
+            if (!nameAttr.isBlank()) {
+                String[] split = nameAttr.trim().split(" ", 2);
+                if (firstName == null || firstName.isBlank()) firstName = split[0];
+                if ((lastName == null || lastName.isBlank()) && split.length > 1) lastName = split[1];
+                if ((lastName == null || lastName.isBlank()) && split.length == 1) lastName = "";
+            }
         }
         // Use nickname if present, otherwise email as username
         String username = principal.getPreferredUsername();
