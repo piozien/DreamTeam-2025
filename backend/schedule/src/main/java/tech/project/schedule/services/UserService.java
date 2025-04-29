@@ -128,14 +128,6 @@ public class UserService {
         mailService.sendRegistrationConfirmation(user.getEmail(), MailContent.PASSWORD_RESET_SUBJECT, mailText);
     }
 
-    @Transactional
-    public void blockUser(UUID userId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new ApiException("User not found with provided id",
-                        HttpStatus.NOT_FOUND));
-        user.setUserStatus(UserStatus.BLOCKED);
-        userRepository.save(user);
-    }
 
     @Transactional
     public void authorizeUser(UUID userId) {

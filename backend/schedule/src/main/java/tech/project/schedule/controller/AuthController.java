@@ -13,8 +13,11 @@ import tech.project.schedule.dto.auth.LoginResponseDTO;
 import tech.project.schedule.dto.auth.RegistrationRequest;
 import tech.project.schedule.dto.auth.RegistrationResponseDTO;
 import tech.project.schedule.dto.auth.SetPasswordRequest;
+import tech.project.schedule.dto.user.ChangeGlobalRoleRequest;
 import tech.project.schedule.dto.user.UserDTO;
 import tech.project.schedule.exception.ApiException;
+import tech.project.schedule.model.enums.GlobalRole;
+import tech.project.schedule.model.enums.UserStatus;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
 import tech.project.schedule.services.UserService;
@@ -78,8 +81,8 @@ public class AuthController {
             user.setFirstName(firstName != null ? firstName : user.getFirstName());
             user.setLastName(lastName != null ? lastName : user.getLastName());
             // Ensure status is AUTHORIZED if they login successfully
-            if (user.getUserStatus() == tech.project.schedule.model.enums.UserStatus.UNAUTHORIZED) {
-                user.setUserStatus(tech.project.schedule.model.enums.UserStatus.AUTHORIZED);
+            if (user.getUserStatus() == UserStatus.UNAUTHORIZED) {
+                user.setUserStatus(UserStatus.AUTHORIZED);
             }
             userRepository.save(user);
         } else {
@@ -90,8 +93,8 @@ public class AuthController {
                     "", // No password needed for OAuth users initially
                     username
             );
-            user.setUserStatus(tech.project.schedule.model.enums.UserStatus.AUTHORIZED); // New users via OAuth are authorized
-            user.setGlobalRole(tech.project.schedule.model.enums.GlobalRole.CLIENT); // Default role
+            user.setUserStatus(UserStatus.AUTHORIZED); // New users via OAuth are authorized
+            user.setGlobalRole(GlobalRole.CLIENT); // Default role
             userRepository.save(user);
         }
 
@@ -110,7 +113,7 @@ public class AuthController {
         return new RedirectView(redirectUrl);
     }
 
-      /**
+    /**
      * Registers a new user in the system.
      * 
      * @param request Object containing user registration data
@@ -126,14 +129,14 @@ public class AuthController {
         request.firstName(),
         request.lastName(),
         request.email(),
-        tech.project.schedule.model.enums.GlobalRole.ADMIN
+        GlobalRole.ADMIN
     );
     String result = userService.register(adminRequest);
     return ResponseEntity.ok(new RegistrationResponseDTO("First admin registered! (temporary logic, remove after init)"));
 }
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new ApiException("Admin user not found", HttpStatus.NOT_FOUND));
-        if (admin.getGlobalRole() != tech.project.schedule.model.enums.GlobalRole.ADMIN) {
+        if (admin.getGlobalRole() != GlobalRole.ADMIN) {
             throw new ApiException("Only ADMIN can register new users", HttpStatus.FORBIDDEN);
         }
         String result = userService.register(request);
@@ -176,7 +179,7 @@ public class AuthController {
 public ResponseEntity<String> requestPasswordReset(@RequestBody SetPasswordRequest request) {
     // Always return OK for privacy (do not leak user existence/status)
     userRepository.findByEmail(request.email()).ifPresent(user -> {
-        if (user.getUserStatus() != tech.project.schedule.model.enums.UserStatus.BLOCKED) {
+        if (user.getUserStatus() != UserStatus.BLOCKED) {
             userService.sendPasswordResetEmail(user);
         }
     });
@@ -195,7 +198,7 @@ public ResponseEntity<String> requestPasswordReset(@RequestBody SetPasswordReque
     public ResponseEntity<String> setPassword(@Valid @RequestBody SetPasswordRequest request) {
         User user = userRepository.findByEmail(request.email())
             .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-        if (user.getUserStatus() == tech.project.schedule.model.enums.UserStatus.BLOCKED) {
+        if (user.getUserStatus() == UserStatus.BLOCKED) {
             throw new ApiException("Blocked users cannot change password", HttpStatus.FORBIDDEN);
         }
         userService.setPassword(request.email(), request.newPassword());
@@ -230,14 +233,14 @@ public ResponseEntity<String> requestPasswordReset(@RequestBody SetPasswordReque
         User currentUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
         UserUtils.assertAuthorized(currentUser);
-        if (currentUser.getUserStatus() == tech.project.schedule.model.enums.UserStatus.BLOCKED) {
+        if (currentUser.getUserStatus() == UserStatus.BLOCKED) {
             throw new ApiException("User is blocked and cannot perform this action", HttpStatus.FORBIDDEN);
         }
 
         List<User> users = userRepository.findAll();
-        if (currentUser.getGlobalRole() != tech.project.schedule.model.enums.GlobalRole.ADMIN) {
+        if (currentUser.getGlobalRole() != GlobalRole.ADMIN) {
             users = users.stream()
-                    .filter(user -> user.getUserStatus() == tech.project.schedule.model.enums.UserStatus.AUTHORIZED)
+                    .filter(user -> user.getUserStatus() == UserStatus.AUTHORIZED)
                     .toList();
         }
 
@@ -249,7 +252,7 @@ public ResponseEntity<String> requestPasswordReset(@RequestBody SetPasswordReque
                         user.getUsername(),
                         user.getEmail(),
                         user.getGlobalRole(),
-                        currentUser.getGlobalRole() == tech.project.schedule.model.enums.GlobalRole.ADMIN ? user.getUserStatus() : null
+                        currentUser.getGlobalRole() == GlobalRole.ADMIN ? user.getUserStatus() : null
                 ))
                 .toList();
 
@@ -269,10 +272,39 @@ public ResponseEntity<String> requestPasswordReset(@RequestBody SetPasswordReque
             @RequestParam String email) {
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new ApiException("Admin user not found", HttpStatus.NOT_FOUND));
-        if (admin.getGlobalRole() != tech.project.schedule.model.enums.GlobalRole.ADMIN) {
+        if (admin.getGlobalRole() != GlobalRole.ADMIN) {
             throw new ApiException("Only ADMIN can block users", HttpStatus.FORBIDDEN);
         }
         userService.blockUser(email);
         return ResponseEntity.ok("User blocked successfully.");
+    }
+    /**
+     * Changes the global role of a user. Only ADMIN can perform this action.
+     */
+    @PostMapping("/change-global-role")
+    public ResponseEntity<String> changeGlobalRole(@RequestParam UUID adminId,
+                                                   @RequestBody ChangeGlobalRoleRequest request) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new ApiException("Admin user not found", HttpStatus.NOT_FOUND));
+        if (admin.getGlobalRole() != GlobalRole.ADMIN) {
+            throw new ApiException("Only ADMIN can change global roles", HttpStatus.FORBIDDEN);
+        }
+        userService.changeGlobalRole(request);
+        return ResponseEntity.ok("Global role changed successfully");
+    }
+
+    /**
+     * Authorizes a user (sets status to AUTHORIZED). Only ADMIN can perform this action.
+     */
+    @PostMapping("/authorize-user/{userId}")
+    public ResponseEntity<String> authorizeUser(@RequestParam UUID adminId,
+                                                @PathVariable UUID userId) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new ApiException("Admin user not found", HttpStatus.NOT_FOUND));
+        if (admin.getGlobalRole() != GlobalRole.ADMIN) {
+            throw new ApiException("Only ADMIN can authorize users", HttpStatus.FORBIDDEN);
+        }
+        userService.authorizeUser(userId);
+        return ResponseEntity.ok("User authorized successfully");
     }
 }
