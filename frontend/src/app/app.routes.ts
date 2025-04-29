@@ -1,4 +1,12 @@
 import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { AuthService } from './shared/services/auth.service';
+
+// Admin guard function to protect admin routes
+const adminGuard = () => {
+  const authService = inject(AuthService);
+  return authService.isAdmin() ? true : ['/projects'];
+};
 
 export const routes: Routes = [
   { path: '', redirectTo: 'projects', pathMatch: 'full' },
@@ -21,6 +29,11 @@ export const routes: Routes = [
   {
     path: 'auth/oauth-callback', 
     loadComponent: () => import('./features/auth/oauth-callback/oauth-callback.component').then(m => m.OAuthCallbackComponent)
+  },
+  {
+    path: 'admin',
+    loadComponent: () => import('./features/admin/admin-panel.component').then(m => m.AdminPanelComponent),
+    canMatch: [adminGuard]
   },
   { path: '**', redirectTo: 'projects' }
 ];

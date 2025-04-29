@@ -50,7 +50,7 @@ export class RegisterComponent {
       lastName: this.user.lastName,
       password: this.user.password,
       email: this.user.email,
-      globalRole: GlobalRole.USER
+      globalRole: GlobalRole.CLIENT
     };
     
     this.authService.register(registerData).subscribe({

@@ -26,12 +26,16 @@ export class NavbarComponent implements OnInit {
   
   currentUser: User | null = null;
   isLoggedIn = false;
+  isAdmin = false;
 
   ngOnInit(): void {
     // Subscribe to the authentication state changes
     this.authService.currentUser$.subscribe((user: User | null) => {
       this.currentUser = user;
       this.isLoggedIn = !!user;
+      
+      // Check if the current user has admin privileges
+      this.isAdmin = this.authService.isAdmin();
     });
   }
 

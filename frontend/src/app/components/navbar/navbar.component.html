@@ -19,6 +19,11 @@
           
           <!-- Show when user is logged in -->
           <ng-container *ngIf="isLoggedIn">
+            <!-- Admin Panel Button (only visible for admin users) -->
+            <a mat-button *ngIf="isAdmin" routerLink="/admin" routerLinkActive="active" class="admin-btn">
+              <mat-icon class="me-1">admin_panel_settings</mat-icon> Panel Admina
+            </a>
+            
             <span class="user-info me-2" *ngIf="currentUser">
               <mat-icon>person</mat-icon> {{ currentUser.name }}
             </span>

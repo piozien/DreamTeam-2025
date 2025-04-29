@@ -67,7 +67,7 @@ export class AuthService {
           lastName: decoded.lastName || '', // Assuming these exist
           name: `${decoded.firstName || ''} ${decoded.lastName || ''}`.trim(),
           email: decoded.email || decoded.sub, // Assuming email exists, fallback to sub
-          globalRole: decoded.role || GlobalRole.USER, // Assuming 'role' exists
+          globalRole: decoded.role || GlobalRole.CLIENT, // Default role is CLIENT
           userStatus: decoded.status || UserStatus.AUTHORIZED // Assuming 'status' exists
         };
         console.log('Created user object:', JSON.stringify(user, null, 2)); // Log the created user
@@ -102,7 +102,7 @@ export class AuthService {
           lastName: response.name.split(' ')[1] || '',
           name: response.name,
           email: response.email,
-          globalRole: this.decodedTokenSubject.value?.role || GlobalRole.USER,
+          globalRole: this.decodedTokenSubject.value?.role || GlobalRole.CLIENT,
           userStatus: this.decodedTokenSubject.value?.status || UserStatus.UNAUTHORIZED
         };
         this.currentUserSubject.next(user);
@@ -131,7 +131,7 @@ export class AuthService {
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
-      globalRole: userData.globalRole || GlobalRole.USER
+      globalRole: userData.globalRole || GlobalRole.CLIENT
     };
     
     return this.registerUserByAdmin(request, adminId);
