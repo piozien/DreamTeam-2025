@@ -57,14 +57,15 @@ public class TaskAssigneeService {
         taskRepository.save(task);
         
         TaskAssignee savedAssignee = taskAssigneeRepository.save(newAssignee);
-        notificationService.sendNotification(
-                savedAssignee.getUser().getId(),
-                Notification.builder()
-                        .user(savedAssignee.getUser())
-                        .status(NotificationStatus.TASK_ASSIGNEE_ADDED)
-                        .message("You have been assigned to " + savedAssignee.getTask().getName()+ ".")
-                        .build()
-
+        notificationService.sendNotificationToUser(
+                user,
+                NotificationStatus.TASK_ASSIGNEE_ADDED,
+                "You have successfully added user "+userToBeAdded.getName()+" to the task "+task.getName()
+        );
+        notificationService.sendNotificationToUser(
+                userToBeAdded,
+                NotificationStatus.TASK_ASSIGNEE_ADDED,
+                "You have been added to the task "+task.getName()
         );
         return savedAssignee;
     }

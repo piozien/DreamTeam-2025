@@ -47,8 +47,14 @@ public class ProjectService {
         setPM.setProject(newProject);
 
         newProject.addMember(user.getId(), setPM);
+        Project savedProject = projectRepository.save(newProject);
 
-        return projectRepository.save(newProject);
+        notificationService.sendNotificationToUser(
+                user,
+                NotificationStatus.PROJECT_CREATED,
+                "You have created a project by the name: "+ project.getName()+" successfully."
+        );
+        return savedProject;
     }
 
     @Transactional
@@ -145,14 +151,17 @@ public class ProjectService {
         
         projectRepository.save(project);
         ProjectMember savedMember = project.getMembers().get(user.getId());
-        notificationService.sendNotification(
-                savedMember.getUser().getId(),
-                Notification.builder()
-                        .user(savedMember.getUser())
-                        .status(NotificationStatus.PROJECT_MEMBER_ADDED)
-                        .message("You have been added to this project: " + newMember.getProject().getName())
-                        .build()
+        notificationService.sendNotificationToUser(
+                savedMember.getUser(),
+                NotificationStatus.PROJECT_MEMBER_ADDED,
+                "You have been added to the project: "+ project.getName()
         );
+        notificationService.sendNotificationToUser(
+                principal,
+                NotificationStatus.PROJECT_MEMBER_ADDED,
+                "You added " + user.getUsername() + " to the project: " + project.getName()
+        );
+
         return savedMember;
     }
     

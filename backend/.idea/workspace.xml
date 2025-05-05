@@ -6,9 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/CustomUserDetailsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/CustomUserDetailsService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/enums/NotificationStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/enums/NotificationStatus.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/NotificationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/NotificationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskAssigneeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskAssigneeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskService.java" afterDir="false" />
     </list>
     <list id="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" name="Changes by tomci" comment="" />
     <list id="09b865cc-bab5-44d0-bb58-d68cb411adc5" name="Changes by zient" comment="" />
@@ -125,9 +127,9 @@
       <option name="ALTERNATIVE_JRE_PATH" value="graalvm-jdk-21" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <envs>
-        <env name="DB_URL" value="jdbc:postgresql://dpg-cvknnofgi27c73ba4kpg-a.frankfurt-postgres.render.com/dreambase" />
+        <env name="DB_URL" value="jdbc:postgresql://root:FX0CMPTIJJ3hthB4cc7RkDWpwmfyh8uj@dpg-d08dn8ndiees73989770-a.frankfurt-postgres.render.com/dreambase_anzr" />
         <env name="DB_USERNAME" value="root" />
-        <env name="DB_PASSWORD" value="4uYZ1HE3Rv4ovk83agGM77Mz37wDQuJ8" />
+        <env name="DB_PASSWORD" value="FX0CMPTIJJ3hthB4cc7RkDWpwmfyh8uj" />
         <env name="SERVER_PORT" value="8080" />
         <env name="SPRING_PROFILES_ACTIVE" value="dev" />
         <env name="FRONTEND_URL" value="http://localhost:4200" />

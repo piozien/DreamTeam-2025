@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.notification.Notification;
+import tech.project.schedule.model.user.User;
 
 import java.util.UUID;
 @Service
@@ -21,5 +23,14 @@ public class NotificationService {
                 "/notification",
                 notification
         );
+    }
+
+    public void sendNotificationToUser(User user, NotificationStatus status, String message) {
+        Notification notification = Notification.builder()
+                .user(user)
+                .status(status)
+                .message(message)
+                .build();
+        sendNotification(user.getId(), notification);
     }
 }
