@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/NotificationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/repositories/NotificationRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/NotificationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/NotificationService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" afterDir="false" />
     </list>
     <list id="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" name="Changes by tomci" comment="" />
     <list id="09b865cc-bab5-44d0-bb58-d68cb411adc5" name="Changes by zient" comment="" />
@@ -198,7 +196,7 @@
       <workItem from="1745920654972" duration="1417000" />
       <workItem from="1745931464560" duration="2212000" />
       <workItem from="1746455959077" duration="68000" />
-      <workItem from="1746462771083" duration="1734000" />
+      <workItem from="1746462771083" duration="2306000" />
     </task>
     <servers />
   </component>

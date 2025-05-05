@@ -29,31 +29,29 @@ public class NotificationService {
             payload.put("id", notification.getId());
             payload.put("status", notification.getStatus());
             payload.put("message", notification.getMessage());
-            payload.put("userId", notification.getUser().getId());
-            payload.put("createdAt", notification.getCreatedAt());
+            payload.put("userId", notification.getUser().getId().toString());
+            payload.put("createdAt", notification.getCreatedAt().toString());
             payload.put("isRead", notification.getIsRead());
 
-            messagingTemplate.convertAndSendToUser(
-                    String.valueOf(userId),
-                    "/notification",
-                    payload
-            );
-        } 
-
+            String destination = String.format("/queue/notifications", userId);
+            messagingTemplate.convertAndSend(destination, payload);
+            
+        }
+    
 
     @Transactional
     public Notification sendNotificationToUser(User user, NotificationStatus status, String message) {
         
-        Notification notification = Notification.builder()
-                .user(user)
-                .status(status)
-                .message(message)
-                .isRead(false)
-                .build();
+            Notification notification = Notification.builder()
+                    .user(user)
+                    .status(status)
+                    .message(message)
+                    .isRead(false)
+                    .build();
 
-        Notification savedNotification = notificationRepository.save(notification);
-        sendNotification(user.getId(), savedNotification);
-        return savedNotification;
-        
+            Notification savedNotification = notificationRepository.save(notification);
+            sendNotification(user.getId(), savedNotification);
+            return savedNotification;
+            
     }
 }
