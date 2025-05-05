@@ -1,7 +1,8 @@
 package tech.project.schedule.model.notification;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.user.User;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,12 @@ import java.util.UUID;
 @Entity
 @Table(name = "Notifications")
 @Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@ToString
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -18,6 +25,9 @@ public class Notification {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Column(nullable = false)
+    private NotificationStatus status;
 
     @Column(nullable = false)
     private String message;

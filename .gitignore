@@ -1,8 +1,10 @@
-backend/.idea/workspace.xml
+# Created by https://www.toptal.com/developers/gitignore/api/dotenv,jetbrains+all
+# Edit at https://www.toptal.com/developers/gitignore?templates=dotenv,jetbrains+all
+
 ### dotenv ###
 .env
 
-### Intellij+all ###
+### JetBrains+all ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
@@ -81,7 +83,7 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
-### Intellij+all Patch ###
+### JetBrains+all Patch ###
 # Ignore everything but code style settings and run configurations
 # that are supposed to be shared within teams.
 
@@ -89,6 +91,5 @@ fabric.properties
 
 !.idea/codeStyles
 !.idea/runConfigurations
-backend/.idea/workspace.xml
 
-/frontend
+# End of https://www.toptal.com/developers/gitignore/api/dotenv,jetbrains+all

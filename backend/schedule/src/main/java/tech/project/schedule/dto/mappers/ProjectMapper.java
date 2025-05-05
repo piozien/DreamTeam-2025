@@ -2,7 +2,7 @@ package tech.project.schedule.dto.mappers;
 
 import tech.project.schedule.dto.project.ProjectDTO;
 import tech.project.schedule.dto.project.ProjectMemberDTO;
-import tech.project.schedule.model.enums.ProjectStatus;
+import tech.project.schedule.dto.project.ProjectUpdateDTO;
 import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.project.ProjectMember;
 
@@ -10,32 +10,62 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Utility class that provides conversion methods between Project-related entities and DTOs.
+ * Handles the mapping of data between the persistence layer (entities) and the presentation layer (DTOs)
+ * for projects, project members, and related data.
+ */
 public class ProjectMapper {
 
+     /**
+     * Converts a ProjectDTO to a Project entity.
+     * 
+     * @param dto The ProjectDTO to convert
+     * @return A new Project entity with properties set from the DTO
+     */
     public static Project dtoToProject(ProjectDTO dto) {
         Project project = new Project();
-        
-        if (dto.id() != null) {
-            project.setId(dto.id());
-        }
+
         
         project.setName(dto.name());
         project.setDescription(dto.description());
         project.setStartDate(dto.startDate());
         project.setEndDate(dto.endDate());
-        
-        if (dto.projectStatus() != null) {
-            project.setProjectStatus(dto.projectStatus());
-        } else {
-            project.setProjectStatus(ProjectStatus.PLANNED);
-        }
+        project.setProjectStatus(dto.projectStatus());
         
         return project;
     }
 
+      /**
+     * Converts a ProjectUpdateDTO to a Project entity.
+     * 
+     * @param dto The ProjectUpdateDTO to convert
+     * @return A new Project entity with properties set from the update DTO
+     */
+    public static Project updateDtoToProject(ProjectUpdateDTO dto) {
+        Project project = new Project();
+        
+        if (dto.id() != null) {
+            project.setId(dto.id());
+        }
+        project.setName(dto.name());
+        project.setDescription(dto.description());
+        project.setStartDate(dto.startDate());
+        project.setEndDate(dto.endDate());
+        project.setProjectStatus(dto.projectStatus());
+        
+        return project;
+    }
+
+     /**
+     * Converts a Project entity to a ProjectDTO.
+     * Also handles conversion of associated members and task IDs.
+     * 
+     * @param project The Project entity to convert
+     * @return A new ProjectDTO containing data from the Project entity
+     */
     public static ProjectDTO projectToDTO(Project project) {
         Map<String, ProjectMemberDTO> memberDTOs = new HashMap<>();
         
@@ -65,12 +95,19 @@ public class ProjectMapper {
                 taskIds
         );
     }
-    
+
+      /**
+     * Converts a ProjectMember entity to a ProjectMemberDTO.
+     * 
+     * @param member The ProjectMember entity to convert
+     * @return A new ProjectMemberDTO containing data from the ProjectMember entity
+     */
     public static ProjectMemberDTO memberToDTO(ProjectMember member) {
         return new ProjectMemberDTO(
                 member.getId(),
                 member.getProject().getId(),
                 member.getUser().getId(),
+                member.getUser().getName(),
                 member.getRole()
         );
     }

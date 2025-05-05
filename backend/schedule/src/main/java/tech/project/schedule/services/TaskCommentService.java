@@ -6,73 +6,168 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.enums.GlobalRole;
+import tech.project.schedule.model.enums.ProjectUserRole;
+import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskComment;
 import tech.project.schedule.model.user.User;
+import tech.project.schedule.repositories.ProjectRepository;
 import tech.project.schedule.repositories.TaskCommentRepository;
 import tech.project.schedule.repositories.TaskRepository;
 import tech.project.schedule.repositories.UserRepository;
+import tech.project.schedule.services.utils.GetProjectRole;
+import tech.project.schedule.services.utils.PmAndAssigneeCheck;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Service class for managing task comments within the scheduling system.
+ * Provides functionality for adding, retrieving, and deleting comments on tasks,
+ * with appropriate permission checks based on user roles and project membership.
+ */
 @Service
 @RequiredArgsConstructor
 public class TaskCommentService {
     private final TaskCommentRepository taskCommentRepository;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
 
+    /**
+     * Adds a comment to a task.
+     * Only project managers and users assigned to the task can add comments.
+     *
+     * @param taskId The ID of the task to comment on
+     * @param user The user adding the comment
+     * @param comment The comment entity to add
+     * @return The saved comment entity
+     * @throws ApiException if task not found or user lacks permission
+     */
     @Transactional
-    public TaskComment addComment(UUID taskId, UUID userId, String content) {
+    public TaskComment addComment(UUID taskId, User user, TaskComment comment){
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new ApiException("Task not found"));
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException("User not found"));
-        // ToDo Check if user is assigned to task
-        TaskComment comment = new TaskComment();
-        comment.setTask(task);
-        comment.setUser(user);
-        comment.setComment(content);
-
-        return taskCommentRepository.save(comment);
-    }
-
-    public void deleteComment(UUID commentId, UUID userId, UUID taskId) {
-        // todo: add deleting single comment by comment Id and check if user is project manager or if he wrote the comment
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException("User not found"));
-        /*
-        boolean isPM = existingProject.getMembers().containsKey(user.getId()) &&
-                ProjectUserRole.PM.equals(existingProject.getMembers().get(user.getId()).getRole());
-         */
-
-
-        if(!user.getGlobalRole().equals(GlobalRole.ADMIN)){
-            throw new ApiException("You cannot delete this comment", HttpStatus.FORBIDDEN);
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+        if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)){
+            throw new ApiException("You are not allowed to add comments", HttpStatus.FORBIDDEN);
         }
-
-
-        if (!taskCommentRepository.existsById(commentId)) {
-            throw new ApiException("Comment not found", HttpStatus.NOT_FOUND);
-        }
-
-        taskCommentRepository.deleteById(commentId);
+        task.getComments().add(comment);
+        taskRepository.save(task);
+        return comment;
     }
-
+    
+    /**
+     * Deletes a specific comment from a task.
+     * Only project managers and users assigned to the task can delete comments.
+     *
+     * @param taskId The ID of the task containing the comment
+     * @param user The user performing the deletion
+     * @param commentId The ID of the comment to delete
+     * @return The deleted comment entity
+     * @throws ApiException if task or comment not found, or user lacks permission
+     */
     @Transactional
-    public void deleteAllCommentsForTask(UUID taskId) {
+    public TaskComment deleteComment(UUID taskId, User user, UUID commentId){
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found.", HttpStatus.NOT_FOUND));
+
+        TaskComment comment = taskCommentRepository.findById(commentId)
+                .orElseThrow(() -> new ApiException("Comment not found.", HttpStatus.NOT_FOUND));
+        if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId,user)){
+            throw new ApiException("You are not allowed to delete this comment", HttpStatus.FORBIDDEN);
+        }
+        task.getComments().remove(comment);
+        taskRepository.save(task);
+        return comment;
+    }
+
+    /**
+     * Deletes all comments for a specific task.
+     * Only project managers can perform this operation.
+     *
+     * @param taskId The ID of the task whose comments should be deleted
+     * @param user The user performing the deletion
+     * @throws ApiException if task not found or user lacks permission
+     */
+    @Transactional
+    public void deleteAllCommentsForTask(UUID taskId, User user) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found.", HttpStatus.NOT_FOUND));
+        if(GetProjectRole.getProjectRole(user,task.getProject()) != ProjectUserRole.PM){
+            throw new ApiException("You are not allowed to delete comments in this task", HttpStatus.FORBIDDEN);
+        }
         taskCommentRepository.deleteAllByTask_Id(taskId);
     }
 
-    public List<TaskComment> getCommentsForTask(UUID taskId) {
+    /**
+     * Retrieves all comments for a specific task.
+     * Only administrators and project members can view task comments.
+     *
+     * @param taskId The ID of the task
+     * @param user The user requesting the comments
+     * @return List of comments for the specified task
+     * @throws ApiException if task not found or user lacks permission
+     */
+    public List<TaskComment> getCommentsForTask(UUID taskId, User user) {
+        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+        boolean isInProject = task.getProject().getMembers().containsKey(user.getId());
+        if(!isAdmin||isInProject){
+            throw new ApiException("You are not allowed to view comments", HttpStatus.FORBIDDEN);
+        }
         return taskCommentRepository.findAllByTask_Id(taskId);
     }
 
-    public List<TaskComment> getCommentsByUser(UUID userId) {
-        return taskCommentRepository.findAllByUser_Id(userId);
+    /**
+     * Retrieves comments made by a specific user.
+     * Access is limited based on context - administrators can see all comments,
+     * users can see their own, and project members can see comments within shared projects.
+     *
+     * @param currUser The user requesting the comments
+     * @param otherUser The user whose comments are being requested
+     * @return List of accessible comments for the specified user
+     */
+    public List<TaskComment> getUserComments(User currUser, User otherUser) {
+        boolean isAdmin = currUser.getGlobalRole() == GlobalRole.ADMIN;
+        if(isAdmin||currUser.getId().equals(otherUser.getId())){return taskCommentRepository.findAllByUser_Id(currUser.getId());}
+
+        List<TaskComment> userComments = new ArrayList<>();
+        List<TaskComment> allComments = taskCommentRepository.findAllByUser_Id(currUser.getId());
+
+        List<Project> allProject = projectRepository.findAll();
+
+        for (Project project : allProject) {
+            for(TaskComment comment : allComments) {
+                if(project.getMembers().containsKey(currUser.getId())
+                        && project.getMembers().containsKey(otherUser.getId())
+                        && comment.getTask().getProject().equals(project)){
+                    userComments.add(comment);
+                }
+            }
+        }
+        return userComments;
+    }
+
+    /**
+     * Retrieves a specific comment by its ID.
+     * Only project managers and users assigned to the task can view comments.
+     *
+     * @param commentId The ID of the comment to retrieve
+     * @param user The user requesting the comment
+     * @return The requested comment entity
+     * @throws ApiException if comment not found or user lacks permission
+     */
+    public TaskComment getCommentById(UUID commentId, User user) {
+        TaskComment comment = taskCommentRepository.findById(commentId)
+                .orElseThrow(() -> new ApiException("Comment not found", HttpStatus.NOT_FOUND));
+        if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(comment.getTask().getId(), user)){
+            throw new ApiException("You are not allowed to view this comment", HttpStatus.FORBIDDEN);
+        }
+        return comment;
+
     }
 
 }
