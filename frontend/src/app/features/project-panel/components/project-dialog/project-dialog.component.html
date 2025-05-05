@@ -1,0 +1,46 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+<mat-dialog-content>
+  <form #projectForm="ngForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Nazwa projektu</mat-label>
+      <input matInput [(ngModel)]="project.name" name="name" required>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Opis</mat-label>
+      <textarea matInput [(ngModel)]="project.description" name="description" required></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Data rozpoczęcia</mat-label>
+      <input matInput [matDatepicker]="startPicker" [(ngModel)]="project.startDate" 
+             name="startDate" required (dateChange)="onStartDateChange()"
+             #startDate="ngModel" [min]="today" [matDatepickerFilter]="dateFilter">
+      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+      <mat-error *ngIf="!isStartDateValid() && project.startDate">
+        Data rozpoczęcia nie może być wcześniejsza niż dzisiejsza data
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Data zakończenia</mat-label>
+      <input matInput [matDatepicker]="endPicker" [(ngModel)]="project.endDate" 
+             name="endDate" [min]="project.startDate || null" 
+             #endDate="ngModel" [matDatepickerFilter]="endDateFilter">
+      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+      <mat-error *ngIf="endDate.errors?.['matDatepickerMin']">
+        Data zakończenia nie może być wcześniejsza niż data rozpoczęcia
+      </mat-error>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Anuluj</button>
+  <button mat-raised-button color="primary" 
+          (click)="onSubmit()" 
+          [disabled]="!projectForm.form.valid || !isValidDateRange()">
+    {{ data.submitButton }}
+  </button>
+</mat-dialog-actions>

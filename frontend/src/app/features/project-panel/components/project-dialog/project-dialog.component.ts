@@ -38,68 +38,8 @@ const MY_DATE_FORMATS = {
     { provide: MAT_DATE_LOCALE, useValue: 'pl-PL' },
     { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
   ],
-  template: `
-    <h2 mat-dialog-title>{{ data.title }}</h2>
-    <mat-dialog-content>
-      <form #projectForm="ngForm" (ngSubmit)="onSubmit()">
-        <mat-form-field appearance="fill" class="full-width">
-          <mat-label>Nazwa projektu</mat-label>
-          <input matInput [(ngModel)]="project.name" name="name" required>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="full-width">
-          <mat-label>Opis</mat-label>
-          <textarea matInput [(ngModel)]="project.description" name="description" required></textarea>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="full-width">
-          <mat-label>Data rozpoczęcia</mat-label>
-          <input matInput [matDatepicker]="startPicker" [(ngModel)]="project.startDate" 
-                 name="startDate" required (dateChange)="onStartDateChange()">
-          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-          <mat-datepicker #startPicker></mat-datepicker>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="full-width">
-          <mat-label>Data zakończenia</mat-label>
-          <input matInput [matDatepicker]="endPicker" [(ngModel)]="project.endDate" 
-                 name="endDate" [min]="project.startDate" 
-                 #endDate="ngModel">
-          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-          <mat-datepicker #endPicker></mat-datepicker>
-          <mat-error *ngIf="endDate.errors?.['matDatepickerMin']">
-            Data zakończenia nie może być wcześniejsza niż data rozpoczęcia
-          </mat-error>
-        </mat-form-field>
-      </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">Anuluj</button>
-      <button mat-raised-button color="primary" 
-              (click)="onSubmit()" 
-              [disabled]="!projectForm.form.valid || !isValidDateRange()">
-        {{ data.submitButton }}
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: [`
-    :host {
-      display: block;
-      width: 100%;
-      max-width: 500px;
-    }
-    .full-width {
-      width: 100%;
-      margin-bottom: 15px;
-    }
-    mat-dialog-content {
-      padding-top: 20px;
-    }
-    mat-error {
-      font-size: 12px;
-      margin-top: 4px;
-    }
-  `]
+  templateUrl: './project-dialog.component.html',
+  styleUrls: ['./project-dialog.component.scss']
 })
 export class ProjectDialogComponent {
   project: Partial<Project> = {
@@ -107,11 +47,38 @@ export class ProjectDialogComponent {
     description: '',
     startDate: new Date(),
   };
+  
+  today = new Date();
+
+  // Date filter to disable all dates before today
+  dateFilter = (date: Date | null): boolean => {
+    if (!date) return false;
+    const currentDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return currentDate >= today;
+  };
+  
+  // Date filter for end date to ensure it's after start date
+  endDateFilter = (date: Date | null): boolean => {
+    if (!date) return false;
+    if (!this.project.startDate) return true; // If no start date, allow any date
+    
+    const endDate = new Date(date);
+    const startDate = new Date(this.project.startDate);
+    return endDate >= startDate;
+  };
 
   constructor(
     public dialogRef: MatDialogRef<ProjectDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { title: string; submitButton: string }
-  ) {}
+  ) {
+    // Reset hours to start of day for date comparison
+    this.today.setHours(0, 0, 0, 0);
+    
+    // Initialize start date to today to avoid starting with invalid date
+    this.project.startDate = new Date(this.today);
+  }
 
   onStartDateChange(): void {
     // If end date is before start date, set it to start date + 1 day
@@ -125,7 +92,18 @@ export class ProjectDialogComponent {
     if (!this.project.startDate) {
       return false;
     }
-    return !this.project.endDate || this.project.endDate >= this.project.startDate;
+    
+    // Check if start date is not before today
+    const startDateValid = this.project.startDate >= this.today;
+    
+    // Check if end date is after start date (if end date exists)
+    const endDateValid = !this.project.endDate || this.project.endDate >= this.project.startDate;
+    
+    return startDateValid && endDateValid;
+  }
+  
+  isStartDateValid(): boolean {
+    return !!this.project.startDate && this.project.startDate >= this.today;
   }
 
   onSubmit(): void {
