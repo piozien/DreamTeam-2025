@@ -1,0 +1,95 @@
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 0 15px;
+}
+
+.form-section {
+  padding: 20px 0;
+}
+
+.form-field {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.date-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.date-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.status-priority-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.status-field, .priority-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.spinner-button {
+  margin-right: 10px;
+  display: inline-block;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+}
+
+.section-divider {
+  margin: 1.5rem 0;
+}
+
+.assignees-list, .dependencies-list, .comments-list {
+  margin-top: 1rem;
+}
+
+.assignee-item, .dependency-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.comment-item {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-left: 3px solid #3f51b5;
+  background-color: #f5f5f5;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.comment-date {
+  color: #757575;
+  font-size: 0.85rem;
+}
+
+.comment-body {
+  white-space: pre-line;
+}

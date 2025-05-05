@@ -121,6 +121,23 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
     });
   }
 
+  openEditDialog(project: Project): void {
+    const dialogRef = this.dialog.open(ProjectDialogComponent, {
+      width: '500px',
+      data: {
+        title: 'Edytuj Projekt',
+        submitButton: 'Zapisz',
+        project: { ...project } // Pass a copy of the project to edit
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.updateProject(project.id, result);
+      }
+    });
+  }
+
   createProject(projectData: Partial<Project>): void {
     this.isCreating = true;
     console.log('Project data from dialog:', projectData);
@@ -142,11 +159,47 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
           this.projects.push(project);
           this.selectProject(project);
           this.isCreating = false;
+          this.toastService.success('Projekt został pomyślnie utworzony.');
         },
         error: (error) => {
           console.error('Error creating project:', error);
           this.error = 'Wystąpił błąd podczas tworzenia projektu.';
           this.isCreating = false;
+          this.toastService.error('Wystąpił błąd podczas tworzenia projektu.');
+        }
+      })
+    );
+  }
+
+  updateProject(projectId: string, projectData: Partial<Project>): void {
+    this.loading = true;
+    console.log('Project update data:', projectData);
+
+    // Create a partial update with only the fields we want to change
+    const updatedProject = {
+      id: projectId,
+      name: projectData.name || '',
+      description: projectData.description || '',
+      startDate: projectData.startDate || new Date(),
+      endDate: projectData.endDate
+    };
+
+    this.subscription.add(
+      this.projectService.updateProject(updatedProject as Project).subscribe({
+        next: (project) => {
+          // Find and update the project in the list
+          const index = this.projects.findIndex(p => p.id === projectId);
+          if (index !== -1) {
+            this.projects[index] = project;
+          }
+          this.loading = false;
+          this.toastService.success('Projekt został pomyślnie zaktualizowany.');
+        },
+        error: (error) => {
+          console.error('Error updating project:', error);
+          this.error = 'Wystąpił błąd podczas aktualizacji projektu.';
+          this.loading = false;
+          this.toastService.error('Wystąpił błąd podczas aktualizacji projektu.');
         }
       })
     );

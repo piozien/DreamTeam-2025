@@ -55,19 +55,46 @@ export class TaskDialogComponent implements OnInit {
       priority: [this.task.priority || TaskPriority.IMPORTANT, [Validators.required]],
       status: [this.task.status || TaskStatus.TO_DO, [Validators.required]]
     });
+    
+    // Set up subscription to start date changes to adjust end date if needed
+    this.taskForm.get('startDate')?.valueChanges.subscribe(newStartDate => {
+      this.onStartDateChange(newStartDate);
+    });
+  }
+
+  /**
+   * Handles start date changes
+   * If end date is before start date, sets end date to start date + 1 day
+   */
+  onStartDateChange(newStartDate: Date): void {
+    if (!newStartDate) return;
+    
+    const currentEndDate = this.taskForm.get('endDate')?.value;
+    // If end date exists and is before the new start date
+    if (currentEndDate && new Date(currentEndDate) < new Date(newStartDate)) {
+      // Create new date that's one day after the start date
+      const newEndDate = new Date(newStartDate);
+      newEndDate.setDate(newEndDate.getDate() + 1);
+      this.taskForm.get('endDate')?.setValue(newEndDate);
+    }
   }
 
   onSubmit(): void {
     if (this.taskForm.valid) {
       const formValue = this.taskForm.value;
       
-      // Format dates to ISO strings and ensure structure matches TaskRequestDTO
+      // Format dates properly without timezone issues
+      // Use a helper function to extract the exact date in YYYY-MM-DD format without timezone issues
+      const getLocalDateString = (date: Date): string => {
+        return date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : '';
+      };
+      
       const result = {
         projectId: this.data.projectId,
         name: formValue.name,
         description: formValue.description || '',
-        startDate: formValue.startDate.toISOString().split('T')[0],
-        endDate: formValue.endDate ? formValue.endDate.toISOString().split('T')[0] : null,
+        startDate: getLocalDateString(formValue.startDate),
+        endDate: formValue.endDate ? getLocalDateString(formValue.endDate) : null,
         priority: formValue.priority,
         status: formValue.status,
         assigneeIds: [],  // Initialize as empty arrays to match backend expectation
@@ -76,6 +103,7 @@ export class TaskDialogComponent implements OnInit {
         dependencyIds: []
       };
       
+      console.log('Sending task with dates:', result);
       this.dialogRef.close(result);
     }
   }

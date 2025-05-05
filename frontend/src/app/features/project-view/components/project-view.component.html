@@ -250,7 +250,7 @@
                       <th mat-header-cell *matHeaderCellDef style="background-color: #f0f0f0 !important; color: #333 !important; font-weight: 500; padding: 16px 12px;"> Akcje </th>
                       <td mat-cell *matCellDef="let task" style="color: #333 !important; padding: 12px; border-bottom: 1px solid #eee;"> 
                         <div class="action-buttons">
-                          <button mat-icon-button class="edit-button" matTooltip="Edytuj zadanie" (click)="openEditTaskDialog(task)">
+                          <button mat-icon-button class="edit-button" matTooltip="Edytuj zadanie" [routerLink]="['/tasks', task.id, 'edit']" routerLinkActive="active">
                             <mat-icon>edit</mat-icon>
                           </button>
                           <button mat-icon-button class="delete-button" matTooltip="Usuń zadanie" (click)="confirmDeleteTask(task)">

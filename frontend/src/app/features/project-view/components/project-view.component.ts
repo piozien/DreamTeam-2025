@@ -32,6 +32,7 @@ import { AuthService } from '../../../shared/services/auth.service';
 import { ProjectDialogComponent } from '../../../features/project-panel/components/project-dialog/project-dialog.component';
 import { MemberDialogComponent } from './member-dialog/member-dialog.component';
 import { TaskDialogComponent } from './task-dialog/task-dialog.component';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-project-view',
@@ -91,7 +92,8 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
     private taskService: TaskService,
     private authService: AuthService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private toastService: ToastrService 
   ) {}
   
   ngOnInit(): void {
@@ -99,7 +101,7 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.projectId) {
       this.loadProject(this.projectId);
     } else {
-      this.error = 'Nie znaleziono identyfikatora projektu';
+      this.toastService.error('Nie znaleziono identyfikatora projektu');
       this.loading = false;
     }
   }

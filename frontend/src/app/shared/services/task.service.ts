@@ -60,8 +60,34 @@ export class TaskService {
   }
 
   addAssignee(taskId: string, assigneeUserId: string, currentUserId: string): Observable<TaskAssignee> {
+    // Create query parameter for currentUserId
     const params = new HttpParams().set('currentUserId', currentUserId);
-    return this.http.post<TaskAssignee>(`${this.apiUrl}/${taskId}/assignees`, { userId: assigneeUserId }, { params });
+    
+    // Create a properly formatted TaskAssigneeDTO as expected by the backend
+    // Ensure we're strictly matching the expected structure
+    const assigneeData = {
+      userId: assigneeUserId
+    };
+    
+    console.log('Adding assignee with payload:', JSON.stringify(assigneeData), 'currentUserId:', currentUserId);
+    
+    // Log the full request URL for debugging
+    const url = `${this.apiUrl}/${taskId}/assignees`;
+    console.log('Request URL:', url);
+    
+    return this.http.post<TaskAssignee>(
+      url,
+      assigneeData,
+      { 
+        params,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        // Add response type to ensure we only get the JSON data we need
+        responseType: 'json' as const
+      }
+    );
   }
 
   removeAssignee(taskId: string, assigneeId: string, currentUserId: string): Observable<void> {
@@ -102,13 +128,23 @@ export class TaskService {
   }
 
   // Task Dependencies
+  getTaskDependencies(taskId: string, userId: string): Observable<Task[]> {
+    const params = new HttpParams().set('userId', userId);
+    return this.http.get<Task[]>(`${this.apiUrl}/dependencies/${taskId}/dependencies`, { params });
+  }
+
   addDependency(taskId: string, dependencyId: string, userId: string): Observable<void> {
     const params = new HttpParams().set('userId', userId);
-    return this.http.post<void>(`${this.apiUrl}/${taskId}/dependencies/${dependencyId}`, {}, { params });
+    return this.http.post<void>(`${this.apiUrl}/${taskId}/dependencies/${dependencyId}`, null, { params });
   }
 
   removeDependency(taskId: string, dependencyId: string, userId: string): Observable<void> {
     const params = new HttpParams().set('userId', userId);
     return this.http.delete<void>(`${this.apiUrl}/${taskId}/dependencies/${dependencyId}`, { params });
+  }
+
+  updateDependency(taskId: string, dependencyId: string, userId: string): Observable<void> {
+    const params = new HttpParams().set('userId', userId);
+    return this.http.put<void>(`${this.apiUrl}/${taskId}/dependencies/${dependencyId}`, null, { params });
   }
 }
