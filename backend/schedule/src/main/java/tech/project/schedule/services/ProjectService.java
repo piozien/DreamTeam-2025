@@ -60,8 +60,6 @@ public class ProjectService {
         boolean isPM = existingProject.getMembers().containsKey(user.getId()) &&
                 ProjectUserRole.PM.equals(existingProject.getMembers().get(user.getId()).getRole());
 
-        boolean isPM = GetProjectRole.getProjectRole(user, existingProject) == ProjectUserRole.PM;
-
         if (!isPM) {
             throw new ApiException("You cannot edit this project", HttpStatus.FORBIDDEN);
         }
