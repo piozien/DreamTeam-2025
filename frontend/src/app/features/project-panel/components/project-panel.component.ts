@@ -14,6 +14,7 @@ import { Project, ProjectCreate, ProjectUserRole } from '../../../shared/models/
 import { ProjectService } from '../../../shared/services/project.service';
 import { ProjectDialogComponent } from './project-dialog/project-dialog.component';
 import { Subscription } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 
 const MY_DATE_FORMATS = {
@@ -35,7 +36,6 @@ const MY_DATE_FORMATS = {
   standalone: true,
   imports: [
     CommonModule,
-    HttpClientModule,
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
@@ -62,7 +62,8 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
   constructor(
     private projectService: ProjectService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private toastService: ToastrService
   ) {}
 
   ngOnInit(): void {
@@ -76,16 +77,29 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
   loadProjects(): void {
     this.loading = true;
     this.error = null;
+
+    this.toastService.clear();
     this.subscription.add(
       this.projectService.getProjects().subscribe({
         next: (projects) => {
           this.projects = projects;
+          this.toastService.success('Projekty zostały pomyślnie załadowane.');
           this.loading = false;
         },
         error: (error) => {
           console.error('Error loading projects:', error);
-          this.error = 'Wystąpił błąd podczas ładowania projektów.';
           this.loading = false;
+          
+          // Check if this is an authentication error
+          if (error && error.message === 'AUTHENTICATION_REQUIRED') {
+            this.error = 'Wymagane zalogowanie się do systemu.';
+            this.toastService.error('Wymagane zalogowanie. Zaloguj się, aby kontynuować.');
+            // Redirect to login page once, not in a loop
+            this.router.navigate(['/login']);
+          } else {
+            this.error = 'Wystąpił błąd podczas ładowania projektów.';
+            this.toastService.error('Wystąpił błąd podczas ładowania projektów.');
+          }
         }
       })
     );
