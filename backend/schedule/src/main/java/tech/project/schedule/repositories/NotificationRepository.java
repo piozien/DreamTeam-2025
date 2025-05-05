@@ -7,8 +7,9 @@ import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.user.User;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface NotificationRepository extends JpaRepository<Notification, Long> {
+public interface NotificationRepository extends JpaRepository<Notification, UUID> {
     List<Notification> findByUser(User user);
 }

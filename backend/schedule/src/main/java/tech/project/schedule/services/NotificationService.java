@@ -1,6 +1,7 @@
 package tech.project.schedule.services;
 
 import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -13,6 +14,7 @@ import tech.project.schedule.repositories.NotificationRepository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -22,24 +24,26 @@ public class NotificationService {
 
     @Transactional
     public void sendNotification(UUID userId, Notification notification) {
-        log.info("Sending notification to {} with payload {}", userId, notification);
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("id", notification.getId());
-        payload.put("status", notification.getStatus());
-        payload.put("message", notification.getMessage());
-        payload.put("userId", notification.getUser().getId());
-        payload.put("createdAt", notification.getCreatedAt());
-        payload.put("isRead", notification.getIsRead());
+            log.info("Sending notification to {} with payload {}", userId, notification);
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("id", notification.getId());
+            payload.put("status", notification.getStatus());
+            payload.put("message", notification.getMessage());
+            payload.put("userId", notification.getUser().getId());
+            payload.put("createdAt", notification.getCreatedAt());
+            payload.put("isRead", notification.getIsRead());
 
-        messagingTemplate.convertAndSendToUser(
-                String.valueOf(userId),
-                "/notification",
-                payload
-        );
-    }
+            messagingTemplate.convertAndSendToUser(
+                    String.valueOf(userId),
+                    "/notification",
+                    payload
+            );
+        } 
+
 
     @Transactional
     public Notification sendNotificationToUser(User user, NotificationStatus status, String message) {
+        
         Notification notification = Notification.builder()
                 .user(user)
                 .status(status)
@@ -48,11 +52,8 @@ public class NotificationService {
                 .build();
 
         Notification savedNotification = notificationRepository.save(notification);
-
         sendNotification(user.getId(), savedNotification);
-
         return savedNotification;
+        
     }
-
-
 }

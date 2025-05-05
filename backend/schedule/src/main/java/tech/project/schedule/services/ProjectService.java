@@ -1,6 +1,5 @@
 package tech.project.schedule.services;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
