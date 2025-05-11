@@ -1,3 +1,9 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 600px;
+}
+
 .form-container {
   display: flex;
   flex-direction: column;
@@ -7,31 +13,36 @@
 
 .full-width {
   width: 100%;
+  margin-bottom: 15px;
 }
 
-.date-container {
+.date-fields,
+.status-priority-fields {
   display: flex;
-  gap: 16px;
+  gap: 15px;
+  margin-bottom: 15px;
 }
 
-.date-field {
-  flex: 1;
-}
-
-.status-priority-container {
-  display: flex;
-  gap: 16px;
-}
-
+.date-field,
 .status-field,
 .priority-field {
-  flex: 1;
+  width: 50%;
+}
+
+mat-form-field {
+  margin-bottom: 10px;
+}
+
+textarea {
+  min-height: 80px;
 }
 
 mat-dialog-content {
   min-height: 200px;
+  padding-top: 10px;
 }
 
 mat-dialog-actions {
-  margin-top: 16px;
+  padding: 16px 0;
+  margin-bottom: 0;
 }

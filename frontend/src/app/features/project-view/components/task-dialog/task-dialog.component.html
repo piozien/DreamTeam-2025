@@ -1,61 +1,68 @@
 <h2 mat-dialog-title>{{ data.title }}</h2>
-<form [formGroup]="taskForm" (ngSubmit)="onSubmit()">
-  <mat-dialog-content>
-    <div class="form-container">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Nazwa zadania</mat-label>
-        <input matInput formControlName="name" placeholder="Wprowadź nazwę zadania" required>
-        <mat-error *ngIf="taskForm.get('name')?.hasError('required')">Nazwa zadania jest wymagana</mat-error>
+<mat-dialog-content>
+  <form #taskForm="ngForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Nazwa zadania</mat-label>
+      <input matInput [(ngModel)]="task.name" name="name" required>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Opis</mat-label>
+      <textarea matInput [(ngModel)]="task.description" name="description" rows="3"></textarea>
+    </mat-form-field>
+
+    <div class="date-fields">
+      <mat-form-field appearance="fill" class="date-field">
+        <mat-label>Data rozpoczęcia</mat-label>
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDateObj" 
+               name="startDate" required (dateChange)="onStartDateChange()"
+               #startDate="ngModel" [min]="today" [matDatepickerFilter]="dateFilter">
+        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+        <mat-error *ngIf="!isStartDateValid() && startDateObj">
+          Data rozpoczęcia nie może być wcześniejsza niż dzisiejsza data
+        </mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Opis</mat-label>
-        <textarea matInput formControlName="description" placeholder="Wprowadź opis zadania" rows="3"></textarea>
+      <mat-form-field appearance="fill" class="date-field">
+        <mat-label>Data zakończenia</mat-label>
+        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDateObj" 
+               name="endDate" [min]="startDateObj || null" 
+               #endDate="ngModel" [matDatepickerFilter]="endDateFilter" (dateChange)="onEndDateChange()">
+        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+        <mat-error *ngIf="endDate.errors?.['matDatepickerMin']">
+          Data zakończenia nie może być wcześniejsza niż data rozpoczęcia
+        </mat-error>
       </mat-form-field>
-
-      <div class="date-container">
-        <mat-form-field appearance="outline" class="date-field">
-          <mat-label>Data rozpoczęcia</mat-label>
-          <input matInput [matDatepicker]="startPicker" formControlName="startDate" [min]="minDate" required>
-          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-          <mat-datepicker #startPicker></mat-datepicker>
-          <mat-error *ngIf="taskForm.get('startDate')?.hasError('required')">Data rozpoczęcia jest wymagana</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="date-field">
-          <mat-label>Data zakończenia</mat-label>
-          <input matInput [matDatepicker]="endPicker" formControlName="endDate" [min]="taskForm.get('startDate')?.value || minDate">
-          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-          <mat-datepicker #endPicker></mat-datepicker>
-        </mat-form-field>
-      </div>
-
-      <div class="status-priority-container">
-        <mat-form-field appearance="outline" class="status-field">
-          <mat-label>Status</mat-label>
-          <mat-select formControlName="status" required>
-            <mat-option *ngFor="let status of taskStatuses" [value]="status">
-              {{ getStatusDisplayName(status) }}
-            </mat-option>
-          </mat-select>
-          <mat-error *ngIf="taskForm.get('status')?.hasError('required')">Status jest wymagany</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="priority-field">
-          <mat-label>Priorytet</mat-label>
-          <mat-select formControlName="priority" required>
-            <mat-option *ngFor="let priority of taskPriorities" [value]="priority">
-              {{ getPriorityDisplayName(priority) }}
-            </mat-option>
-          </mat-select>
-          <mat-error *ngIf="taskForm.get('priority')?.hasError('required')">Priorytet jest wymagany</mat-error>
-        </mat-form-field>
-      </div>
     </div>
-  </mat-dialog-content>
-  
-  <mat-dialog-actions align="end">
-    <button mat-button (click)="onCancel()">Anuluj</button>
-    <button mat-raised-button color="primary" type="submit" [disabled]="taskForm.invalid">{{ data.submitButton }}</button>
-  </mat-dialog-actions>
-</form>
+
+    <div class="status-priority-fields">
+      <mat-form-field appearance="fill" class="status-field">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="task.status" name="status" required>
+          <mat-option *ngFor="let status of taskStatuses" [value]="status">
+            {{ getStatusDisplayName(status) }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="priority-field">
+        <mat-label>Priorytet</mat-label>
+        <mat-select [(ngModel)]="task.priority" name="priority" required>
+          <mat-option *ngFor="let priority of taskPriorities" [value]="priority">
+            {{ getPriorityDisplayName(priority) }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Anuluj</button>
+  <button mat-raised-button color="primary" 
+          (click)="onSubmit()" 
+          [disabled]="!taskForm.form.valid || !isValidDateRange()">
+    {{ data.submitButton }}
+  </button>
+</mat-dialog-actions>
