@@ -8,7 +8,6 @@ import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.enums.ProjectUserRole;
 import tech.project.schedule.model.enums.TaskStatus;
-import tech.project.schedule.model.notification.Notification;
 import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskAssignee;
@@ -90,13 +89,23 @@ public class TaskService {
         if (updatedTask.getPriority() != null) {
             existingTask.setPriority(updatedTask.getPriority());
         }
+        if (updatedTask.getEndDate() != null) {
+            LocalDate startDate = existingTask.getStartDate();
+            if (updatedTask.getStartDate() != null) {
+                startDate = updatedTask.getStartDate();
+            }
+            if (updatedTask.getEndDate().isBefore(startDate)) {
+                throw new ApiException("End date cannot be before start date", HttpStatus.BAD_REQUEST);
+            }
+            existingTask.setEndDate(updatedTask.getEndDate());
+        }
         if (updatedTask.getStatus() != null) {
             boolean wasCompleted = existingTask.getStatus() == TaskStatus.FINISHED;
             boolean isNowCompleted = updatedTask.getStatus() == TaskStatus.FINISHED;
-            if (!wasCompleted && isNowCompleted) {
+            if (!wasCompleted && isNowCompleted && existingTask.getEndDate() == null) {
                 existingTask.setEndDate(LocalDate.now());
             }
-            if (wasCompleted && !isNowCompleted) {
+            if (wasCompleted && !isNowCompleted && updatedTask.getEndDate() == null) {
                 existingTask.setEndDate(null);
             }
             existingTask.setStatus(updatedTask.getStatus());
