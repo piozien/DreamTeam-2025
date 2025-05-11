@@ -104,13 +104,10 @@ public class TaskService {
         var saved = taskRepository.save(existingTask);
         NotificationStatus statusNot = existingTask.getStatus() == TaskStatus.FINISHED  ? NotificationStatus.TASK_COMPLETED : NotificationStatus.TASK_UPDATED;
         for(TaskAssignee assignee :  existingTask.getAssignees()) {
-            notificationService.sendNotification(
-                    assignee.getUser().getId(),
-                    Notification.builder()
-                            .user(assignee.getUser())
-                            .status(statusNot)
-                            .message("Task " + existingTask.getName() + " has been updated.")
-                            .build()
+            notificationService.sendNotificationToUser(
+                    assignee.getUser(),
+                    statusNot,
+                    "Task "+updatedTask.getName()+" has been updated."
             );
         }
         return saved;

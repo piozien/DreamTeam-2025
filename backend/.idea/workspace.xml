@@ -5,10 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/ProjectService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskHistoryService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/NotificationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/NotificationService.java" afterDir="false" />
     </list>
     <list id="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" name="Changes by tomci" comment="" />
     <list id="09b865cc-bab5-44d0-bb58-d68cb411adc5" name="Changes by zient" comment="" />
@@ -20,8 +17,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Interface" />
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -124,6 +121,21 @@
     <configuration name="ScheduleApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="ALTERNATIVE_JRE_PATH" value="graalvm-jdk-21" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <envs>
+        <env name="DB_URL" value="jdbc:postgresql://dpg-cvknnofgi27c73ba4kpg-a.frankfurt-postgres.render.com/dreambase" />
+        <env name="DB_USERNAME" value="root" />
+        <env name="DB_PASSWORD" value="4uYZ1HE3Rv4ovk83agGM77Mz37wDQuJ8" />
+        <env name="SERVER_PORT" value="8080" />
+        <env name="SPRING_PROFILES_ACTIVE" value="dev" />
+        <env name="FRONTEND_URL" value="http://localhost:4200" />
+        <env name="MAIL_HOST" value="sandbox.smtp.mailtrap.io" />
+        <env name="MAIL_USERNAME" value="f4b9b31f4c7610" />
+        <env name="MAIL_PASSWORD" value="ef4ec5878e244f" />
+        <env name="GOOGLE_CLIENT_ID" value="604871735498-5k70tjcr7ddac71ruv2cqgu7s87l0rl2.apps.googleusercontent.com" />
+        <env name="GOOGLE_CLIENT_SECRET" value="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" />
+        <env name="JWT_SECRET" value="ZJzN9s2EK0Hhyik9rD27PQT5nU/Nt1tNwKMVSrSGR/I=" />
+        <env name="JWT_EXP" value="3600000" />
+      </envs>
       <module name="schedule" />
       <selectedOptions>
         <option name="environmentVariables" />
@@ -185,8 +197,7 @@
       <workItem from="1745838500747" duration="4585000" />
       <workItem from="1745860205126" duration="2103000" />
       <workItem from="1745920654972" duration="1417000" />
-      <workItem from="1745931464560" duration="4138000" />
-      <workItem from="1745935895943" duration="1788000" />
+      <workItem from="1745931464560" duration="2212000" />
     </task>
     <servers />
   </component>
