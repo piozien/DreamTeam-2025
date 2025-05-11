@@ -53,7 +53,6 @@ public class TaskAssigneeService {
         TaskAssignee newAssignee = new TaskAssignee();
         newAssignee.setTask(task);
         newAssignee.setUser(userToBeAdded);
-        task.getAssignees().add(newAssignee);
         taskRepository.save(task);
         
         TaskAssignee savedAssignee = taskAssigneeRepository.save(newAssignee);
