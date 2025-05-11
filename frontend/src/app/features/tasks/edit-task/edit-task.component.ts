@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { ToastrService } from 'ngx-toastr';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -94,7 +95,9 @@ export class EditTaskComponent implements OnInit {
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
   private datePipe = inject(DatePipe);
-  
+  private toastrService = inject(ToastrService);
+  private memberSearchText = '';
+
   constructor() {}
   
   ngOnInit(): void {
@@ -124,7 +127,9 @@ export class EditTaskComponent implements OnInit {
     this.setupDateValidation();
   }
   
-  // Load all the task data and related info
+  /**
+   * Load all the task data and related info.
+   */
   loadTaskData(): void {
     const userId = this.authService.getUserId();
     if (!userId) {
@@ -204,7 +209,7 @@ export class EditTaskComponent implements OnInit {
   
   /**
    * When the start date changes, automatically adjust the end date
-   * to follow the same behavior as ProjectDialogComponent
+   * to follow the same behavior as ProjectDialogComponent.
    */
   onStartDateChange(): void {
     const startDate = this.taskForm.get('startDate')?.value;
@@ -214,7 +219,7 @@ export class EditTaskComponent implements OnInit {
     if (!startDate) return;
     
     // If there's no end date or if end date is before start date, set it to start date + 1 day
-    if (!endDate || new Date(endDate) < new Date(startDate)) {
+    if (!endDate || endDate < startDate) {
       const newEndDate = new Date(startDate);
       newEndDate.setDate(newEndDate.getDate() + 1);
       this.taskForm.get('endDate')?.setValue(newEndDate);
@@ -268,6 +273,26 @@ export class EditTaskComponent implements OnInit {
         }
       }
     });
+    
+    // Add a listener for endDate changes to ensure proper validation
+    this.taskForm.get('endDate')?.valueChanges.subscribe(value => {
+      if (value) {
+        const startDate = this.taskForm.get('startDate')?.value;
+        const endDate = new Date(value);
+        
+        // Validate that end date is not before start date
+        if (startDate && endDate < startDate) {
+          // Either reset to start date + 1 day or show error
+          const correctedEndDate = new Date(startDate);
+          correctedEndDate.setDate(correctedEndDate.getDate() + 1);
+          this.taskForm.get('endDate')?.setValue(correctedEndDate);
+          this.showError('Data zakończenia nie może być wcześniejsza niż data rozpoczęcia');
+          console.log('Corrected invalid end date to:', correctedEndDate);
+        } else {
+          console.log('End date validated successfully:', endDate);
+        }
+      }
+    });
   }
   
   /**
@@ -284,10 +309,8 @@ export class EditTaskComponent implements OnInit {
       return false; // Start date must be set
     }
     
-    const startDateObj = new Date(startDate);
-    
     // Validate against the minimum start date (which is already the max of project start and today)
-    if (this.minStartDate && startDateObj < this.minStartDate) {
+    if (this.minStartDate && startDate < this.minStartDate) {
       if (this.projectStartDate && this.minStartDate && this.minStartDate.getTime() === this.projectStartDate.getTime()) {
         this.showError('Zadanie nie może rozpocząć się przed datą rozpoczęcia projektu');
       } else {
@@ -298,7 +321,7 @@ export class EditTaskComponent implements OnInit {
     
     // Validate end date is after start date
     const endDate = this.taskForm.get('endDate')?.value;
-    if (endDate && new Date(endDate) < startDateObj) {
+    if (endDate && endDate < startDate) {
       this.showError('Data zakończenia nie może być wcześniejsza niż data rozpoczęcia');
       return false;
     }
@@ -315,8 +338,59 @@ export class EditTaskComponent implements OnInit {
       return 'dziś';
     }
     
-    // Format the date as DD.MM.YYYY (Polish format)
-    return this.datePipe.transform(this.minStartDate, 'dd.MM.yyyy') || 'dziś';
+    // Check if min date is the project start date
+    if (this.projectStartDate && this.minStartDate.getTime() === this.projectStartDate.getTime()) {
+      return `datą rozpoczęcia projektu (${this.datePipe.transform(this.projectStartDate, 'yyyy-MM-dd')})`;
+    } else {
+      return `dziś (${this.datePipe.transform(this.minStartDate, 'yyyy-MM-dd')})`;
+    }
+  }
+
+  /**
+   * Formats a date to the yyyy-MM-dd format required by the backend
+   * Uses direct date component extraction to avoid timezone issues (like in project-dialog)
+   */
+  formatDate(date: Date): string | null {
+    if (!date) return null;
+    // Use direct date component extraction to avoid timezone issues
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  /**
+   * Shows an error message using the ToastrService
+   */
+  showError(message: string): void {
+    this.toastrService.error(message);
+  }
+
+  /**
+   * Shows a success message using the ToastrService
+   */
+  showSuccess(message: string): void {
+    this.toastrService.success(message);
+  }
+
+  /**
+   * Refreshes task data from the server to ensure we have the latest state
+   * Used after operations that may have succeeded but returned serialization errors
+   */
+  refreshTaskData(): void {
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      console.error('Cannot refresh task data: User ID is missing');
+      return;
+    }
+
+    console.log('Refreshing task data to get latest state...');
+    this.taskService.getTaskById(this.taskId, userId).subscribe({
+      next: (refreshedTask) => {
+        console.log('Task data refreshed successfully:', refreshedTask);
+        this.task = refreshedTask;
+      },
+      error: (err) => {
+        console.error('Error refreshing task data:', err);
+      }
+    });
   }
 
   /**
@@ -335,26 +409,31 @@ export class EditTaskComponent implements OnInit {
       }
       return false;
     }
-    
-    // Then perform our custom date validation
-    const isDateRangeValid = this.isValidDateRange();
-    console.log('Custom date validation result:', isDateRangeValid);
-    return isDateRangeValid;
+
+    // Additional custom validation for date range
+    if (!this.isValidDateRange()) {
+      return false;
+    }
+
+    return true;
   }
 
+  /**
+   * Submit form for task editing
+   */
   onSubmit(): void {
     console.log('Form submission attempt');
-    
+
     // Double-check form validity before submission
     if (!this.isFormValid()) {
       console.log('Form validation failed at submission time');
       this.showError('Formularz zawiera błędy. Proszę poprawić dane.');
       return;
     }
-    
+
     // Log validation status to help with debugging
     console.log('Form validation passed. Proceeding with submission.');
-    
+
     this.submitting = true;
     const userId = this.authService.getUserId();
     if (!userId || !this.taskId) {
@@ -365,17 +444,17 @@ export class EditTaskComponent implements OnInit {
 
     // Get form values
     const formValue = this.taskForm.value;
-    
-    // Format dates using the DatePipe approach like in ProjectService
+
+    // Format dates using direct extraction of date components to avoid timezone issues
     const formattedStartDate = formValue.startDate ? this.formatDate(formValue.startDate) : null;
     const formattedEndDate = formValue.endDate ? this.formatDate(formValue.endDate) : null;
-    
+
     // Debugging to verify correct date formatting
     console.log('Original startDate from form:', formValue.startDate);
     console.log('Formatted startDate for API:', formattedStartDate);
     console.log('Original endDate from form:', formValue.endDate);
     console.log('Formatted endDate for API:', formattedEndDate);
-    
+
     // Create the task update object from form values
     const taskUpdate: TaskUpdate = {
       id: this.taskId,
@@ -424,12 +503,10 @@ export class EditTaskComponent implements OnInit {
     }
     
     // Add more debugging info
-    console.log('Adding assignee - Task ID:', this.taskId);
-    console.log('User ID to add:', this.selectedAssigneeId);
-    console.log('Current user ID:', userId);
-    console.log('Project ID:', this.projectId);
-    
-    // First update the task locally to avoid UI delay
+
+    /**
+     * First update the task locally to avoid UI delay
+     */
     const optimisticUpdate = () => {
       // Update the UI optimistically, before the server responds
       if (!this.task!.assigneeIds) {
@@ -476,7 +553,7 @@ export class EditTaskComponent implements OnInit {
       }
     });
   }
-  
+
   removeAssignee(assigneeId: string): void {
     this.submitting = true;
     const userId = this.authService.getUserId();
@@ -516,29 +593,6 @@ export class EditTaskComponent implements OnInit {
         } else {
           this.showError(`Nie udało się usunąć użytkownika: ${err.message || 'Nieznany błąd'}`);
         }
-      }
-    });
-  }
-  
-  /**
-   * Refreshes task data from the server to ensure we have the latest state
-   * Used after operations that may have succeeded but returned serialization errors
-   */
-  refreshTaskData(): void {
-    const userId = this.authService.getUserId();
-    if (!userId) {
-      console.error('Cannot refresh task data: User ID is missing');
-      return;
-    }
-    
-    console.log('Refreshing task data to get latest state...');
-    this.taskService.getTaskById(this.taskId, userId).subscribe({
-      next: (refreshedTask) => {
-        console.log('Task data refreshed successfully:', refreshedTask);
-        this.task = refreshedTask;
-      },
-      error: (err) => {
-        console.error('Error refreshing task data:', err);
       }
     });
   }
@@ -609,8 +663,13 @@ export class EditTaskComponent implements OnInit {
     });
   }
   
+  /**
+   * Add a comment to the task
+   */
   addComment(): void {
-    if (!this.newComment) return;
+    if (!this.newComment.trim()) {
+      return;
+    }
     
     this.submitting = true;
     const userId = this.authService.getUserId();
@@ -628,8 +687,7 @@ export class EditTaskComponent implements OnInit {
           this.task!.comments = [];
         }
         this.task!.comments.push(comment);
-        
-        this.newComment = '';
+        this.newComment = ''; // Clear the input
         this.submitting = false;
         this.showSuccess('Komentarz został dodany');
       },
@@ -642,15 +700,7 @@ export class EditTaskComponent implements OnInit {
   }
   
   /**
-   * Formats a date to the yyyy-MM-dd format required by the backend
-   */
-  formatDate(date: Date): string | null {
-    if (!date) return null;
-    return this.datePipe.transform(date, 'yyyy-MM-dd') || null;
-  }
-  
-  /**
-   * Loads project members who can be assigned to the task
+   * Load assignees and available project members.
    */
   loadAssignees(projectId: string): void {
     const userId = this.authService.getUserId();
@@ -681,7 +731,7 @@ export class EditTaskComponent implements OnInit {
   }
   
   /**
-   * Loads all tasks from the project that can be set as dependencies
+   * Loads all tasks from the project that can be set as dependencies.
    */
   loadTaskDependencies(projectId: string): void {
     const userId = this.authService.getUserId();
@@ -706,7 +756,7 @@ export class EditTaskComponent implements OnInit {
   }
   
   /**
-   * Load comments if not already included with the task
+   * Load comments if not already included with the task.
    */
   loadComments(): void {
     // In this implementation, comments are loaded with the task
@@ -714,52 +764,47 @@ export class EditTaskComponent implements OnInit {
   }
   
   /**
-   * Update the form with values from the loaded task
+   * Update the form with values from the loaded task.
    */
   updateFormWithTaskData(task: Task): void {
-    // Convert date strings to Date objects
-    const startDate = task.startDate ? new Date(task.startDate) : null;
-    const endDate = task.endDate ? new Date(task.endDate) : null;
+    console.log('Updating form with task data:', task);
     
-    // Save original start date for validation
-    this.originalStartDate = startDate;
+    if (!task) {
+      console.error('No task data to update form with');
+      return;
+    }
     
-    // Update form values
+    // Convert string dates to Date objects for the form
+    // Handle timezone properly to avoid date shifting
+    let startDate = null;
+    let endDate = null;
+    
+    if (task.startDate) {
+      // Use the date string parts directly to create a date in local time
+      const [year, month, day] = task.startDate.split('-').map(num => parseInt(num));
+      startDate = new Date(year, month - 1, day);
+      this.originalStartDate = startDate; // Store original for validation comparisons
+    }
+    
+    if (task.endDate) {
+      // Use the date string parts directly to create a date in local time
+      const [year, month, day] = task.endDate.split('-').map(num => parseInt(num));
+      endDate = new Date(year, month - 1, day);
+    }
+    
+    // Update the form control values
     this.taskForm.patchValue({
       name: task.name,
-      description: task.description,
+      description: task.description || '',
       startDate: startDate,
       endDate: endDate,
       status: task.status,
       priority: task.priority
     });
-    
-    console.log('Form updated with task data', this.taskForm.value);
   }
   
   /**
-   * Helper methods for showing success and error messages
-   */
-  showSuccess(message: string): void {
-    this.snackBar.open(message, 'OK', {
-      duration: 3000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-      panelClass: ['success-snackbar']
-    });
-  }
-  
-  showError(message: string): void {
-    this.snackBar.open(message, 'OK', {
-      duration: 5000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-      panelClass: ['error-snackbar']
-    });
-  }
-  
-  /**
-   * Checks if the current user is an assignee for this task
+   * Checks if the current user is an assignee for this task.
    */
   isUserAssigned(): boolean {
     const userId = this.authService.getUserId();
@@ -767,7 +812,7 @@ export class EditTaskComponent implements OnInit {
   }
   
   /**
-   * Cancels editing and returns to the project view
+   * Cancels editing and returns to the project view.
    */
   cancel(): void {
     this.router.navigate(['/projects', this.projectId]);
