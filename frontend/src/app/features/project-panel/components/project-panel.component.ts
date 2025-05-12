@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
 import { Project, ProjectCreate, ProjectUserRole } from '../../../shared/models/project.model';
 import { ProjectService } from '../../../shared/services/project.service';
+import { WebSocketService } from '../../../shared/services/websocket.service';
 import { ProjectDialogComponent } from './project-dialog/project-dialog.component';
 import { Subscription } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
@@ -63,15 +64,55 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
     private projectService: ProjectService,
     private router: Router,
     private dialog: MatDialog,
-    private toastService: ToastrService
+    private toastService: ToastrService,
+    private websocketService: WebSocketService
   ) {}
 
   ngOnInit(): void {
     this.loadProjects();
+    this.subscribeToNotifications();
   }
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
+  }
+
+  /**
+   * Subscribe to WebSocket notifications
+   */
+  private subscribeToNotifications(): void {
+    // Subscribe to notifications from WebSocket
+    this.subscription.add(
+      this.websocketService.notifications$.subscribe(notification => {
+        console.log('Received notification in project panel:', notification);
+        
+        // Handle project-related notifications
+        if (notification && notification.status) {
+          switch(notification.status) {
+            case 'PROJECT_CREATED':
+              // Show toast notification for project creation
+              this.toastService.success(notification.message || 'Projekt został utworzony');
+              break;
+              
+            case 'PROJECT_UPDATED':
+              this.toastService.info(notification.message || 'Projekt został zaktualizowany');
+              break;
+              
+            case 'PROJECT_MEMBER_ADDED':
+              this.toastService.info(notification.message || 'Dodano użytkownika do projektu');
+              break;
+              
+            case 'PROJECT_MEMBER_REMOVED':
+              this.toastService.info(notification.message || 'Usunięto użytkownika z projektu');
+              break;
+              
+            case 'PROJECT_DELETED':
+              this.toastService.warning(notification.message || 'Projekt został usunięty');
+              break;
+          }
+        }
+      })
+    );
   }
 
   loadProjects(): void {
@@ -159,7 +200,7 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
           this.projects.push(project);
           this.selectProject(project);
           this.isCreating = false;
-          this.toastService.success('Projekt został pomyślnie utworzony.');
+          // Toast will come from the WebSocket notification
         },
         error: (error) => {
           console.error('Error creating project:', error);
