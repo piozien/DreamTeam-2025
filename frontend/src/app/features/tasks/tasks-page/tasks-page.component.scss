@@ -233,6 +233,113 @@
   padding: 20px 0;
 }
 
+// Expanded details section styles
+.expanded-details {
+  margin-top: 16px;
+  
+  mat-divider {
+    margin: 12px 0;
+  }
+  
+  .detail-section {
+    margin-bottom: 20px;
+    
+    .detail-title {
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #555;
+    }
+    
+    .detail-content {
+      margin: 0;
+      color: #666;
+    }
+    
+    // Assignee and dependency tags
+    .assignee-tag, .dependency-tag {
+      display: inline-block;
+      background-color: #f1f1f1;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin: 4px;
+      font-size: 0.85rem;
+      color: #555;
+    }
+    
+    // Comments styling
+    .comment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      
+      .comment-item {
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 6px;
+        border-left: 3px solid #ddd;
+        
+        .comment-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 6px;
+          font-size: 0.8rem;
+          color: #777;
+          
+          .comment-author {
+            font-weight: 500;
+          }
+        }
+        
+        .comment-text {
+          margin: 0;
+          font-size: 0.9rem;
+          line-height: 1.4;
+        }
+      }
+    }
+    
+    // Files styling
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      
+      .file-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+        
+        mat-icon {
+          color: #666;
+          font-size: 18px;
+          height: 18px;
+          width: 18px;
+        }
+        
+        .file-name {
+          font-weight: 500;
+          color: #333;
+        }
+        
+        .file-uploader, .file-date {
+          font-size: 0.8rem;
+          color: #777;
+          margin-left: 8px;
+        }
+      }
+    }
+    
+    .no-data {
+      font-style: italic;
+      color: #999;
+    }
+  }
+}
+
 // Responsive adjustments
 @media (max-width: 768px) {
   .task-header {
@@ -241,6 +348,19 @@
     
     .task-badges {
       margin-top: 8px;
+    }
+  }
+  
+  .expanded-details {
+    .detail-section {
+      .comment-header, .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+        
+        .file-uploader, .file-date {
+          margin-left: 0;
+        }
+      }
     }
   }
 }

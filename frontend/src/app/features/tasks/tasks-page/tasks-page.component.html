@@ -111,6 +111,74 @@
         <a mat-button color="primary" [routerLink]="['/tasks', task.id, 'edit']">
           <mat-icon>edit</mat-icon> Edytuj
         </a>
+        <button mat-button color="accent" (click)="toggleTaskExpansion(task.id)" type="button">
+          <mat-icon>{{ isTaskExpanded(task.id) ? 'expand_less' : 'expand_more' }}</mat-icon>
+          {{ isTaskExpanded(task.id) ? 'Mniej szczegółów' : 'Więcej szczegółów' }}
+        </button>
+      </div>
+
+      <!-- Expanded Task Details Section (only visible when task is expanded) -->
+      <div class="expanded-details" *ngIf="isTaskExpanded(task.id)">
+        <mat-divider></mat-divider>
+
+        <!-- Assignees (if available) -->
+        <div class="detail-section" *ngIf="task.assigneeIds && task.assigneeIds.length > 0">
+          <h4 class="detail-title">Przypisani użytkownicy</h4>
+          <p class="detail-content">
+            <span class="assignee-tag" *ngFor="let assigneeId of task.assigneeIds">
+              {{ getAssigneeName(assigneeId, task.projectId) }}
+            </span>
+            <span *ngIf="!task.assigneeIds || task.assigneeIds.length === 0">
+              Brak przypisanych użytkowników
+            </span>
+          </p>
+        </div>
+
+        <!-- Dependencies (if available) -->
+        <div class="detail-section" *ngIf="task.dependencyIds && task.dependencyIds.length > 0">
+          <h4 class="detail-title">Zależności</h4>
+          <p class="detail-content">
+            <span class="dependency-tag" *ngFor="let dependencyId of task.dependencyIds">
+              {{ getTaskName(dependencyId) }}
+            </span>
+            <span *ngIf="!task.dependencyIds || task.dependencyIds.length === 0">
+              Brak zależności
+            </span>
+          </p>
+        </div>
+
+        <!-- Comments (if available) -->
+        <div class="detail-section" *ngIf="task.comments && task.comments.length > 0">
+          <h4 class="detail-title">Komentarze</h4>
+          <div class="comment-list">
+            <div class="comment-item" *ngFor="let comment of task.comments">
+              <div class="comment-header">
+                <span class="comment-author">{{ getUserName(comment.userId) }}</span>
+                <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+              </div>
+              <p class="comment-text">{{ comment.comment }}</p>
+            </div>
+            <p *ngIf="!task.comments || task.comments.length === 0" class="no-data">
+              Brak komentarzy
+            </p>
+          </div>
+        </div>
+
+        <!-- Files (if available) -->
+        <div class="detail-section" *ngIf="task.files && task.files.length > 0">
+          <h4 class="detail-title">Pliki</h4>
+          <div class="file-list">
+            <div class="file-item" *ngFor="let file of task.files">
+              <mat-icon>attach_file</mat-icon>
+              <span class="file-name">{{ file.filePath }}</span>
+              <span class="file-uploader">Dodany przez: {{ file.uploadedById }}</span>
+              <span class="file-date">{{ formatDate(file.uploadedAt) }}</span>
+            </div>
+            <p *ngIf="!task.files || task.files.length === 0" class="no-data">
+              Brak plików
+            </p>
+          </div>
+        </div>
       </div>
     </mat-card>
     
