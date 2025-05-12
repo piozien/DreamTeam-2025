@@ -83,7 +83,7 @@
               <div class="assignees-list" *ngIf="task?.assigneeIds?.length; else noAssignees">
                 <div class="assignee-item" *ngFor="let assigneeId of task?.assigneeIds">
                   <div class="assignee-info">
-                    <span>{{ getUserName(assigneeId) }}</span>
+                    <span>{{ getUserNameByAssignmentId(assigneeId) }}</span>
                   </div>
                   <button 
                     mat-icon-button 

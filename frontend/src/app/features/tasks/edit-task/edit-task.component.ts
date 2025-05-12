@@ -207,6 +207,11 @@ export class EditTaskComponent implements OnInit {
     return this.taskMap.get(taskId) || `Task (${taskId})`;
   }
   
+  // This will be initialized when we load assignees to translate assignment IDs to user names
+  getUserNameByAssignmentId: (assignmentId: string) => string = (assignmentId: string) => {
+    return `Unknown User`;
+  }
+  
   /**
    * When the start date changes, automatically adjust the end date
    * to follow the same behavior as ProjectDialogComponent.
@@ -502,30 +507,75 @@ export class EditTaskComponent implements OnInit {
       return;
     }
     
-    // Add more debugging info
+    // Get the selected user information from available users
+    const selectedUser = this.availableUsers.find(user => user.id === this.selectedAssigneeId);
+    if (!selectedUser) {
+      this.showError('Selected user not found in available users.');
+      this.submitting = false;
+      return;
+    }
 
     /**
      * First update the task locally to avoid UI delay
      */
-    const optimisticUpdate = () => {
+    const optimisticUpdate = (assigneeObject?: TaskAssignee) => {
       // Update the UI optimistically, before the server responds
       if (!this.task!.assigneeIds) {
         this.task!.assigneeIds = [];
       }
+      
       // Only add if not already in the list
-      if (!this.task!.assigneeIds.includes(this.selectedAssigneeId!)) {
-        this.task!.assigneeIds.push(this.selectedAssigneeId!);
+      let assignmentId: string;
+      
+      if (assigneeObject) {
+        // If we have the actual assignee object from API response
+        assignmentId = assigneeObject.id;
+        
+        // Update our mapping immediately so the user name shows correctly
+        const oldFn = this.getUserNameByAssignmentId;
+        this.getUserNameByAssignmentId = (id: string): string => {
+          if (id === assignmentId) {
+            // For the newly added user, use their name from availableUsers
+            return selectedUser.name;
+          }
+          // For existing users, use the previous function
+          return oldFn(id);
+        };
+      } else {
+        // If we're doing optimistic update before API response (will be temporary)
+        // Create a temporary ID - will be replaced after API response
+        assignmentId = `temp-${Date.now()}`;
+        
+        // Update our mapping with temporary ID
+        const oldFn = this.getUserNameByAssignmentId;
+        this.getUserNameByAssignmentId = (id: string): string => {
+          if (id === assignmentId) {
+            // For the newly added user, use their name from availableUsers
+            return selectedUser.name;
+          }
+          // For existing users, use the previous function
+          return oldFn(id);
+        };
       }
+      
+      // Add the assignment to the task
+      if (!this.task!.assigneeIds.includes(assignmentId)) {
+        this.task!.assigneeIds.push(assignmentId);
+      }
+      
       this.selectedAssigneeId = null;
     };
 
     this.taskService.addAssignee(this.taskId, this.selectedAssigneeId, userId).subscribe({
       next: (assignee) => {
         console.log('Successfully added assignee:', assignee);
-        // Update already done optimistically
-        optimisticUpdate();
+        // Update with the actual assignee object from the API
+        optimisticUpdate(assignee);
         this.submitting = false;
         this.showSuccess('Użytkownik został dodany');
+        
+        // Update our userMap for future reference
+        this.userMap.set(this.selectedAssigneeId!, selectedUser.name);
         
         // Refresh task data to ensure we have the latest state from server
         this.refreshTaskData();
@@ -540,7 +590,7 @@ export class EditTaskComponent implements OnInit {
              err.error.includes('jackson-datatype-jsr310'))) {
           // Special handling for date serialization errors
           console.log('LocalDate serialization error detected. Assuming assignee was added successfully.');
-          // Proceed with optimistic update
+          // Proceed with optimistic update without assignee object (we'll rely on refresh)
           optimisticUpdate();
           this.showSuccess('Użytkownik prawdopodobnie został dodany. Odświeżanie danych...');
           // Refresh task data to get the current state
@@ -709,6 +759,7 @@ export class EditTaskComponent implements OnInit {
       return;
     }
     
+    // First, load all the project members for name lookup
     this.projectService.getProjectMembers(projectId).subscribe({
       next: (members) => {
         this.availableUsers = (Array.isArray(members) ? members : Object.values(members)).map((member: ProjectMemberDTO) => ({
@@ -718,6 +769,62 @@ export class EditTaskComponent implements OnInit {
         
         // Create a map of user IDs to names for lookup
         this.createUserMap(this.availableUsers);
+        
+        // Now fetch the actual task assignees to get the correct user IDs
+        if (this.task && this.task.assigneeIds && this.task.assigneeIds.length > 0) {
+          console.log('Getting detailed assignee information for task...');
+          
+          // Get the complete assignee objects with taskId, id (assignment id), and userId (the one we need)
+          this.taskService.getTaskAssignees(this.taskId, userId).subscribe({
+            next: (assignees) => {
+              if (assignees && assignees.length > 0) {
+                console.log('Received task assignees:', assignees);
+                
+                // Clear task assignee IDs (they're assignment IDs, not user IDs)
+                if (this.task) {
+                  // Store assignment IDs for operations like removal
+                  const assignmentIds = [...(this.task.assigneeIds || [])];
+                  
+                  // Create a mapping from assignment ID to user ID
+                  const assignmentToUserIdMap = new Map<string, string>();
+                  assignees.forEach(assignee => {
+                    assignmentToUserIdMap.set(assignee.id, assignee.userId);
+                  });
+                  
+                  // Create a getUserNameByAssignmentId function that first translates assignment ID to user ID
+                  // and then looks up the user name
+                  this.getUserNameByAssignmentId = (assignmentId: string): string => {
+                    const actualUserId = assignmentToUserIdMap.get(assignmentId);
+                    if (actualUserId) {
+                      return this.userMap.get(actualUserId) || `User (${actualUserId})`;
+                    }
+                    return `Unknown User`;
+                  }
+                }
+                
+                // For each assignee, check if we have their user name in our map
+                assignees.forEach(assignee => {
+                  const userId = assignee.userId;
+                  if (!this.userMap.has(userId)) {
+                    // Try to find the user in available users
+                    const user = this.availableUsers.find(u => u.id === userId);
+                    if (user) {
+                      this.userMap.set(userId, user.name);
+                      console.log(`Added assignee from project members: ${user.name} (${userId})`);
+                    } else {
+                      // No name found, use a default label
+                      this.userMap.set(userId, `User ${userId}`);
+                      console.log(`No name found for user ${userId}, using default label`);
+                    }
+                  }
+                });
+              }
+            },
+            error: (assigneeErr) => {
+              console.error('Failed to load task assignees:', assigneeErr);
+            }
+          });
+        }
         
         // Complete loading
         this.loading = false;
