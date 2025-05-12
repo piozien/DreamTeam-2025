@@ -16,6 +16,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import tech.project.schedule.security.JwtAuthenticationFilter;
 
+import static org.springframework.http.HttpMethod.OPTIONS;
+
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig implements WebMvcConfigurer {
@@ -37,6 +39,10 @@ public class SecurityConfig implements WebMvcConfigurer {
             .sessionManagement(sess -> sess.sessionCreationPolicy
                     (SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(OPTIONS, "/**").permitAll()
+                // ws
+                .requestMatchers("/ws/**").permitAll()
+                // Auth endpoints
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/request-password-reset",
                         "/api/auth/set-password", "/login**", "/error**").permitAll()
                 .anyRequest().authenticated()
@@ -53,7 +59,7 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
+        registry.addMapping("/**")
                 .allowedOrigins("http://localhost:4200")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("Authorization", "Content-Type", "*")
