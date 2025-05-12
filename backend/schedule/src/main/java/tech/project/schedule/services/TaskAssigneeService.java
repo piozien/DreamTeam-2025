@@ -8,7 +8,6 @@ import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.enums.GlobalRole;
 import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.enums.ProjectUserRole;
-import tech.project.schedule.model.notification.Notification;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.user.User;

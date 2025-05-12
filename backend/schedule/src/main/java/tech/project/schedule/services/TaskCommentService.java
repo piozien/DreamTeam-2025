@@ -11,10 +11,8 @@ import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskComment;
 import tech.project.schedule.model.user.User;
-import tech.project.schedule.repositories.ProjectRepository;
 import tech.project.schedule.repositories.TaskCommentRepository;
 import tech.project.schedule.repositories.TaskRepository;
-import tech.project.schedule.repositories.UserRepository;
 import tech.project.schedule.services.utils.GetProjectRole;
 import tech.project.schedule.services.utils.PmAndAssigneeCheck;
 
@@ -33,8 +31,6 @@ import java.util.UUID;
 public class TaskCommentService {
     private final TaskCommentRepository taskCommentRepository;
     private final TaskRepository taskRepository;
-    private final UserRepository userRepository;
-    private final ProjectRepository projectRepository;
 
     /**
      * Adds a comment to a task.
@@ -53,7 +49,12 @@ public class TaskCommentService {
         if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)){
             throw new ApiException("You are not allowed to add comments", HttpStatus.FORBIDDEN);
         }
+        comment.setTask(task);
+        comment.setUser(user);
         task.getComments().add(comment);
+
+        comment = taskCommentRepository.save(comment);
+
         taskRepository.save(task);
         return comment;
     }
@@ -62,14 +63,13 @@ public class TaskCommentService {
      * Deletes a specific comment from a task.
      * Only project managers and users assigned to the task can delete comments.
      *
-     * @param taskId The ID of the task containing the comment
-     * @param user The user performing the deletion
+     * @param taskId    The ID of the task containing the comment
+     * @param user      The user performing the deletion
      * @param commentId The ID of the comment to delete
-     * @return The deleted comment entity
      * @throws ApiException if task or comment not found, or user lacks permission
      */
     @Transactional
-    public TaskComment deleteComment(UUID taskId, User user, UUID commentId){
+    public void deleteComment(UUID taskId, User user, UUID commentId){
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found.", HttpStatus.NOT_FOUND));
 
@@ -80,7 +80,6 @@ public class TaskCommentService {
         }
         task.getComments().remove(comment);
         taskRepository.save(task);
-        return comment;
     }
 
     /**
@@ -115,7 +114,7 @@ public class TaskCommentService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
         boolean isInProject = task.getProject().getMembers().containsKey(user.getId());
-        if(!isAdmin||isInProject){
+        if(!isAdmin&&!isInProject){
             throw new ApiException("You are not allowed to view comments", HttpStatus.FORBIDDEN);
         }
         return taskCommentRepository.findAllByTask_Id(taskId);
@@ -132,22 +131,19 @@ public class TaskCommentService {
      */
     public List<TaskComment> getUserComments(User currUser, User otherUser) {
         boolean isAdmin = currUser.getGlobalRole() == GlobalRole.ADMIN;
-        if(isAdmin||currUser.getId().equals(otherUser.getId())){return taskCommentRepository.findAllByUser_Id(currUser.getId());}
+        if(isAdmin||currUser.getId().equals(otherUser.getId())){return taskCommentRepository.findAllByUser_Id(otherUser.getId());}
 
         List<TaskComment> userComments = new ArrayList<>();
-        List<TaskComment> allComments = taskCommentRepository.findAllByUser_Id(currUser.getId());
+        List<TaskComment> allComments = taskCommentRepository.findAllByUser_Id(otherUser.getId());
 
-        List<Project> allProject = projectRepository.findAll();
-
-        for (Project project : allProject) {
-            for(TaskComment comment : allComments) {
-                if(project.getMembers().containsKey(currUser.getId())
-                        && project.getMembers().containsKey(otherUser.getId())
-                        && comment.getTask().getProject().equals(project)){
-                    userComments.add(comment);
-                }
+        for(TaskComment comment : allComments) {
+            Project commentProject = comment.getTask().getProject();
+            if(commentProject.getMembers().containsKey(currUser.getId())
+                    && commentProject.getMembers().containsKey(otherUser.getId())){
+                userComments.add(comment);
             }
         }
+        
         return userComments;
     }
 

@@ -104,25 +104,41 @@ public class TaskDependencyService {
      * Only project managers and users assigned to the task can update dependencies.
      *
      * @param taskId The ID of the dependent task
-     * @param dependencyId The ID of the current prerequisite task
+     * @param oldDependencyId The ID of the current prerequisite task to be replaced
+     * @param newDependencyId The ID of the new prerequisite task to use as replacement
      * @param user The user attempting to update the dependency
      * @throws ApiException if tasks not found, dependency not found, or user lacks permission
      */
     @Transactional
-    public void updateTaskDependency(UUID taskId, UUID dependencyId, User user) {
-        Task newTask = taskRepository.findById(taskId)
+    public void updateTaskDependency(UUID taskId, UUID oldDependencyId, UUID newDependencyId, User user) {
+        // Find the task that has dependencies
+        Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
+                
+        // Find the new dependency task
+        Task newDependencyTask = taskRepository.findById(newDependencyId)
+                .orElseThrow(() -> new ApiException("New dependency task not found", HttpStatus.NOT_FOUND));
+                
+        // Find the existing dependency relationship
         TaskDependency taskDependency = taskDependencyRepository
-                .findByTaskIdAndDependsOnTaskId(taskId, dependencyId);
+                .findByTaskIdAndDependsOnTaskId(taskId, oldDependencyId);
 
+        // Check if user has permission
         if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)){
-            throw new ApiException("You are not allowed to add dependencies", HttpStatus.FORBIDDEN);
+            throw new ApiException("You are not allowed to modify dependencies", HttpStatus.FORBIDDEN);
         }
 
+        // Verify the dependency exists
         if(taskDependency == null) {
             throw new ApiException("Dependency not found", HttpStatus.NOT_FOUND);
         }
-        taskDependency.setDependsOnTask(newTask);
+        
+        if (taskId.equals(newDependencyId)) {
+            throw new ApiException("A task cannot depend on itself", HttpStatus.BAD_REQUEST);
+        }
+        
+        // Replace the old dependency with the new one
+        taskDependency.setDependsOnTask(newDependencyTask);
         taskDependencyRepository.save(taskDependency);
     }
 
@@ -136,9 +152,10 @@ public class TaskDependencyService {
      * @throws ApiException if task not found or user lacks permission
      */
     public Set<Task> getTaskDependencies(UUID taskId, User user) {
+        
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
-                
+        
         if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)){
             throw new ApiException("You are not allowed to view dependencies", HttpStatus.FORBIDDEN);
         }
@@ -147,6 +164,7 @@ public class TaskDependencyService {
         task.getDependencies().forEach(dependency -> {
             dependencies.add(dependency.getDependsOnTask());
         });
+
         
         return dependencies;
     }

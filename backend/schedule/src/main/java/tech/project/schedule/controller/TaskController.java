@@ -4,14 +4,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tech.project.schedule.dto.mappers.TaskMapper;
-import tech.project.schedule.dto.task.TaskAssigneeDTO;
-import tech.project.schedule.dto.task.TaskCommentDTO;
-import tech.project.schedule.dto.task.TaskDTO;
-import tech.project.schedule.dto.task.TaskFileDTO;
-import tech.project.schedule.dto.task.TaskRequestDTO;
-import tech.project.schedule.dto.task.TaskUpdateDTO;
+import tech.project.schedule.dto.task.*;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskAssignee;
@@ -20,12 +16,10 @@ import tech.project.schedule.model.task.TaskFile;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
 import tech.project.schedule.services.*;
-
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import tech.project.schedule.utils.UserUtils;
 
 /**
@@ -37,6 +31,7 @@ import tech.project.schedule.utils.UserUtils;
 @RestController
 @RequestMapping("/api/tasks")
 @RequiredArgsConstructor
+@Transactional
 public class TaskController {
     private final TaskService taskService;
     private final UserRepository userRepository;
@@ -236,23 +231,23 @@ public class TaskController {
      /**
      * Adds a dependency relationship between two tasks.
      *
-     * @param taskId ID of the task that depends on another
-     * @param dependencyId ID of the task that is depended upon
+     * @param taskId ID of the task that will depend on another task
+     * @param dependentOnTaskId ID of the task that is depended upon (prerequisite task)
      * @param userId ID of the user creating the dependency
      * @return ResponseEntity with HTTP status 201 (CREATED) on successful creation
      * @throws ApiException if the user is not found, tasks don't exist, or user lacks permissions
      */
-    @PostMapping("/{taskId}/dependencies/{dependencyId}")
+    @PostMapping("/{taskId}/dependencies/{dependentOnTaskId}")
     public ResponseEntity<Void> addDependency(
             @PathVariable UUID taskId,
-            @PathVariable UUID dependencyId,
+            @PathVariable UUID dependentOnTaskId,
             @RequestParam UUID userId
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
         UserUtils.assertAuthorized(user);
 
-        taskDependencyService.addDependency(taskId, dependencyId, user);
+        taskDependencyService.addDependency(taskId, dependentOnTaskId, user);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -260,22 +255,22 @@ public class TaskController {
      * Removes a dependency relationship between two tasks.
      *
      * @param taskId ID of the task that depends on another
-     * @param dependencyId ID of the task that is depended upon
+     * @param dependentOnTaskId ID of the prerequisite task to remove as dependency
      * @param userId ID of the user removing the dependency
      * @return ResponseEntity with HTTP status 204 (NO CONTENT) on successful removal
      * @throws ApiException if the user is not found, tasks don't exist, or user lacks permissions
      */
-    @DeleteMapping("/{taskId}/dependencies/{dependencyId}")
+    @DeleteMapping("/{taskId}/dependencies/{dependentOnTaskId}")
     public ResponseEntity<Void> removeDependency(
             @PathVariable UUID taskId,
-            @PathVariable UUID dependencyId,
+            @PathVariable UUID dependentOnTaskId,
             @RequestParam UUID userId
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
         UserUtils.assertAuthorized(user);
 
-        taskDependencyService.removeDependency(taskId, dependencyId, user);
+        taskDependencyService.removeDependency(taskId, dependentOnTaskId, user);
         return ResponseEntity.noContent().build();
     }
     
@@ -284,11 +279,11 @@ public class TaskController {
      *
      * @param taskId ID of the task whose dependencies are to be retrieved
      * @param userId ID of the user requesting the dependencies
-     * @return ResponseEntity containing a set of tasks as DTOs that the specified task depends on
+     * @return ResponseEntity containing a set of UUIDs identifying the tasks that the specified task depends on
      * @throws ApiException if the user is not found, task doesn't exist, or user lacks access
      */
-    @GetMapping("dependencies/{taskId}/dependencies")
-    public ResponseEntity<Set<TaskDTO>> getTaskDependencies(
+    @GetMapping("/{taskId}/dependencies")
+    public ResponseEntity<Set<UUID>> getTaskDependencies(
             @PathVariable UUID taskId,
             @RequestParam UUID userId
     ) {
@@ -297,59 +292,36 @@ public class TaskController {
         UserUtils.assertAuthorized(user);
 
         Set<Task> dependencies = taskDependencyService.getTaskDependencies(taskId, user);
-        Set<TaskDTO> dependencyDTOs = dependencies.stream()
-                .map(TaskMapper::taskToDTO)
+        Set<UUID> dependencyIds = dependencies.stream()
+                .map(Task::getId)
                 .collect(Collectors.toSet());
 
-        return ResponseEntity.ok(dependencyDTOs);
+        return ResponseEntity.ok(dependencyIds);
     }
-
     /**
      * Updates a dependency relationship between tasks.
+     * Replaces one prerequisite task with another for a specific task.
      *
-     * @param taskId ID of the task that depends on another
-     * @param dependencyId ID of the task that is depended upon
-     * @param userId ID of the user updating the dependency
+     * @param taskId ID of the task whose dependency is being updated
+     * @param oldDependentOnTaskId ID of the current prerequisite task to be replaced
+     * @param request DTO containing the new prerequisite task ID
+     * @param userId ID of the user updating the dependency (for authorization)
      * @return ResponseEntity with HTTP status 200 (OK) on successful update
      * @throws ApiException if the user is not found, tasks don't exist, or user lacks permissions
      */
-    @PutMapping("/{taskId}/dependencies/{dependencyId}")
+    @PutMapping("/{taskId}/dependencies/{oldDependentOnTaskId}")
     public ResponseEntity<Void> updateDependency(
             @PathVariable UUID taskId,
-            @PathVariable UUID dependencyId,
+            @PathVariable UUID oldDependentOnTaskId,
+            @RequestBody UpdateTaskDependencyRequest request,
             @RequestParam UUID userId
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
         UserUtils.assertAuthorized(user);
 
-        taskDependencyService.updateTaskDependency(taskId, dependencyId, user);
+        taskDependencyService.updateTaskDependency(taskId, oldDependentOnTaskId, request.getNewDependentOnTaskId(), user);
         return ResponseEntity.ok().build();
-    }
-    
-     /**
-     * Retrieves all assignees for a specific task in list format.
-     *
-     * @param taskId ID of the task
-     * @param userId ID of the user requesting the assignee list
-     * @return ResponseEntity containing a list of task assignees as DTOs
-     * @throws ApiException if the user is not found, task doesn't exist, or user lacks access
-     */
-    @GetMapping("/{taskId}/all-assignees")
-    public ResponseEntity<List<TaskAssigneeDTO>> getAllTaskAssignees(
-            @PathVariable UUID taskId,
-            @RequestParam UUID userId
-    ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-        UserUtils.assertAuthorized(user);
-
-        List<TaskAssignee> assignees = taskAssigneeService.getAllAssigneesByTaskId(taskId, user);
-        List<TaskAssigneeDTO> assigneeDTOs = assignees.stream()
-                .map(TaskMapper::assigneeToDTO)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(assigneeDTOs);
     }
     
     /**
@@ -400,14 +372,57 @@ public class TaskController {
         return ResponseEntity.ok(TaskMapper.commentToDTO(comment));
     }
     
-     /**
-     * Retrieves all comments made by a specific user that are visible to the requesting user.
+    /**
+     * Retrieves all assignees for a specific task in list format.
      *
-     * @param userId ID of the requesting user
-     * @param otherUserId ID of the user whose comments are being retrieved
-     * @return ResponseEntity containing a list of comments as DTOs
-     * @throws ApiException if either user is not found
+     * @param taskId ID of the task
+     * @param userId ID of the user requesting the assignee list
+     * @return ResponseEntity containing a list of task assignees as DTOs
+     * @throws ApiException if the user is not found, task doesn't exist, or user lacks access
      */
+    @GetMapping("/{taskId}/all-assignees")
+    public ResponseEntity<List<TaskAssigneeDTO>> getAllTaskAssignees(
+            @PathVariable UUID taskId,
+            @RequestParam UUID userId
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(user);
+
+        List<TaskAssignee> assignees = taskAssigneeService.getAllAssigneesByTaskId(taskId, user);
+        List<TaskAssigneeDTO> assigneeDTOs = assignees.stream()
+                .map(TaskMapper::assigneeToDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(assigneeDTOs);
+    }
+    
+    /**
+     * Retrieves all tasks assigned to a specific user.
+     *
+     * @param userId ID of the user whose tasks should be retrieved
+     * @param requestUserId ID of the requesting user (for authorization)
+     * @return ResponseEntity containing a list of task DTOs
+     * @throws ApiException if either user is not found or requesting user lacks permissions
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<TaskDTO>> getTasksByUserId(
+            @PathVariable UUID userId,
+            @RequestParam UUID requestUserId
+    ) {
+        User requestingUser = userRepository.findById(requestUserId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        UserUtils.assertAuthorized(requestingUser);
+        
+        List<Task> tasks = taskService.getTasksByUserId(userId, requestingUser);
+        
+        List<TaskDTO> taskDTOs = tasks.stream()
+                .map(TaskMapper::taskToDTO)
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(taskDTOs);
+    }
+    
     @GetMapping("/comments/user")
     public ResponseEntity<List<TaskCommentDTO>> getUserComments(
             @RequestParam UUID userId,

@@ -3,6 +3,7 @@ package tech.project.schedule.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.enums.GlobalRole;
 import tech.project.schedule.model.enums.ProjectUserRole;
@@ -41,6 +42,7 @@ public class TaskFileService {
      * @return The saved TaskFile entity
      * @throws ApiException if task not found, user lacks permission, or file path is null
      */
+    @Transactional
     public TaskFile addTaskFile(UUID taskId, User user, TaskFile file) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
@@ -57,6 +59,7 @@ public class TaskFileService {
         file.setUploadedBy(user);
         
         TaskFile savedFile = taskFileRepository.save(file);
+        savedFile = taskFileRepository.findById(savedFile.getId()).orElseThrow(() -> new ApiException("Failed to save file", HttpStatus.INTERNAL_SERVER_ERROR));
         
         if (task.getFiles() == null) {
             task.setFiles(new java.util.HashSet<>());
@@ -76,6 +79,7 @@ public class TaskFileService {
      * @param user The user performing the update
      * @throws ApiException if task not found or user lacks permission
      */
+    @Transactional
     public void updateFilePathByTaskId(UUID taskId, String newFilePath, User user) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
@@ -97,6 +101,7 @@ public class TaskFileService {
      * @param user The user performing the update
      * @throws ApiException if task or file not found, user lacks permission, or file doesn't belong to task
      */
+    @Transactional
     public void updateFilePath(UUID taskId, UUID fileId, String newFilePath, User user) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
@@ -121,6 +126,7 @@ public class TaskFileService {
      * @param filePath The file path to check
      * @return true if a file with this path exists, false otherwise
      */
+    @Transactional
     public boolean doesFileExist(String filePath) {
         return taskFileRepository.existsByFilePath(filePath);
     }
@@ -134,6 +140,7 @@ public class TaskFileService {
      * @param user The user attempting the deletion
      * @throws ApiException if file not found or user lacks permission
      */
+    @Transactional
     public void deleteTaskFileByPath(String filePath, UUID taskId, User user) {
         TaskFile taskFile = taskFileRepository.findByFilePath(filePath);
         if(!doesFileExist(taskFile.getFilePath())){
@@ -154,6 +161,7 @@ public class TaskFileService {
      * @param user The user attempting the deletion
      * @throws ApiException if task or file not found, user lacks permission, or file doesn't belong to task
      */
+    @Transactional
     public void deleteTaskFile(UUID taskId, UUID fileId, User user) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
@@ -184,6 +192,7 @@ public class TaskFileService {
      * @return List of TaskFile entities associated with the task
      * @throws ApiException if task not found or user lacks permission
      */
+    @Transactional
     public List<TaskFile> getTaskFiles(UUID taskId, User user) {
         boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
         Task task = taskRepository.findById(taskId)
@@ -207,6 +216,7 @@ public class TaskFileService {
      * @return The requested TaskFile entity
      * @throws ApiException if task or file not found, or user lacks permission
      */
+    @Transactional
     public TaskFile getTaskFileById(UUID taskId, UUID fileId, User user) {
         boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
         Task task = taskRepository.findById(taskId)
@@ -230,6 +240,7 @@ public class TaskFileService {
      * @return The requested TaskFile entity
      * @throws ApiException if file not found, file path is null, or user lacks permission
      */
+    @Transactional
     public TaskFile getTaskFileByPath(String filePath, User user) {
         boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
         if(filePath == null){

@@ -307,4 +307,28 @@ public ResponseEntity<String> requestPasswordReset(@RequestBody SetPasswordReque
         userService.authorizeUser(userId);
         return ResponseEntity.ok("User authorized successfully");
     }
+
+    /**
+     * Retrieves information about a specific user by their ID.
+     * 
+     * @param userId The ID of the user to retrieve
+     * @return ResponseEntity containing the user information
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        
+        UserDTO userDTO = new UserDTO(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getGlobalRole(),
+                null
+        );
+        
+        return ResponseEntity.ok(userDTO);
+    }
 }
