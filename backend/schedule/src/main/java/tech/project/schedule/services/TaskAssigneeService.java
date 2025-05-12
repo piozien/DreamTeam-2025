@@ -58,12 +58,12 @@ public class TaskAssigneeService {
         notificationService.sendNotificationToUser(
                 user,
                 NotificationStatus.TASK_ASSIGNEE_ADDED,
-                "You have successfully added user "+userToBeAdded.getName()+" to the task "+task.getName()
+                "Pomyślnie dodano użytkownika "+userToBeAdded.getName()+" do zadania "+task.getName()
         );
         notificationService.sendNotificationToUser(
                 userToBeAdded,
                 NotificationStatus.TASK_ASSIGNEE_ADDED,
-                "You have been added to the task "+task.getName()
+                "Zostałeś dodany do zadania "+task.getName()
         );
         return savedAssignee;
     }

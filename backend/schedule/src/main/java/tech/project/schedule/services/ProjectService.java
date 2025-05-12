@@ -51,7 +51,7 @@ public class ProjectService {
         notificationService.sendNotificationToUser(
                 user,
                 NotificationStatus.PROJECT_CREATED,
-                "You have created a project by the name: "+ project.getName()+" successfully."
+                "Stworzono projekt: "+ project.getName()+" pomyślnie."
         );
         return savedProject;
     }
@@ -153,12 +153,12 @@ public class ProjectService {
         notificationService.sendNotificationToUser(
                 savedMember.getUser(),
                 NotificationStatus.PROJECT_MEMBER_ADDED,
-                "You have been added to the project: "+ project.getName()
+                "Zostałeś dodany do projektu: "+ project.getName()
         );
         notificationService.sendNotificationToUser(
                 principal,
                 NotificationStatus.PROJECT_MEMBER_ADDED,
-                "You added " + user.getUsername() + " to the project: " + project.getName()
+                "Dodano użytkownika "+ user.getUsername() + " do projektu: "+ project.getName()
         );
 
         return savedMember;

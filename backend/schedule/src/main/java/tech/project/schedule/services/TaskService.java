@@ -122,7 +122,7 @@ public class TaskService {
             notificationService.sendNotificationToUser(
                     assignee.getUser(),
                     statusNot,
-                    "Task "+updatedTask.getName()+" has been updated."
+                    "Zadanie "+updatedTask.getName()+" zostało zaktualizowane."
             );
         }
         return saved;
