@@ -93,9 +93,12 @@ public class TaskMapper {
                     .collect(Collectors.toSet());
         }
         Set<UUID> dependencyIds = new HashSet<>();
-        if(task.getDependencies() != null) {
-            dependencyIds = task.getDependencies().stream().map(TaskDependency::getId)
-                    .collect(Collectors.toSet());
+        if(task.getDependencies() != null && !task.getDependencies().isEmpty()) {
+            for (TaskDependency dep : task.getDependencies()) {
+                if (dep.getDependsOnTask() != null) {
+                    dependencyIds.add(dep.getDependsOnTask().getId());
+                }
+            }
         }
         return new TaskDTO(
                 task.getId(),
@@ -141,6 +144,64 @@ public class TaskMapper {
         return comment;
     }
 
+    
+    /**
+     * Converts a Task entity to a TaskDTO with specified dependency IDs.
+     * This method allows controlling which dependencies are included to avoid circular references.
+     * 
+     * @param task The Task entity to convert
+     * @param dependencyIds Explicit set of dependency IDs to include in the DTO
+     * @return A TaskDTO containing the task data with controlled dependencies
+     */
+    public static TaskDTO taskToDTOWithSpecificDependencies(Task task, Set<UUID> dependencyIds) {
+        // Process assignees
+        Set<UUID> assigneeIds = new HashSet<>();
+        if(task.getAssignees() != null) {
+            assigneeIds = task.getAssignees().stream().map(TaskAssignee::getId)
+                    .collect(Collectors.toSet());
+        }
+        
+        // Process comments
+        Set<TaskCommentDTO> commentDtos = new HashSet<>();
+        if(task.getComments() != null) {
+            commentDtos = task.getComments().stream().map(TaskComment::mapToTaskCommentDTO)
+                    .collect(Collectors.toSet());
+        }
+        
+        // Process files
+        Set<TaskFileDTO> taskFileDtos = new HashSet<>();
+        if(task.getFiles() != null) {
+            taskFileDtos = task.getFiles().stream().map(TaskFile::mapToTaskFileDTO)
+                    .collect(Collectors.toSet());
+        }
+        
+        // Use the explicitly provided dependency IDs
+        return new TaskDTO(
+                task.getId(),
+                task.getProject().getId(),
+                task.getName(),
+                task.getDescription(),
+                task.getStartDate(),
+                task.getEndDate(),
+                task.getPriority(),
+                task.getStatus(),
+                assigneeIds,
+                commentDtos,
+                taskFileDtos,
+                dependencyIds
+        );
+    }
+    
+    /**
+     * Converts a Task entity to a TaskDTO without any dependencies.
+     * This method is useful to avoid circular references when mapping related tasks.
+     * 
+     * @param task The Task entity to convert
+     * @return A TaskDTO containing the task data but with empty dependencies
+     */
+    public static TaskDTO taskToDTOWithoutDependencies(Task task) {
+        return taskToDTOWithSpecificDependencies(task, new HashSet<>());
+    }
     
     /**
      * Converts a TaskComment entity to a TaskCommentDTO.

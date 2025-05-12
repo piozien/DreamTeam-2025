@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.exception.ApiException;
+import tech.project.schedule.model.enums.GlobalRole;
 import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.enums.ProjectUserRole;
 import tech.project.schedule.model.enums.TaskStatus;
@@ -13,6 +14,9 @@ import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.services.utils.GetProjectRole;
+import tech.project.schedule.utils.UserUtils;
+import tech.project.schedule.repositories.TaskAssigneeRepository;
+import java.util.stream.Collectors;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,6 +34,8 @@ public class TaskService {
     private final NotificationService notificationService;
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
+    private final TaskAssigneeRepository taskAssigneeRepository;
+    private final tech.project.schedule.repositories.UserRepository userRepository;
 
     @Transactional
     public Task createTask(Task task, User user){
@@ -158,5 +164,38 @@ public class TaskService {
         }
         
         return new ArrayList<>(project.getTasks());
+    }
+    
+    /**
+     * Retrieves all tasks assigned to a specific user.
+     * This method finds all tasks that the user is assigned to across all projects.
+     *
+     * @param userId ID of the user whose tasks are to be retrieved
+     * @param requestingUser The user making the request (for authorization)
+     * @return List of tasks assigned to the specified user
+     * @throws ApiException if the user is not found or requesting user lacks authorization
+     */
+    public List<Task> getTasksByUserId(UUID userId, User requestingUser) {
+        // Ensure the requesting user is authorized
+        UserUtils.assertAuthorized(requestingUser);
+        
+        // Check if the user exists
+        User targetUser = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+
+        if (!requestingUser.getId().equals(userId) && requestingUser.getGlobalRole() != GlobalRole.ADMIN) {
+            throw new ApiException("You don't have permission to view tasks for this user", HttpStatus.FORBIDDEN);
+        }
+        
+        // Get all task assignments for the user
+        List<TaskAssignee> assignments = taskAssigneeRepository.findAllByUser_Id(userId);
+        
+        // Extract tasks from assignments
+        List<Task> tasks = assignments.stream()
+                .map(TaskAssignee::getTask)
+                .distinct()
+                .collect(Collectors.toList());
+        
+        return tasks;
     }
 }
