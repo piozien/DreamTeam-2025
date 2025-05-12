@@ -19,6 +19,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/project-view/components/project-view.component').then(m => m.ProjectViewComponent)
   },
   {
+    path: 'tasks',
+    loadComponent: () => import('./features/tasks/tasks-page/tasks-page.component').then(m => m.TasksPageComponent)
+  },
+  {
     path: 'tasks/:id/edit',
     loadComponent: () => import('./features/tasks/edit-task/edit-task.component').then(m => m.EditTaskComponent)
   },
