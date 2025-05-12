@@ -33,7 +33,7 @@ public class NotificationService {
             payload.put("createdAt", notification.getCreatedAt().toString());
             payload.put("isRead", notification.getIsRead());
 
-            String destination = String.format("/queue/notifications", userId);
+            String destination = String.format("/user/%s/queue/notifications", userId);
             messagingTemplate.convertAndSend(destination, payload);
             
         }
