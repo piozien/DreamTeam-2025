@@ -8,10 +8,6 @@ import tech.project.schedule.model.user.User;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * Entity representing a system notification sent to users.
- * Tracks notifications for various events in the system along with their read status.
- */
 @Entity
 @Table(name = "Notifications")
 @Data
@@ -42,10 +38,6 @@ public class Notification {
     @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
 
-    
-    /**
-     * Sets creation timestamp when a notification is first persisted
-     */
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

@@ -61,9 +61,8 @@ public class ProjectService {
         Project existingProject = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
 
-        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
-        boolean isPM = existingProject.getMembers().containsKey(user.getId()) &&
-                ProjectUserRole.PM.equals(existingProject.getMembers().get(user.getId()).getRole());
+
+        boolean isPM = GetProjectRole.getProjectRole(user, existingProject) == ProjectUserRole.PM;
 
         if (!isPM) {
             throw new ApiException("You cannot edit this project", HttpStatus.FORBIDDEN);

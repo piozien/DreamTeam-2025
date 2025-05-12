@@ -40,34 +40,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.ScheduleApplication.executor": "Run",
-    "Maven.Unknown [clean].executor": "Run",
-    "Maven.schedule [clean].executor": "Run",
-    "Maven.schedule [install].executor": "Run",
-    "Maven.schedule [test].executor": "Run",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.ScheduleApplication.executor": "Run",
-    "git-widget-placeholder": "backend",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/bundam/Desktop/git_uwm/DreamTeam-2025/backend",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.ScheduleApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.Unknown [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.schedule [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.schedule [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.schedule [test].executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.ScheduleApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;connect-notif-calendar&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/bundam/Desktop/git_uwm/DreamTeam-2025/backend&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\uwm\rok3\semestr6\DreamTeam-2025\backend\schedule\src\main\java\tech\project\schedule\services" />
@@ -124,9 +124,9 @@
       <option name="ALTERNATIVE_JRE_PATH" value="graalvm-jdk-21" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <envs>
-        <env name="DB_URL" value="jdbc:postgresql://dpg-cvknnofgi27c73ba4kpg-a.frankfurt-postgres.render.com/dreambase" />
+        <env name="DB_URL" value="jdbc:postgresql://dpg-d08dn8ndiees73989770-a.frankfurt-postgres.render.com:5432/dreambase_anzr" />
         <env name="DB_USERNAME" value="root" />
-        <env name="DB_PASSWORD" value="4uYZ1HE3Rv4ovk83agGM77Mz37wDQuJ8" />
+        <env name="DB_PASSWORD" value="FX0CMPTIJJ3hthB4cc7RkDWpwmfyh8uj" />
         <env name="SERVER_PORT" value="8080" />
         <env name="SPRING_PROFILES_ACTIVE" value="dev" />
         <env name="FRONTEND_URL" value="http://localhost:4200" />
@@ -139,9 +139,6 @@
         <env name="JWT_EXP" value="3600000" />
       </envs>
       <module name="schedule" />
-      <selectedOptions>
-        <option name="environmentVariables" />
-      </selectedOptions>
       <option name="SPRING_BOOT_MAIN_CLASS" value="tech.project.schedule.ScheduleApplication" />
       <method v="2">
         <option name="Make" enabled="true" />

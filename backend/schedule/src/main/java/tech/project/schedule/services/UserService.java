@@ -28,7 +28,6 @@ import java.util.UUID;
 
 
 public class UserService {
-    // ToDo: add JWT tokens
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
