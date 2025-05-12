@@ -1,0 +1,122 @@
+<!-- Tasks Page Container -->
+<div class="tasks-page-container">
+  <!-- Header -->
+  <div class="tasks-header">
+    <h1>Moje Zadania</h1>
+    <p class="subtitle">Poniżej znajdują się wszystkie zadania, do których jesteś przypisany/a, pogrupowane według projektów.</p>
+  </div>
+  
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Ładowanie zadań...</p>
+  </div>
+  
+  <!-- Empty State -->
+  <div *ngIf="!loading && tasksByProject.length === 0" class="empty-state">
+    <mat-icon>assignment</mat-icon>
+    <h2>Brak przypisanych zadań</h2>
+    <p>Nie masz aktualnie przypisanych żadnych zadań. Zadania pojawią się tutaj, gdy ktoś przypisze Cię do zadania w projekcie.</p>
+  </div>
+  
+  <!-- Projects Container -->
+  <div *ngIf="!loading && tasksByProject.length > 0" class="projects-container">
+    <!-- Project Card (repeat for each project) -->
+    <mat-card *ngFor="let projectData of tasksByProject" class="project-card">
+      <!-- Project Header -->
+      <mat-card-header>
+        <mat-card-title>
+          <a [routerLink]="['/projects', projectData.project.id]" class="project-link">
+            {{ projectData.project.name || 'Projekt bez nazwy' }}
+          </a>
+        </mat-card-title>
+        <mat-card-subtitle>
+          <span class="project-dates">
+            {{ formatDate(projectData.project.startDate) }} - {{ formatDate(projectData.project.endDate) }}
+          </span>
+        </mat-card-subtitle>
+      </mat-card-header>
+      
+      <!-- Project Content with Tasks -->
+      <mat-card-content>
+        <mat-tab-group>
+          <!-- All Tasks Tab -->
+          <mat-tab label="Wszystkie ({{ projectData.tasks.length || 0 }})">
+            <ng-container *ngTemplateOutlet="tasksListTemplate; context: {$implicit: projectData.tasks, emptyMessage: 'Brak zadań w tym projekcie'}"></ng-container>
+          </mat-tab>
+          
+          <!-- In Progress Tasks Tab -->
+          <mat-tab label="W trakcie ({{ getFilteredTasksCount(projectData.tasks, TaskStatus.IN_PROGRESS) }})">
+            <ng-container *ngTemplateOutlet="tasksListTemplate; context: {$implicit: getFilteredTasks(projectData.tasks, TaskStatus.IN_PROGRESS), emptyMessage: 'Brak zadań w trakcie w tym projekcie'}"></ng-container>
+          </mat-tab>
+          
+          <!-- To Do Tasks Tab -->
+          <mat-tab label="Do zrobienia ({{ getFilteredTasksCount(projectData.tasks, TaskStatus.TO_DO) }})">
+            <ng-container *ngTemplateOutlet="tasksListTemplate; context: {$implicit: getFilteredTasks(projectData.tasks, TaskStatus.TO_DO), emptyMessage: 'Brak zadań do zrobienia w tym projekcie'}"></ng-container>
+          </mat-tab>
+          
+          <!-- Finished Tasks Tab -->
+          <mat-tab label="Ukończone ({{ getFilteredTasksCount(projectData.tasks, TaskStatus.FINISHED) }})">
+            <ng-container *ngTemplateOutlet="tasksListTemplate; context: {$implicit: getFilteredTasks(projectData.tasks, TaskStatus.FINISHED), emptyMessage: 'Brak ukończonych zadań w tym projekcie'}"></ng-container>
+          </mat-tab>
+        </mat-tab-group>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Reusable Task List Template -->
+<ng-template #tasksListTemplate let-tasks let-emptyMessage="emptyMessage">
+  <div class="tasks-list">
+    <!-- Task Card (repeat for each task) -->
+    <mat-card *ngFor="let task of tasks" class="task-card">
+      <div class="task-header">
+        <h3 class="task-name">{{ task.name || 'Brak nazwy' }}</h3>
+        <div class="task-badges">
+          <!-- Status Badge -->
+          <ng-container [ngSwitch]="task.status">
+            <span *ngSwitchCase="TaskStatus.TO_DO" class="task-badge status status-todo">Do zrobienia</span>
+            <span *ngSwitchCase="TaskStatus.IN_PROGRESS" class="task-badge status status-inprogress">W trakcie</span>
+            <span *ngSwitchCase="TaskStatus.FINISHED" class="task-badge status status-finished">Ukończone</span>
+            <span *ngSwitchDefault class="task-badge status">Nieznany</span>
+          </ng-container>
+          
+          <!-- Priority Badge -->
+          <ng-container [ngSwitch]="task.priority">
+            <span *ngSwitchCase="TaskPriority.CRITICAL" class="task-badge priority priority-critical">Krytyczne</span>
+            <span *ngSwitchCase="TaskPriority.IMPORTANT" class="task-badge priority priority-important">Ważne</span>
+            <span *ngSwitchCase="TaskPriority.OPTIONAL" class="task-badge priority priority-optional">Opcjonalne</span>
+            <span *ngSwitchDefault class="task-badge priority">Nieznany</span>
+          </ng-container>
+        </div>
+      </div>
+      
+      <!-- Task Description -->
+      <p *ngIf="task.description" class="task-description">{{ task.description }}</p>
+      
+      <!-- Task Dates -->
+      <div class="task-dates">
+        <div class="date-item">
+          <mat-icon>event</mat-icon>
+          <span>Start: {{ formatDate(task.startDate) }}</span>
+        </div>
+        <div class="date-item" *ngIf="task.endDate">
+          <mat-icon>event_busy</mat-icon>
+          <span>Koniec: {{ formatDate(task.endDate) }}</span>
+        </div>
+      </div>
+      
+      <!-- Task Actions -->
+      <div class="task-actions">
+        <a mat-button color="primary" [routerLink]="['/tasks', task.id, 'edit']">
+          <mat-icon>edit</mat-icon> Edytuj
+        </a>
+      </div>
+    </mat-card>
+    
+    <!-- Empty Task List Message -->
+    <p *ngIf="tasks && tasks.length === 0" class="no-tasks-message">
+      {{ emptyMessage }}
+    </p>
+  </div>
+</ng-template>

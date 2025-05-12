@@ -147,4 +147,10 @@ export class TaskService {
     const params = new HttpParams().set('userId', userId);
     return this.http.put<void>(`${this.apiUrl}/${taskId}/dependencies/${dependencyId}`, null, { params });
   }
+
+  // Get all tasks assigned to a user
+  getUserTasks(userId: string): Observable<Task[]> {
+    const params = new HttpParams().set('requestUserId', userId);
+    return this.http.get<Task[]>(`${this.apiUrl}/user/${userId}`, { params });
+  }
 }

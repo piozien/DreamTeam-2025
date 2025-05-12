@@ -1,0 +1,246 @@
+.tasks-page-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tasks-header {
+  margin-bottom: 30px;
+  
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+  
+  .subtitle {
+    color: #666;
+    font-size: 1.1rem;
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 0;
+  
+  p {
+    margin-top: 20px;
+    color: #666;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin: 20px 0;
+  
+  mat-icon {
+    font-size: 64px;
+    height: 64px;
+    width: 64px;
+    color: #ccc;
+  }
+  
+  h2 {
+    margin: 20px 0;
+    color: #555;
+  }
+  
+  p {
+    color: #777;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+.projects-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.project-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  
+  mat-card-header {
+    background-color: #f5f5f5;
+    padding: 16px;
+    
+    mat-card-title {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+      
+      .project-link {
+        color: #3f51b5;
+        text-decoration: none;
+        transition: color 0.3s;
+        
+        &:hover {
+          color: #283593;
+          text-decoration: underline;
+        }
+      }
+    }
+    
+    mat-card-subtitle {
+      .project-dates {
+        color: #666;
+      }
+    }
+  }
+  
+  mat-card-content {
+    padding: 0; // Remove padding for tabs to touch edges
+    
+    mat-tab-group {
+      width: 100%;
+    }
+  }
+}
+
+.tasks-list {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.task-card {
+  border-left: 4px solid #eee;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  transition: box-shadow 0.3s;
+  
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
+    
+    .task-name {
+      font-size: 1.2rem;
+      margin: 0;
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .task-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+  }
+  
+  .task-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    
+    &.status {
+      &.status-todo {
+        background-color: #e3f2fd;
+        color: #1565c0;
+      }
+      
+      &.status-inprogress {
+        background-color: #fff8e1;
+        color: #f57f17;
+      }
+      
+      &.status-finished {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+      }
+    }
+    
+    &.priority {
+      &.priority-critical {
+        background-color: #ffebee;
+        color: #c62828;
+      }
+      
+      &.priority-important {
+        background-color: #fff3e0;
+        color: #e65100;
+      }
+      
+      &.priority-optional {
+        background-color: #f5f5f5;
+        color: #616161;
+      }
+    }
+  }
+  
+  .task-description {
+    margin: 12px 0;
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .task-dates {
+    display: flex;
+    gap: 16px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+    
+    .date-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #666;
+      font-size: 0.9rem;
+      
+      mat-icon {
+        font-size: 18px;
+        height: 18px;
+        width: 18px;
+      }
+    }
+  }
+  
+  .task-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+  }
+}
+
+.no-tasks-message {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  padding: 20px 0;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .task-header {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .task-badges {
+      margin-top: 8px;
+    }
+  }
+}
