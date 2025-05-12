@@ -10,7 +10,6 @@ import tech.project.schedule.repositories.UserRepository;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
-    @Autowired
     private UserRepository userRepository;
 
     @Override

@@ -17,13 +17,26 @@ import java.util.UUID;
  */
 public record TaskDTO(
         UUID id,
+
+        @NotNull(message = "Project ID is required")
         UUID projectId,
+
+        @NotBlank(message = "Task name is required")
         String name,
+
         String description,
+
+        @NotNull(message = "Start date is required")
         LocalDate startDate,
+
         LocalDate endDate,
+
+        @NotNull(message = "Priority is required")
         TaskPriority priority,
+
+        @NotNull(message = "Status is required")
         TaskStatus status,
+
         Set<UUID> assigneeIds,
         Set<TaskCommentDTO> comments,
         Set<TaskFileDTO> files,
