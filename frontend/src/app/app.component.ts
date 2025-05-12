@@ -8,17 +8,27 @@ import { FooterComponent } from './components/footer/footer.component';
   standalone: true,
   imports: [RouterOutlet, NavbarComponent, FooterComponent],
   template: `
-    <app-navbar></app-navbar>
-    <main class="content">
-      <router-outlet></router-outlet>
-    </main>
-    <app-footer></app-footer>
+    <div class="app-container">
+      <app-navbar></app-navbar>
+      <main class="content">
+        <router-outlet></router-outlet>
+      </main>
+      <app-footer></app-footer>
+    </div>
   `,
   styles: [`
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
     .content {
+      flex: 1;
       padding: 20px;
       max-width: 1200px;
       margin: 0 auto;
+      width: 100%;
     }
   `]
 })

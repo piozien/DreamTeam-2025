@@ -24,7 +24,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
   `,
   styles: [`
     .footer {
-      margin-top: 50px;
+      /* Remove margin-top to work with flex layout */
+      margin-top: 0;
     }
     
     .footer-toolbar {
