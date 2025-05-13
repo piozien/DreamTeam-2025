@@ -6,7 +6,6 @@ package tech.project.schedule.dto.calendar;
  * an external calendar system.
  */
 public record EventDTO(String summary,
-                       String location,
                        String description,
                        String startDateTime,
                        String endDateTime,

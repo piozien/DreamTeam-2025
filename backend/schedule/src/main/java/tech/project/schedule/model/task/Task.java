@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import tech.project.schedule.model.enums.TaskPriority;
 import tech.project.schedule.model.enums.TaskStatus;
 import tech.project.schedule.model.project.Project;
-import tech.project.schedule.model.project.ProjectMember;
 
 import java.time.LocalDate;
 import java.util.HashSet;

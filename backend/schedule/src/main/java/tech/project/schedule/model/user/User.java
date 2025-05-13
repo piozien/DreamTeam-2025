@@ -125,6 +125,13 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "user_status", nullable = false)
     private UserStatus userStatus = UserStatus.UNAUTHORIZED;
+    
+    /**
+     * Refresh token for Google OAuth2 services like Google Calendar.
+     * Used to automatically renew access tokens when they expire.
+     */
+    @Column(name = "google_refresh_token")
+    private String googleRefreshToken;
 
     public User(String firstName, String lastName,
                 String email, String password,

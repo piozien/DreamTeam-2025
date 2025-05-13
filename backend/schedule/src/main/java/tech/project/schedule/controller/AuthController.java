@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.web.bind.annotation.*;
 import tech.project.schedule.dto.auth.HealthResponseDTO;
 import tech.project.schedule.dto.auth.LoginRequest;
@@ -20,6 +22,7 @@ import tech.project.schedule.model.enums.GlobalRole;
 import tech.project.schedule.model.enums.UserStatus;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
+import tech.project.schedule.services.OAuth2TokenService;
 import tech.project.schedule.services.UserService;
 import tech.project.schedule.security.JwtUtil;
 import java.util.Map;
@@ -44,12 +47,13 @@ public class AuthController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-
-
+    private final OAuth2TokenService oAuth2TokenService;
+    
     @GetMapping("/oauth2-success")
-    public RedirectView oauth2Success(@AuthenticationPrincipal OidcUser principal) {
+    public RedirectView oauth2Success(@AuthenticationPrincipal OidcUser principal,
+                                      @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient) {
         if (principal == null) {
-            // Redirect to login page with an error maybe?
+            // Redirect to login page with an error
             return new RedirectView("http://localhost:4200/auth/login?error=oauth_failed");
         }
         String email = principal.getEmail();
@@ -84,6 +88,10 @@ public class AuthController {
             if (user.getUserStatus() == UserStatus.UNAUTHORIZED) {
                 user.setUserStatus(UserStatus.AUTHORIZED);
             }
+            // Save refresh token if available
+            if (authorizedClient != null && authorizedClient.getRefreshToken() != null) {
+                user.setGoogleRefreshToken(authorizedClient.getRefreshToken().getTokenValue());
+            }
             userRepository.save(user);
         } else {
             user = new tech.project.schedule.model.user.User(
@@ -95,6 +103,10 @@ public class AuthController {
             );
             user.setUserStatus(UserStatus.AUTHORIZED); // New users via OAuth are authorized
             user.setGlobalRole(GlobalRole.CLIENT); // Default role
+            // Save refresh token if available
+            if (authorizedClient != null && authorizedClient.getRefreshToken() != null) {
+                user.setGoogleRefreshToken(authorizedClient.getRefreshToken().getTokenValue());
+            }
             userRepository.save(user);
         }
 
@@ -158,7 +170,8 @@ public class AuthController {
                 "role", user.getGlobalRole().name(),
                 "status", user.getUserStatus().name()
         ));
-        return ResponseEntity.ok(new LoginResponseDTO(token, user.getId(), user.getEmail(), user.getFirstName() + " " + user.getLastName(), user.getUsername()));
+        return ResponseEntity.ok(new LoginResponseDTO(token, user.getId(), user.getEmail(),
+                user.getFirstName() + " " + user.getLastName(), user.getUsername()));
     }
 
     /*

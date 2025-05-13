@@ -1,12 +1,20 @@
 package tech.project.schedule.controller;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import tech.project.schedule.dto.calendar.EventDTO;
+import tech.project.schedule.model.user.User;
+import tech.project.schedule.repositories.UserRepository;
 import tech.project.schedule.services.GoogleCalendarService;
+import tech.project.schedule.services.OAuth2TokenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -16,49 +24,61 @@ import java.time.format.DateTimeFormatter;
 /**
  * REST controller that handles integration with Google Calendar.
  * Provides endpoints for creating, updating, and deleting calendar events through
- * Google's API. Uses OAuth2 for authentication with Google services.
+ * Google's API. Uses user authentication to manage calendar access tokens.
  */
 @RestController
 @RequestMapping("/api/calendar")
+@RequiredArgsConstructor
 public class GoogleCalendarController {
 
     private final GoogleCalendarService calendarService;
-
+    private final UserRepository userRepository;
+    private final OAuth2TokenService tokenService;
     
     /**
-     * Constructor with dependency injection for the Google Calendar service.
+     * Helper method to extract the current authenticated user's ID
      * 
-     * @param calendarService Service that handles actual communication with Google Calendar API
+     * @return UUID of the currently authenticated user
+     * @throws RuntimeException if no user is authenticated
      */
-    public GoogleCalendarController(GoogleCalendarService calendarService) {
-        this.calendarService = calendarService;
+    private UUID getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated");
+        }
+        
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found: " + email));
+        
+        return user.getId();
     }
 
-     /**
+    /**
      * Creates a new event in the user's Google Calendar.
-     * Uses the authenticated user's OAuth2 token to authorize the request.
-     * 
-     * @param authorizedClient OAuth2 client with user's Google authorization credentials
+     * Uses the authenticated user's ID to find their stored OAuth tokens.
+     *
      * @param eventDTO Data transfer object containing event information (title, timing, location, etc.)
      * @return Response with created event ID or error message
      */
     @PostMapping("/create-event")
-    public ResponseEntity<String> createEvent(
-            @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
-            @RequestBody EventDTO eventDTO) {
+    public ResponseEntity<String> createEvent(@RequestBody EventDTO eventDTO) {
         try {
-            String eventId = calendarService.createEvent(authorizedClient, eventDTO);
+            UUID userId = getCurrentUserId();
+            String eventId = calendarService.createEvent(userId, eventDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(eventId);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create event.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                   .body("Failed to create event: " + e.getMessage());
         }
     }
     // Evil attempt to fix date problem boss said
+
     /**
      * Test endpoint for validating date/time parsing and timezone conversions.
      * Attempts to fix date formatting issues by explicitly setting timezone.
-     * 
-     * @param dateTime String representation of date/time in format "dd.MM.yyyy:HH:mm:ss" 
+     *
+     * @param dateTime String representation of date/time in format "dd.MM.yyyy:HH:mm:ss"
      * @return Response with the parsed and timezone-adjusted datetime
      */
     @PostMapping("/test-datetime")
@@ -68,45 +88,41 @@ public class GoogleCalendarController {
 
         ZonedDateTime adjustedDateTime = localDateTime.atZone(ZoneId.of("Europe/Warsaw"));
 
-        return ResponseEntity.ok("Adjusted DateTime: " + adjustedDateTime.toString());
+        return ResponseEntity.ok("Adjusted DateTime: " + adjustedDateTime);
     }
 
-
-   
     /**
      * Updates an existing event in the user's Google Calendar.
-     * 
-     * @param authorizedClient OAuth2 client with user's Google authorization credentials
-     * @param eventId The unique identifier for the Google Calendar event to update
+     *
+     * @param eventId  The unique identifier for the Google Calendar event to update
      * @param eventDTO Data transfer object containing updated event details
      * @return Response with success message or error details
      */
     @PutMapping("/update-event/{eventId}")
     public ResponseEntity<String> updateEvent(
-            @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
             @PathVariable String eventId,
             @RequestBody EventDTO eventDTO) {
         try {
-            String response = calendarService.updateEvent(authorizedClient, eventId, eventDTO);
+            UUID userId = getCurrentUserId();
+            String response = calendarService.updateEvent(userId, eventId, eventDTO);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update event.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                   .body("Failed to update event: " + e.getMessage());
         }
     }
 
     /**
      * Deletes an event from the user's Google Calendar.
-     * 
-     * @param authorizedClient OAuth2 client with user's Google authorization credentials
+     *
      * @param eventId The unique identifier for the Google Calendar event to delete
      * @return Empty response with appropriate status code (204 for success, 500 for error)
      */
     @DeleteMapping("/delete-event/{eventId}")
-    public ResponseEntity<Void> deleteEvent(
-            @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
-            @PathVariable String eventId) {
+    public ResponseEntity<Void> deleteEvent(@PathVariable String eventId) {
         try {
-            calendarService.deleteEvent(authorizedClient, eventId);
+            UUID userId = getCurrentUserId();
+            calendarService.deleteEvent(userId, eventId);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

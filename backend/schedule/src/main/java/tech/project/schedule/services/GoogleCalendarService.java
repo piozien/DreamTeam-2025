@@ -1,9 +1,9 @@
 package tech.project.schedule.services;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 
 /**
@@ -23,25 +24,42 @@ import java.time.format.DateTimeFormatter;
  * between application data and Google Calendar API requirements.
  */
 @Service
+@RequiredArgsConstructor
 public class GoogleCalendarService {
 
     private final RestTemplate restTemplate = new RestTemplate();
+    private final OAuth2TokenService tokenService;
+    
     private static final String CALENDAR_API_BASE_URL = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
-    private static final Logger logger = LoggerFactory.getLogger(GoogleCalendarService.class);
+    private static final Logger log = LoggerFactory.getLogger(GoogleCalendarService.class);
 
     /**
      * Creates a new event in the user's primary Google Calendar.
      * 
-     * @param authorizedClient OAuth2 client with user's Google API credentials
+     * @param userId UUID of the user for whom to create the event
      * @param eventDTO Event data containing details like title, location, and timing
      * @return The Google Calendar API response containing the created event ID
-     * @throws RuntimeException if the API request fails
+     * @throws RuntimeException if the API request fails or token is not available
      */
-    public String createEvent(OAuth2AuthorizedClient authorizedClient, EventDTO eventDTO) {
+    public String createEvent(UUID userId, EventDTO eventDTO) {
         try {
-            HttpHeaders headers = createHeaders(authorizedClient);
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(buildEventBody(eventDTO), headers);
+            log.info("Creating calendar event for user: {}", userId);
+            log.info("Event details: summary={}, start={}, end={}, timeZone={}", 
+                    eventDTO.summary(), eventDTO.startDateTime(), eventDTO.endDateTime(), eventDTO.timeZone());
+            
+            String accessToken = tokenService.getAccessToken(userId);
+            if (accessToken == null) {
+                log.error("No access token available for user: {}", userId);
+                throw new RuntimeException("No access token available for user. Please authorize Google Calendar access.");
+            }
+            
+            HttpHeaders headers = createHeaders(accessToken);
+            Map<String, Object> eventBody = buildEventBody(eventDTO);
+            log.info("Request payload: {}", eventBody);
+            
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(eventBody, headers);
 
+            log.info("Sending request to Google Calendar API: {}", CALENDAR_API_BASE_URL);
             ResponseEntity<String> response = restTemplate.exchange(
                     CALENDAR_API_BASE_URL,
                     HttpMethod.POST,
@@ -49,27 +67,38 @@ public class GoogleCalendarService {
                     String.class
             );
 
+            log.info("Event created successfully with response: {}", response.getStatusCode());
             return response.getBody();
         } catch (RestClientException e) {
-            logger.error("Error creating event: {}", e.getMessage());
-            throw new RuntimeException("Unable to create event in calendar.");
+            log.error("Error creating event: {}", e.getMessage());
+            log.error("Exception details: ", e);
+            throw new RuntimeException("Unable to create event in calendar: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error creating event: {}", e.getMessage());
+            log.error("Exception details: ", e);
+            throw new RuntimeException("Unexpected error creating event: " + e.getMessage());
         }
     }
 
 
-     /**
+    /**
      * Updates an existing event in the user's Google Calendar.
      * 
-     * @param authorizedClient OAuth2 client with user's Google API credentials
+     * @param userId UUID of the user who owns the event
      * @param eventId The ID of the event to update
      * @param eventDTO Updated event data
      * @return The Google Calendar API response containing the updated event
-     * @throws RuntimeException if the API request fails
+     * @throws RuntimeException if the API request fails or token is not available
      */
-    public String updateEvent(OAuth2AuthorizedClient authorizedClient, String eventId, EventDTO eventDTO) {
+    public String updateEvent(UUID userId, String eventId, EventDTO eventDTO) {
         try {
+            String accessToken = tokenService.getAccessToken(userId);
+            if (accessToken == null) {
+                throw new RuntimeException("No access token available for user. Please authorize Google Calendar access.");
+            }
+            
             String url = CALENDAR_API_BASE_URL + "/" + eventId;
-            HttpHeaders headers = createHeaders(authorizedClient);
+            HttpHeaders headers = createHeaders(accessToken);
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(buildEventBody(eventDTO), headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
@@ -81,7 +110,7 @@ public class GoogleCalendarService {
 
             return response.getBody();
         } catch (RestClientException e) {
-            logger.error("Error updating calendar event: {}", e.getMessage());
+            log.error("Error updating calendar event: {}", e.getMessage());
             throw new RuntimeException("Unable to update event in calendar.");
         }
     }
@@ -89,14 +118,19 @@ public class GoogleCalendarService {
     /**
      * Deletes an event from the user's Google Calendar.
      * 
-     * @param authorizedClient OAuth2 client with user's Google API credentials
+     * @param userId UUID of the user who owns the event
      * @param eventId The ID of the event to delete
-     * @throws RuntimeException if the API request fails
+     * @throws RuntimeException if the API request fails or token is not available
      */
-    public void deleteEvent(OAuth2AuthorizedClient authorizedClient, String eventId) {
+    public void deleteEvent(UUID userId, String eventId) {
         try {
+            String accessToken = tokenService.getAccessToken(userId);
+            if (accessToken == null) {
+                throw new RuntimeException("No access token available for user. Please authorize Google Calendar access.");
+            }
+            
             String url = CALENDAR_API_BASE_URL + "/" + eventId;
-            HttpHeaders headers = createHeaders(authorizedClient);
+            HttpHeaders headers = createHeaders(accessToken);
             HttpEntity<Void> request = new HttpEntity<>(headers);
 
             restTemplate.exchange(
@@ -106,7 +140,7 @@ public class GoogleCalendarService {
                     Void.class
             );
         } catch (RestClientException e) {
-            logger.error("Error deleting event: {}", e.getMessage());
+            log.error("Error deleting event: {}", e.getMessage());
             throw new RuntimeException("Unable to delete event in calendar.");
         }
     }
@@ -131,35 +165,59 @@ public class GoogleCalendarService {
     /**
      * Creates HTTP headers with OAuth2 authorization for Google API requests.
      * 
-     * @param authorizedClient OAuth2 client containing access token
+     * @param accessToken OAuth2 access token
      * @return Configured HTTP headers
      */
-    private HttpHeaders createHeaders(OAuth2AuthorizedClient authorizedClient) {
+    private HttpHeaders createHeaders(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(authorizedClient.getAccessToken().getTokenValue());
+        headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
 
-     /**
-     * Builds the event request body in the format required by Google Calendar API.
+    /**
+     * Convert date string from dd.MM.yyyy:HH:mm:ss format to ISO-8601 format required by Google Calendar API.
+     * If the date is already in ISO-8601 format, return it as is.
      * 
-     * @param eventDTO Event data from the application
-     * @return Map representing the JSON structure for the API request
+     * @param dateTime The date string to convert
+     * @param timeZone The time zone to use
+     * @return ISO-8601 formatted date string
      */
+    private String formatDateToISO8601(String dateTime, String timeZone) {
+        try {
+            // Check if date is already in ISO-8601 format
+            if (dateTime.contains("T") && dateTime.contains("-")) {
+                return dateTime; // Already in correct format
+            }
+            
+            // Parse the input date format (dd.MM.yyyy:HH:mm:ss)
+            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy:HH:mm:ss");
+            LocalDateTime localDateTime = LocalDateTime.parse(dateTime, inputFormatter);
+            
+            // Convert to ZonedDateTime with the specified time zone
+            ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of(timeZone));
+            
+            // Format as ISO-8601 (format required by Google Calendar API)
+            return zonedDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        } catch (Exception e) {
+            log.warn("Failed to parse date '{}', returning as is: {}", dateTime, e.getMessage());
+            return dateTime; // Return original on error
+        }
+    }
+    
     private Map<String, Object> buildEventBody(EventDTO eventDTO) {
         Map<String, Object> event = new HashMap<>();
         event.put("summary", eventDTO.summary());
-        event.put("location", eventDTO.location());
+        //event.put("location", eventDTO.location());
         event.put("description", eventDTO.description());
 
         Map<String, Object> start = new HashMap<>();
-        start.put("dateTime", eventDTO.startDateTime());
+        start.put("dateTime", formatDateToISO8601(eventDTO.startDateTime(), eventDTO.timeZone()));
         start.put("timeZone", eventDTO.timeZone());
         event.put("start", start);
 
         Map<String, Object> end = new HashMap<>();
-        end.put("dateTime", eventDTO.endDateTime());
+        end.put("dateTime", formatDateToISO8601(eventDTO.endDateTime(), eventDTO.timeZone()));
         end.put("timeZone", eventDTO.timeZone());
         event.put("end", end);
 
