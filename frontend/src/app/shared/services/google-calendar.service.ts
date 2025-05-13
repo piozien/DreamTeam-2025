@@ -83,4 +83,12 @@ export class GoogleCalendarService {
     
     return this.createEvent(eventDTO);
   }
+  
+  /**
+   * Tests the Google Calendar token to verify it's valid and working
+   * @returns Observable with the test response message
+   */
+  testToken(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/test-token`);
+  }
 }
