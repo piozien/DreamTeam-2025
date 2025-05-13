@@ -199,6 +199,45 @@ export class AuthService {
     return this.http.get<User[]>(`${this.apiUrl}/all-users?userId=${userId}`);
   }
 
+  getUserById(userId: string): Observable<User> {
+    const currentUserId = this.getUserId();
+    if (!currentUserId) {
+      return throwError(() => new Error('Current user ID not found in token. Cannot fetch user.'));
+    }
+    
+    // First try to get from project members as they already have user data
+    const cachedUser = this.currentUserSubject.value;
+    if (cachedUser && cachedUser.id === userId) {
+      return of(cachedUser);
+    }
+    
+    // If we have to go to API, we'll use all-users endpoint as it's likely to be implemented
+    // This avoids creating a new endpoint if not needed
+    return this.getAllUsers().pipe(
+      map(users => {
+        const foundUser = users.find(u => u.id === userId);
+        if (foundUser) {
+          return foundUser;
+        }
+        throw new Error(`User with ID ${userId} not found`);
+      }),
+      catchError(error => {
+        console.error('Error retrieving user:', error);
+        // Return a placeholder user rather than breaking the whole page
+        return of({
+          id: userId,
+          name: 'Unknown User',
+          username: 'unknown',
+          email: '',
+          firstName: 'Unknown',
+          lastName: 'User',
+          globalRole: 'CLIENT' as any,
+          userStatus: 'AUTHORIZED' as any
+        });
+      })
+    );
+  }
+
   /**
    * Initiates Google OAuth login by redirecting the main window
    * to the backend's Google authorization endpoint.
