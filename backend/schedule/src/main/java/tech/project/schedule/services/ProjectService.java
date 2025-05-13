@@ -18,13 +18,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-
+/**
+ * Service for managing projects and their members.
+ * Handles project lifecycle operations and member access management with
+ * appropriate permission checks and business rule validations.
+ */
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
     private final NotificationService notificationService;
     private final ProjectRepository projectRepository;
 
+     /**
+     * Creates a new project with the specified user as Project Manager.
+     * Sets initial project status based on start date and sends a confirmation notification.
+     * 
+     * @param project The project to create
+     * @param user The user creating the project, who becomes the initial PM
+     * @return The saved project entity
+     * @throws ApiException if a project with the same name exists or required fields are missing
+     */
     @Transactional
     public Project createProject(Project project, User user) {
         if (projectRepository.existsByName(project.getName())) {
@@ -56,6 +69,16 @@ public class ProjectService {
         return savedProject;
     }
 
+    /**
+     * Updates an existing project's details.
+     * Only Project Managers can update projects, and completion requires all tasks to be finished.
+     * 
+     * @param projectId ID of the project to update
+     * @param updatedProject Project entity containing the updated fields
+     * @param user The user performing the update
+     * @return The updated project entity
+     * @throws ApiException if project not found, user lacks permission, or business rules violated
+     */
     @Transactional
     public Project updateProject(UUID projectId, Project updatedProject, User user) {
         Project existingProject = projectRepository.findById(projectId)
@@ -97,6 +120,14 @@ public class ProjectService {
         return projectRepository.save(existingProject);
     }
 
+    /**
+     * Deletes a project from the system.
+     * Only Project Managers can delete projects.
+     * 
+     * @param projectId ID of the project to delete
+     * @param user The user attempting to delete the project
+     * @throws ApiException if project not found or user lacks permission
+     */
     @Transactional
     public void deleteProject(UUID projectId, User user) {
         Project project = projectRepository.findById(projectId)
@@ -112,7 +143,16 @@ public class ProjectService {
         
         projectRepository.deleteById(projectId);
     }
-    
+
+    /**
+     * Retrieves a project by its ID.
+     * Only project members can view a project.
+     * 
+     * @param projectId ID of the project to retrieve
+     * @param user The user requesting the project
+     * @return The requested project entity
+     * @throws ApiException if project not found or user lacks permission
+     */
     public Project getProjectById(UUID projectId, User user) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
@@ -127,7 +167,18 @@ public class ProjectService {
         
         return project;
     }
-    
+
+    /**
+     * Adds a user to a project with the specified role.
+     * Only Project Managers can add members to projects.
+     * 
+     * @param projectId ID of the project to add the member to
+     * @param user The user to add as a member
+     * @param role The role to assign to the new member
+     * @param principal The user performing the addition
+     * @return The created ProjectMember entity
+     * @throws ApiException if project not found, user lacks permission, or user already a member
+     */
     @Transactional
     public ProjectMember addMemberToProject(UUID projectId, User user, ProjectUserRole role, User principal) {
         Project project = projectRepository.findById(projectId)
@@ -163,7 +214,16 @@ public class ProjectService {
 
         return savedMember;
     }
-    
+
+    /**
+     * Removes a member from a project.
+     * Only Project Managers can remove members, and the last PM cannot be removed.
+     * 
+     * @param projectId ID of the project to remove the member from
+     * @param userId ID of the user to remove
+     * @param currentUser The user performing the removal
+     * @throws ApiException if project not found, user lacks permission, or removing last PM
+     */
     @Transactional
     public void removeMemberFromProject(UUID projectId, UUID userId, User currentUser) {
         Project project = projectRepository.findById(projectId)
@@ -192,7 +252,18 @@ public class ProjectService {
         project.getMembers().remove(userId);
         projectRepository.save(project);
     }
-    
+
+    /**
+     * Updates a project member's role.
+     * Only Project Managers can change roles, and the last PM cannot be downgraded.
+     * 
+     * @param projectId ID of the project
+     * @param userId ID of the member to update
+     * @param newRole The new role to assign
+     * @param currentUser The user performing the update
+     * @return The updated ProjectMember entity
+     * @throws ApiException if project not found, user lacks permission, or downgrading last PM
+     */
     @Transactional
     public ProjectMember updateMemberRole(UUID projectId, UUID userId, ProjectUserRole newRole, User currentUser) {
         Project project = projectRepository.findById(projectId)
@@ -222,7 +293,16 @@ public class ProjectService {
         projectRepository.save(project);
         return member;
     }
-    
+
+    /**
+     * Retrieves all members of a project.
+     * Only project members, PMs, and admins can view project members.
+     * 
+     * @param projectId ID of the project
+     * @param currentUser The user requesting the member list
+     * @return Map of user IDs to ProjectMember entities
+     * @throws ApiException if project not found or user lacks permission
+     */
     public Map<UUID, ProjectMember> getProjectMembers(UUID projectId, User currentUser) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
