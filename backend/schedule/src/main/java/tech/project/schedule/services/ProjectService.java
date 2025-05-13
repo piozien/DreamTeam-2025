@@ -318,7 +318,14 @@ public class ProjectService {
         
         return project.getMembers();
     }
-    
+
+     /**
+     * Gets all projects the user is a member of.
+     * Admins can see all projects in the system.
+     * 
+     * @param user The user whose projects to retrieve
+     * @return List of projects the user is a member of
+     */
     public List<Project> getUserProjects(User user) {
         boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
         
