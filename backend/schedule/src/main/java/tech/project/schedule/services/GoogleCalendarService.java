@@ -16,6 +16,12 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 
+/**
+ * Service for interacting with Google Calendar API.
+ * Provides methods to create, update, and delete calendar events using
+ * the authenticated user's OAuth2 credentials. Handles the conversion
+ * between application data and Google Calendar API requirements.
+ */
 @Service
 public class GoogleCalendarService {
 
@@ -23,6 +29,14 @@ public class GoogleCalendarService {
     private static final String CALENDAR_API_BASE_URL = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
     private static final Logger logger = LoggerFactory.getLogger(GoogleCalendarService.class);
 
+    /**
+     * Creates a new event in the user's primary Google Calendar.
+     * 
+     * @param authorizedClient OAuth2 client with user's Google API credentials
+     * @param eventDTO Event data containing details like title, location, and timing
+     * @return The Google Calendar API response containing the created event ID
+     * @throws RuntimeException if the API request fails
+     */
     public String createEvent(OAuth2AuthorizedClient authorizedClient, EventDTO eventDTO) {
         try {
             HttpHeaders headers = createHeaders(authorizedClient);
@@ -43,6 +57,15 @@ public class GoogleCalendarService {
     }
 
 
+     /**
+     * Updates an existing event in the user's Google Calendar.
+     * 
+     * @param authorizedClient OAuth2 client with user's Google API credentials
+     * @param eventId The ID of the event to update
+     * @param eventDTO Updated event data
+     * @return The Google Calendar API response containing the updated event
+     * @throws RuntimeException if the API request fails
+     */
     public String updateEvent(OAuth2AuthorizedClient authorizedClient, String eventId, EventDTO eventDTO) {
         try {
             String url = CALENDAR_API_BASE_URL + "/" + eventId;
@@ -63,6 +86,13 @@ public class GoogleCalendarService {
         }
     }
 
+    /**
+     * Deletes an event from the user's Google Calendar.
+     * 
+     * @param authorizedClient OAuth2 client with user's Google API credentials
+     * @param eventId The ID of the event to delete
+     * @throws RuntimeException if the API request fails
+     */
     public void deleteEvent(OAuth2AuthorizedClient authorizedClient, String eventId) {
         try {
             String url = CALENDAR_API_BASE_URL + "/" + eventId;
@@ -80,7 +110,14 @@ public class GoogleCalendarService {
             throw new RuntimeException("Unable to delete event in calendar.");
         }
     }
-    //  Convert Locale Date time to Zone
+    
+     /**
+     * Converts a datetime string to a timezone-aware format.
+     * Used to ensure proper timezone handling in calendar events.
+     * 
+     * @param dateTime String in format "dd.MM.yyyy:HH:mm:ss"
+     * @return Timezone-adjusted datetime string
+     */
     public String adjustDateTime(String dateTime) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy:HH:mm:ss");
         LocalDateTime localDateTime = LocalDateTime.parse(dateTime, formatter);
@@ -91,6 +128,12 @@ public class GoogleCalendarService {
     }
 
 
+    /**
+     * Creates HTTP headers with OAuth2 authorization for Google API requests.
+     * 
+     * @param authorizedClient OAuth2 client containing access token
+     * @return Configured HTTP headers
+     */
     private HttpHeaders createHeaders(OAuth2AuthorizedClient authorizedClient) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authorizedClient.getAccessToken().getTokenValue());
@@ -98,6 +141,12 @@ public class GoogleCalendarService {
         return headers;
     }
 
+     /**
+     * Builds the event request body in the format required by Google Calendar API.
+     * 
+     * @param eventDTO Event data from the application
+     * @return Map representing the JSON structure for the API request
+     */
     private Map<String, Object> buildEventBody(EventDTO eventDTO) {
         Map<String, Object> event = new HashMap<>();
         event.put("summary", eventDTO.summary());
