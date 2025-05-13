@@ -1,5 +1,10 @@
 package tech.project.schedule.model.enums;
 
+/**
+ * Defines types of notifications that can be triggered by system events.
+ * Used to categorize notifications based on the specific action that occurred,
+ * allowing for appropriate handling and display throughout the application.
+ */
 public enum NotificationStatus {
     PROJECT_MEMBER_ADDED,
     TASK_ASSIGNEE_ADDED,
