@@ -18,6 +18,10 @@ import tech.project.schedule.security.JwtAuthenticationFilter;
 
 import static org.springframework.http.HttpMethod.OPTIONS;
 
+/**
+ * Security configuration for the scheduling application.
+ * Configures JWT authentication, CORS policies, and access control rules.
+ */
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig implements WebMvcConfigurer {
@@ -32,6 +36,10 @@ public class SecurityConfig implements WebMvcConfigurer {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
 
+    /**
+     * Configures the security filter chain with authentication and authorization rules.
+     * Defines public endpoints and secures all other resources.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -57,6 +65,9 @@ public class SecurityConfig implements WebMvcConfigurer {
         return http.build();
     }
 
+    /**
+     * Configures CORS to allow frontend application access to the API.
+     */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
@@ -66,6 +77,9 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .allowCredentials(true);
     }
 
+    /**
+     * Creates the authentication manager with user details service and password encoder.
+     */
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
