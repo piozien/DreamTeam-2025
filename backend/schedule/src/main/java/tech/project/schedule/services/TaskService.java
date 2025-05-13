@@ -27,7 +27,11 @@ import tech.project.schedule.repositories.ProjectRepository;
 import tech.project.schedule.repositories.TaskRepository;
 
 
-
+/**
+ * Service for managing tasks within projects.
+ * Handles CRUD operations for tasks with appropriate permission checks
+ * and business rule validation.
+ */
 @Service
 @RequiredArgsConstructor
 public class TaskService {
@@ -37,6 +41,15 @@ public class TaskService {
     private final TaskAssigneeRepository taskAssigneeRepository;
     private final tech.project.schedule.repositories.UserRepository userRepository;
 
+    /**
+     * Creates a new task within a project.
+     * Validates that the user has permission in the project and that
+     * task dates are valid relative to the project timeline.
+     * 
+     * @param task The task to create
+     * @param user The user creating the task
+     * @return The saved task entity
+     */
     @Transactional
     public Task createTask(Task task, User user){
 
@@ -63,6 +76,17 @@ public class TaskService {
         return newTask;
     }
 
+    /**
+     * Updates an existing task.
+     * Only project managers and task assignees can update tasks.
+     * Validates business rules like date constraints and sends
+     * notifications to all task assignees.
+     * 
+     * @param updatedTask Task with updated fields
+     * @param taskId ID of the task to update
+     * @param user User performing the update
+     * @return The updated task entity
+     */
     @Transactional
     public Task updateTask(Task updatedTask, UUID taskId, User user) {
 
@@ -128,6 +152,13 @@ public class TaskService {
         return saved;
     }
 
+    /**
+     * Deletes a task.
+     * Only project managers can delete tasks.
+     * 
+     * @param taskId ID of the task to delete
+     * @param user User attempting to delete the task
+     */
     @Transactional
     public void deleteTask(UUID taskId, User user){
         Task task = taskRepository.findById(taskId)
@@ -138,7 +169,15 @@ public class TaskService {
         }
         taskRepository.deleteById(taskId);
     }
-    
+
+    /**
+     * Retrieves a task by its ID.
+     * Only project members and task assignees can view tasks.
+     * 
+     * @param taskId ID of the task to retrieve
+     * @param user User requesting the task
+     * @return The requested task entity
+     */
     public Task getTaskById(UUID taskId, User user) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
@@ -153,7 +192,15 @@ public class TaskService {
         
         return task;
     }
-    
+
+    /**
+     * Retrieves all tasks within a project.
+     * Only project members can view project tasks.
+     * 
+     * @param projectId ID of the project
+     * @param user User requesting the tasks
+     * @return List of tasks in the project
+     */
     public List<Task> getTasksByProject(UUID projectId, User user) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException("Project not found", HttpStatus.NOT_FOUND));
