@@ -17,5 +17,12 @@ import java.util.UUID;
  */
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
+    /**
+     * Retrieves all notifications targeted to a specific user.
+     * Used for displaying a user's notification feed and determining unread counts.
+     * 
+     * @param user The user whose notifications should be retrieved
+     * @return List of notifications directed to the specified user
+     */
     List<Notification> findByUser(User user);
 }
