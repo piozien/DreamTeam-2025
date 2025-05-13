@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, tap } from 'rxjs';
+import { GoogleCalendarService } from './google-calendar.service';
 import { Task, TaskRequest, TaskUpdate, TaskComment, TaskFile, TaskAssignee } from '../models/task.model';
 
 @Injectable({
@@ -9,7 +10,10 @@ import { Task, TaskRequest, TaskUpdate, TaskComment, TaskFile, TaskAssignee } fr
 export class TaskService {
   private apiUrl = 'http://localhost:8080/api/tasks';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private googleCalendarService: GoogleCalendarService
+  ) {}
 
   // Get all tasks for a project
   getTasksByProject(projectId: string, userId: string): Observable<Task[]> {
@@ -38,7 +42,19 @@ export class TaskService {
     };
     
     console.log('Formatted task being sent to API:', formattedTask);
-    return this.http.post<Task>(this.apiUrl, formattedTask, { params });
+    return this.http.post<Task>(this.apiUrl, formattedTask, { params })
+      .pipe(
+        tap(createdTask => {
+          // After successfully creating the task, add it to Google Calendar
+          console.log('Task created successfully, adding to Google Calendar');
+          
+          this.addTaskToGoogleCalendar(createdTask);
+        }),
+        catchError(error => {
+          console.error('Error creating task:', error);
+          throw error;
+        })
+      );
   }
 
   // Update a task
@@ -152,5 +168,33 @@ export class TaskService {
   getUserTasks(userId: string): Observable<Task[]> {
     const params = new HttpParams().set('requestUserId', userId);
     return this.http.get<Task[]>(`${this.apiUrl}/user/${userId}`, { params });
+  }
+
+  /**
+   * Adds a task to Google Calendar
+   * @param task The task to add to Google Calendar
+   * @private
+   */
+  private addTaskToGoogleCalendar(task: Task): void {
+    if (!task.startDate) {
+      console.warn('Cannot add task to Google Calendar without a start date');
+      return;
+    }
+
+    this.googleCalendarService.createTaskEvent(
+      task.name,
+      task.description || '',
+      task.startDate,
+      task.endDate
+    ).subscribe({
+      next: (eventId) => {
+        console.log(`Task successfully added to Google Calendar with event ID: ${eventId}`);
+        // Optionally, we could store the eventId with the task for future reference
+        // This would require updating the Task model and backend
+      },
+      error: (error) => {
+        console.error('Error adding task to Google Calendar:', error);
+      }
+    });
   }
 }
