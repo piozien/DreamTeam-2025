@@ -23,7 +23,7 @@ import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 import { Project, ProjectStatus, ProjectUserRole, ProjectMemberDTO, AddProjectMemberDTO } from '../../../shared/models/project.model';
-import { Task, TaskPriority, TaskStatus } from '../../../shared/models/task.model';
+import { Task, TaskPriority, TaskStatus, TaskAssignee } from '../../../shared/models/task.model';
 import { User } from '../../../shared/models/user.model';
 import { ProjectService } from '../../../shared/services/project.service';
 import { TaskService } from '../../../shared/services/task.service';
@@ -76,6 +76,9 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
   isAddingTask = false;
   isPerformingMemberAction = false;
   isLoadingTasks = false;
+  
+  // User cache to store user data and avoid redundant API calls
+  private userCache: Map<string, User> = new Map<string, User>();
   
   // Table related properties
   displayedColumns: string[] = ['name', 'status', 'priority', 'startDate', 'endDate', 'assignees', 'actions'];
@@ -270,11 +273,99 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
   
   getPriorityColorClass(priority: TaskPriority): string {
     switch (priority) {
-      case TaskPriority.OPTIONAL: return 'priority-optional';
-      case TaskPriority.IMPORTANT: return 'priority-important';
-      case TaskPriority.CRITICAL: return 'priority-critical';
-      default: return '';
+      case TaskPriority.OPTIONAL: return 'priority-low';
+      case TaskPriority.IMPORTANT: return 'priority-medium';
+      case TaskPriority.CRITICAL: return 'priority-high';
+      default: return 'priority-low';
     }
+  }
+
+  /**
+   * Get the full names of task assignees
+   * @param task The task containing assignee information
+   * @returns A comma-separated string of assignee names
+   */
+  getAssigneeNames(task: Task): string {
+    if (!task || !task.assigneeIds || task.assigneeIds.length === 0) {
+      return 'Brak przypisanych użytkowników';
+    }
+
+    // For simple display purposes, first fetch assignee info for these assignation IDs
+    if (!task.assignees) {
+      const userId = this.authService.getUserId() || '';
+      // Start loading the assignees for this task if they aren't loaded
+      this.subscription.add(
+        this.taskService.getTaskAssignees(task.id, userId).subscribe({
+          next: (assignees) => {
+            // Attach the assignees to the task for future reference
+            const taskRef = this.tasks.find(t => t.id === task.id);
+            if (taskRef) {
+              taskRef.assignees = assignees;
+              this.dataSource.data = [...this.tasks];
+            }
+          },
+          error: (error) => {
+            console.error(`Error fetching assignees for task ${task.id}:`, error);
+          }
+        })
+      );
+      
+      return 'Wczytywanie przypisanych użytkowników...';
+    }
+    
+    // If we have the assignees array now (previously loaded), use it to show names
+    if (task.assignees && task.assignees.length > 0) {
+      const userIds = task.assignees.map((assignee: TaskAssignee) => assignee.userId);
+      const names: string[] = [];
+      
+      userIds.forEach(userId => {
+        // Try to find in cached users or project members
+        if (this.userCache.has(userId)) {
+          const user = this.userCache.get(userId);
+          if (user) {
+            names.push(user.name || `${user.firstName} ${user.lastName}`.trim());
+          }
+        } else {
+          // Try to find in project members
+          const member = this.projectMembers.find(m => m.user?.id === userId);
+          if (member && member.user) {
+            names.push(member.user.name || `${member.user.firstName || ''} ${member.user.lastName || ''}`.trim());
+            // Cache for future reference
+            this.userCache.set(userId, member.user as User);
+          } else {
+            // Fetch user if not found locally
+            this.authService.getUserById(userId).subscribe({
+              next: (user) => {
+                this.userCache.set(userId, user);
+                // Force refresh
+                this.dataSource.data = [...this.tasks];
+              },
+              error: (error) => {
+                console.error(`Error fetching user ${userId}:`, error);
+                // Cache placeholder
+                this.userCache.set(userId, {
+                  id: userId,
+                  name: 'Unknown User',
+                  username: 'unknown',
+                  email: '',
+                  firstName: 'Unknown',
+                  lastName: 'User',
+                  globalRole: 'CLIENT' as any,
+                  userStatus: 'AUTHORIZED' as any
+                });
+              }
+            });
+            // Add a temporary placeholder
+            names.push('...');
+          }
+        }
+      });
+      
+      return names.length > 0 ? names.join(', ') : 'Brak przypisanych użytkowników';
+    }
+    
+    // If we have assignee objects but it's empty, there are no assignees
+    return 'Brak przypisanych użytkowników';
   }
 
   openAddTaskDialog(): void {
@@ -397,20 +488,7 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
   
-  getAssigneeNames(task: Task): string {
-    if (!task.assigneeIds || task.assigneeIds.length === 0) {
-      return 'Brak przypisanych osób';
-    }
-    
-    const assignees = task.assigneeIds
-      .map(id => {
-        const member = this.projectMembers.find(m => m.user?.id === id);
-        return member ? member.user.name : 'Nieznany';
-      })
-      .join(', ');
-    
-    return assignees || 'Brak przypisanych osób';
-  }
+  // This duplicate method has been replaced by the implementation above
 
   getRoleDisplayName(role: ProjectUserRole): string {
     switch (role) {

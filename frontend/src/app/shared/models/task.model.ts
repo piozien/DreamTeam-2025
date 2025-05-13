@@ -25,6 +25,7 @@ export interface Task {
   comments?: TaskComment[];
   files?: TaskFile[];
   dependencyIds?: string[];
+  assignees?: TaskAssignee[];
 }
 
 export interface TaskComment {
