@@ -14,8 +14,9 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Controller for integrating with Google Calendar.
- * Provides endpoints to create, update and delete calendar events.
+ * REST controller that handles integration with Google Calendar.
+ * Provides endpoints for creating, updating, and deleting calendar events through
+ * Google's API. Uses OAuth2 for authentication with Google services.
  */
 @RestController
 @RequestMapping("/api/calendar")
@@ -23,12 +24,23 @@ public class GoogleCalendarController {
 
     private final GoogleCalendarService calendarService;
 
+    
+    /**
+     * Constructor with dependency injection for the Google Calendar service.
+     * 
+     * @param calendarService Service that handles actual communication with Google Calendar API
+     */
     public GoogleCalendarController(GoogleCalendarService calendarService) {
         this.calendarService = calendarService;
     }
 
-    /**
-     * Creates a new event in Google Calendar.
+     /**
+     * Creates a new event in the user's Google Calendar.
+     * Uses the authenticated user's OAuth2 token to authorize the request.
+     * 
+     * @param authorizedClient OAuth2 client with user's Google authorization credentials
+     * @param eventDTO Data transfer object containing event information (title, timing, location, etc.)
+     * @return Response with created event ID or error message
      */
     @PostMapping("/create-event")
     public ResponseEntity<String> createEvent(
@@ -43,7 +55,11 @@ public class GoogleCalendarController {
     }
     // Evil attempt to fix date problem boss said
     /**
-     * Test endpoint for datetime parsing and timezone handling.
+     * Test endpoint for validating date/time parsing and timezone conversions.
+     * Attempts to fix date formatting issues by explicitly setting timezone.
+     * 
+     * @param dateTime String representation of date/time in format "dd.MM.yyyy:HH:mm:ss" 
+     * @return Response with the parsed and timezone-adjusted datetime
      */
     @PostMapping("/test-datetime")
     public ResponseEntity<String> testDateTime(@RequestParam String dateTime) {
@@ -56,8 +72,14 @@ public class GoogleCalendarController {
     }
 
 
+   
     /**
-     * Updates an existing Google Calendar event.
+     * Updates an existing event in the user's Google Calendar.
+     * 
+     * @param authorizedClient OAuth2 client with user's Google authorization credentials
+     * @param eventId The unique identifier for the Google Calendar event to update
+     * @param eventDTO Data transfer object containing updated event details
+     * @return Response with success message or error details
      */
     @PutMapping("/update-event/{eventId}")
     public ResponseEntity<String> updateEvent(
@@ -73,7 +95,11 @@ public class GoogleCalendarController {
     }
 
     /**
-     * Deletes a Google Calendar event.
+     * Deletes an event from the user's Google Calendar.
+     * 
+     * @param authorizedClient OAuth2 client with user's Google authorization credentials
+     * @param eventId The unique identifier for the Google Calendar event to delete
+     * @return Empty response with appropriate status code (204 for success, 500 for error)
      */
     @DeleteMapping("/delete-event/{eventId}")
     public ResponseEntity<Void> deleteEvent(
