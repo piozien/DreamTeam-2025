@@ -1,7 +1,20 @@
 package tech.project.schedule.services;
 
+/**
+ * Contains standard email templates used throughout the application.
+ * Defines subjects and HTML-formatted message bodies for system notifications
+ * like account registration and password reset requests.
+ */
 public class MailContent {
+     /**
+     * Email subject for registration confirmation messages.
+     */
     public static final String REGISTRATION_SUBJECT = "Account registration - set your password";
+
+    /**
+     * HTML template for registration emails with password setup link.
+     * Contains a %s placeholder to be replaced with the actual setup URL.
+     */
     public static final String REGISTRATION_BODY = "<html>" +
             "<body>" +
             "<p>Dear User,</p>" +
@@ -13,7 +26,15 @@ public class MailContent {
             "</body>" +
             "</html>";
 
+      /**
+     * Email subject for password reset requests.
+     */
     public static final String PASSWORD_RESET_SUBJECT = "Password reset";
+    
+    /**
+     * HTML template for password reset emails.
+     * Contains a %s placeholder to be replaced with the reset URL.
+     */
     public static final String PASSWORD_RESET_BODY = "<html>" +
             "<body>" +
             "<p>Dear User,</p>" +
