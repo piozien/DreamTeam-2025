@@ -8,6 +8,12 @@ import tech.project.schedule.model.user.User;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Entity class representing a notification in the system.
+ * Notifications are generated in response to various events (e.g., project updates,
+ * task assignments) and are directed to specific users. The system uses these
+ * records to display alerts and keep users informed about relevant activities.
+ */
 @Entity
 @Table(name = "Notifications")
 @Data
@@ -38,6 +44,10 @@ public class Notification {
     @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
 
+    /**
+     * Lifecycle hook that executes before the entity is persisted.
+     * Sets the creation timestamp to the current date and time.
+     */
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
