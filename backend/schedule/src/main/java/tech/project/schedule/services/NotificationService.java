@@ -15,6 +15,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Service responsible for creating and delivering real-time notifications.
+ * Handles both persistence of notification records and immediate WebSocket delivery
+ * to connected clients for features like alerts about task assignments or updates.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -22,6 +27,14 @@ public class NotificationService {
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificationRepository notificationRepository;
 
+     /**
+     * Sends a notification to a specific user via WebSocket.
+     * Converts the notification entity to a simplified payload and delivers it
+     * to the user's specific notification queue.
+     * 
+     * @param userId The ID of the user to receive the notification
+     * @param notification The notification entity to be delivered
+     */
     @Transactional
     public void sendNotification(UUID userId, Notification notification) {
             log.info("Sending notification to {} with payload {}", userId, notification);
@@ -39,6 +52,16 @@ public class NotificationService {
         }
     
 
+    /**
+     * Creates a notification for a user and delivers it in real-time.
+     * Persists the notification record in the database and immediately
+     * sends it to the user via WebSocket if they're currently connected.
+     * 
+     * @param user The user who should receive the notification
+     * @param status The type of notification being sent
+     * @param message The content of the notification
+     * @return The created and persisted notification entity
+     */
     @Transactional
     public Notification sendNotificationToUser(User user, NotificationStatus status, String message) {
         
