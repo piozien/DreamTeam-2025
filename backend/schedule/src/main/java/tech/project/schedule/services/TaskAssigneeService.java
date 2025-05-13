@@ -20,6 +20,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.HashSet;
 
+/**
+ * Service responsible for managing task assignments to users.
+ * Handles the creation and removal of task-user associations with
+ * appropriate permission checks and notification triggers.
+ */
 @Service
 @RequiredArgsConstructor
 public class TaskAssigneeService {
@@ -28,6 +33,15 @@ public class TaskAssigneeService {
     private final TaskAssigneeRepository taskAssigneeRepository;
     private final NotificationService notificationService;
 
+     /**
+     * Assigns a project member to a specific task.
+     * Only Project Managers can assign users to tasks.
+     * 
+     * @param taskId ID of the task to assign a user to
+     * @param user The user performing the assignment (must be a PM)
+     * @param userToBeAdded The user to assign to the task
+     * @return The created assignment relationship
+     */
     @Transactional
     public TaskAssignee assignMemberToTask(UUID taskId, User user, User userToBeAdded){
         Task task = taskRepository.findById(taskId)
@@ -68,6 +82,10 @@ public class TaskAssigneeService {
         return savedAssignee;
     }
 
+    /**
+     * Removes a user assignment from a task.
+     * Only Project Managers can remove assignments.
+     */
     @Transactional
     public void removeAssigneeFromTask(UUID taskId, UUID assigneeId, User currentUser) {
         Task task = taskRepository.findById(taskId)
@@ -88,6 +106,10 @@ public class TaskAssigneeService {
         taskAssigneeRepository.delete(assigneeToRemove);
     }
 
+    /**
+     * Retrieves all task assignments for a specific task.
+     * Only Project Managers and system Admins can access the full list.
+     */
     public List<TaskAssignee> getAllAssigneesByTaskId(UUID taskId, User user) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
@@ -103,7 +125,10 @@ public class TaskAssigneeService {
         return taskAssigneeRepository.findAllByTask_Id(taskId);
     }
 
-    
+    /**
+     * Gets task assignments with more permissive access controls.
+     * Project members and assignees can view the task's assignment list.
+     */
     public Set<TaskAssignee> getTaskAssignees(UUID taskId, User user) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
