@@ -53,6 +53,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                 // Auth endpoints
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/request-password-reset",
                         "/api/auth/set-password", "/login**", "/error**").permitAll()
+                // Explicitly allow access to notifications endpoints
+                .requestMatchers("/api/notifications/**").authenticated()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2

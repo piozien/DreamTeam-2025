@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
+import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskDependency;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.TaskDependencyRepository;
 import tech.project.schedule.repositories.TaskRepository;
+import tech.project.schedule.services.utils.NotificationHelper;
 import tech.project.schedule.services.utils.PmAndAssigneeCheck;
 
 import java.util.HashSet;
@@ -28,6 +30,7 @@ public class TaskDependencyService {
 
     private final TaskRepository taskRepository;
     private final TaskDependencyRepository taskDependencyRepository;
+    private final NotificationHelper notificationHelper;
 
     /**
      * Creates a new dependency relationship between two tasks.
@@ -65,6 +68,25 @@ public class TaskDependencyService {
         task.getDependencies().add(taskDependency);
 
         taskDependencyRepository.save(taskDependency);
+        
+        // Powiadom osobę dodającą zależność
+        notificationHelper.notifyUser(
+            user,
+            NotificationStatus.TASK_DEPENDENCY_ADDED,
+            "Dodano zależność: zadanie " + task.getName() + " zależy teraz od zadania " + dependsOnTask.getName()
+        );
+        
+        // Powiadom przypisanych użytkowników zadania
+        task.getAssignees().forEach(assignee -> {
+            // Nie powiadamiaj ponownie osoby dodającej zależność
+            if (!assignee.getUser().getId().equals(user.getId())) {
+                notificationHelper.notifyTaskAssignee(
+                    assignee.getUser(),
+                    NotificationStatus.TASK_DEPENDENCY_ADDED,
+                    task.getName()
+                );
+            }
+        });
     }
 
     /**
@@ -93,10 +115,24 @@ public class TaskDependencyService {
             throw new ApiException("Dependency not found", HttpStatus.NOT_FOUND);
         }
 
+        // Zapisz nazwę zadania zależnego przed usunięciem
+        String dependencyTaskName = taskDependency.getDependsOnTask().getName();
 
         task.getDependencies().remove(taskDependency);
         taskRepository.save(task);
         taskDependencyRepository.delete(taskDependency);
+        
+        // Powiadom przypisanych użytkowników o usunięciu zależności
+        task.getAssignees().forEach(assignee -> {
+            // Nie powiadamiaj ponownie osoby usuwającej zależność
+            if (!assignee.getUser().getId().equals(user.getId())) {
+                notificationHelper.notifyUser(
+                    assignee.getUser(),
+                    NotificationStatus.TASK_DEPENDENCY_DELETED,
+                    "Usunięto zależność pomiędzy zadaniami: " + task.getName() + " i " + dependencyTaskName
+                );
+            }
+        });
     }
 
     /**
@@ -137,9 +173,25 @@ public class TaskDependencyService {
             throw new ApiException("A task cannot depend on itself", HttpStatus.BAD_REQUEST);
         }
         
+        // Zapisz nazwy zadań przed aktualizacją
+        String oldDependencyName = taskDependency.getDependsOnTask().getName();
+        
         // Replace the old dependency with the new one
         taskDependency.setDependsOnTask(newDependencyTask);
         taskDependencyRepository.save(taskDependency);
+        
+        // Powiadom przypisanych użytkowników o aktualizacji zależności
+        task.getAssignees().forEach(assignee -> {
+            // Nie powiadamiaj ponownie osoby aktualizującej zależność
+            if (!assignee.getUser().getId().equals(user.getId())) {
+                notificationHelper.notifyUser(
+                    assignee.getUser(),
+                    NotificationStatus.TASK_DEPENDENCY_UPDATED,
+                    "Zaktualizowano zależność dla zadania " + task.getName() + ": teraz zależy od " + 
+                    newDependencyTask.getName() + " (wcześniej: " + oldDependencyName + ")"
+                );
+            }
+        });
     }
 
     /**
@@ -168,5 +220,4 @@ public class TaskDependencyService {
         
         return dependencies;
     }
-
 }

@@ -1,80 +1,122 @@
 package tech.project.schedule.services;
 
 import jakarta.transaction.Transactional;
-import org.springframework.transaction.annotation.Propagation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import tech.project.schedule.exception.ApiException;
+import tech.project.schedule.model.enums.GlobalRole;
 import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.notification.Notification;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.NotificationRepository;
+import tech.project.schedule.repositories.UserRepository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Service responsible for creating and delivering real-time notifications.
- * Handles both persistence of notification records and immediate WebSocket delivery
- * to connected clients for features like alerts about task assignments or updates.
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationService {
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
 
-     /**
-     * Sends a notification to a specific user via WebSocket.
-     * Converts the notification entity to a simplified payload and delivers it
-     * to the user's specific notification queue.
-     * 
-     * @param userId The ID of the user to receive the notification
-     * @param notification The notification entity to be delivered
-     */
     @Transactional
     public void sendNotification(UUID userId, Notification notification) {
-            log.info("Sending notification to {} with payload {}", userId, notification);
-            Map<String, Object> payload = new HashMap<>();
-            payload.put("id", notification.getId());
-            payload.put("status", notification.getStatus());
-            payload.put("message", notification.getMessage());
-            payload.put("userId", notification.getUser().getId().toString());
-            payload.put("createdAt", notification.getCreatedAt().toString());
-            payload.put("isRead", notification.getIsRead());
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("id", notification.getId());
+        payload.put("status", notification.getStatus());
+        payload.put("message", notification.getMessage());
+        payload.put("userId", notification.getUser().getId());
+        payload.put("createdAt", notification.getCreatedAt().toString());
+        payload.put("isRead", notification.getIsRead());
+        String destination = String.format("/user/%s/queue/notifications", userId);
+        messagingTemplate.convertAndSend(destination, payload);
+    }
 
-            String destination = String.format("/user/%s/queue/notifications", userId);
-            messagingTemplate.convertAndSend(destination, payload);
-            
-        }
-    
-
-    /**
-     * Creates a notification for a user and delivers it in real-time.
-     * Persists the notification record in the database and immediately
-     * sends it to the user via WebSocket if they're currently connected.
-     * 
-     * @param user The user who should receive the notification
-     * @param status The type of notification being sent
-     * @param message The content of the notification
-     * @return The created and persisted notification entity
-     */
     @Transactional
-    public Notification sendNotificationToUser(User user, NotificationStatus status, String message) {
-        
-            Notification notification = Notification.builder()
-                    .user(user)
-                    .status(status)
-                    .message(message)
-                    .isRead(false)
-                    .build();
+    public Notification sendNotificationToUser(UUID userId, NotificationStatus status, String message) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new ApiException("User not found", HttpStatus.NOT_FOUND)
+        );
+        Notification notification = Notification.builder()
+                .user(user)
+                .status(status)
+                .message(message)
+                .isRead(false)
+                .build();
+        Notification savedNotification = notificationRepository.save(notification);
+        sendNotification(user.getId(), savedNotification);
+        return savedNotification;
+    }
 
-            Notification savedNotification = notificationRepository.save(notification);
-            sendNotification(user.getId(), savedNotification);
-            return savedNotification;
-            
+    @Transactional
+    public List<Notification> getUserNotifications(UUID currUserId, User authenticatedUser) {
+        boolean isAdmin = authenticatedUser.getGlobalRole() == GlobalRole.ADMIN;
+
+        if(!isAdmin && !authenticatedUser.getId().equals(currUserId)) {
+            throw new ApiException("You do not have permission to view notifications", HttpStatus.UNAUTHORIZED);
+        }
+        User currUser = userRepository.findById(currUserId).orElseThrow(
+                () -> new ApiException("User not found", HttpStatus.NOT_FOUND)
+        );
+        return notificationRepository.findByUser(currUser);
+    }
+
+    @Transactional
+    public Notification markNotificationAsRead(User user, UUID notificationId) {
+        Notification notification = notificationRepository.findById(notificationId).orElseThrow(
+                () -> new ApiException("Notification not found", HttpStatus.NOT_FOUND)
+        );
+        if(!user.getId().equals(notification.getUser().getId())) {
+            throw new ApiException("You do not have permission to view notifications", HttpStatus.UNAUTHORIZED);
+        }
+        notification.setIsRead(true);
+        notificationRepository.save(notification);
+        return notification;
+    }
+
+    @Transactional
+    public List<Notification> markAllNotificationsAsRead(User user) {
+        List<Notification> notifications = notificationRepository.findByUser(user);
+        if(notifications.isEmpty()) {
+            throw new ApiException("No notifications found", HttpStatus.NOT_FOUND);
+        }
+        for(Notification notification : notifications) {
+            notification.setIsRead(true);
+        }
+        return notificationRepository.saveAll(notifications);
+    }
+
+    @Transactional
+    public void deleteNotification(User user, UUID notificationId){
+        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
+                Notification notification = notificationRepository.findById(notificationId).orElseThrow(
+                () -> new ApiException("Notification not found", HttpStatus.NOT_FOUND)
+        );
+        if(!user.getId().equals(notification.getUser().getId()) && !isAdmin) {
+            throw new ApiException("You do not have permission to view these notifications", HttpStatus.UNAUTHORIZED);
+        }
+        notificationRepository.delete(notification);
+    }
+
+    @Transactional
+    public void deleteAllNotifications(User user) {
+        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
+        List<Notification> notifications = notificationRepository.findByUser(user);
+        if(notifications.isEmpty()) {
+            throw new ApiException("No notifications found", HttpStatus.NOT_FOUND);
+        }
+        if(!isAdmin&&notifications.stream()
+                .anyMatch(notification -> notification.getUser().getId().equals(user.getId()))) {
+            throw new ApiException("You do not have permission to view notifications", HttpStatus.UNAUTHORIZED);
+        }
+        notificationRepository.deleteAll(notifications);
     }
 }

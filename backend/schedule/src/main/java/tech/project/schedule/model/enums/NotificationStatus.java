@@ -22,5 +22,15 @@ public enum NotificationStatus {
     TASK_DEPENDENCY_UPDATED,
     TASK_FILE_UPLOADED,
     TASK_FILE_DELETED,
-    TASK_FILE_UPDATED
+    TASK_FILE_UPDATED,
+    
+    // Error and system notification types
+    ERROR,              // For general error notifications
+    PERMISSION_DENIED,  // For access control violations
+    SYSTEM,             // For system-wide announcements and administrative messages
+    
+    // Additional notification types for future use
+    DEADLINE_APPROACHING,
+    TASK_OVERDUE,
+    MENTION              // For when a user is mentioned in comments
 }

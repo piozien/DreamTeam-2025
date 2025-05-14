@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.enums.GlobalRole;
+import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.enums.ProjectUserRole;
 import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.task.Task;
@@ -14,6 +15,7 @@ import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.TaskCommentRepository;
 import tech.project.schedule.repositories.TaskRepository;
 import tech.project.schedule.services.utils.GetProjectRole;
+import tech.project.schedule.services.utils.NotificationHelper;
 import tech.project.schedule.services.utils.PmAndAssigneeCheck;
 
 
@@ -31,6 +33,7 @@ import java.util.UUID;
 public class TaskCommentService {
     private final TaskCommentRepository taskCommentRepository;
     private final TaskRepository taskRepository;
+    private final NotificationHelper notificationHelper;
 
     /**
      * Adds a comment to a task.
@@ -56,6 +59,19 @@ public class TaskCommentService {
         comment = taskCommentRepository.save(comment);
 
         taskRepository.save(task);
+        
+        // Powiadom wszystkich przypisanych użytkowników o nowym komentarzu
+        task.getAssignees().forEach(assignee -> {
+            // Nie powiadamiaj autora komentarza
+            if (!assignee.getUser().getId().equals(user.getId())) {
+                notificationHelper.notifyTaskAssignee(
+                    assignee.getUser(),
+                    NotificationStatus.TASK_COMMENT_ADDED,
+                    task.getName()
+                );
+            }
+        });
+        
         return comment;
     }
     
@@ -78,8 +94,34 @@ public class TaskCommentService {
         if(PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId,user)){
             throw new ApiException("You are not allowed to delete this comment", HttpStatus.FORBIDDEN);
         }
+        
+        // Zapisz informacje o autorze komentarza
+        User commentAuthor = comment.getUser();
+        
         task.getComments().remove(comment);
         taskRepository.save(task);
+        
+        // Powiadom autora komentarza o usunięciu
+        if (!commentAuthor.getId().equals(user.getId())) {
+            notificationHelper.notifyUser(
+                commentAuthor,
+                NotificationStatus.TASK_COMMENT_DELETED,
+                "Twój komentarz w zadaniu " + task.getName() + " został usunięty"
+            );
+        }
+        
+        // Powiadom wszystkich przypisanych użytkowników
+        task.getAssignees().forEach(assignee -> {
+            // Nie powiadamiaj osoby usuwającej ani autora komentarza
+            if (!assignee.getUser().getId().equals(user.getId()) 
+                && !assignee.getUser().getId().equals(commentAuthor.getId())) {
+                notificationHelper.notifyTaskAssignee(
+                    assignee.getUser(),
+                    NotificationStatus.TASK_COMMENT_DELETED,
+                    task.getName()
+                );
+            }
+        });
     }
 
     /**
@@ -97,7 +139,20 @@ public class TaskCommentService {
         if(GetProjectRole.getProjectRole(user,task.getProject()) != ProjectUserRole.PM){
             throw new ApiException("You are not allowed to delete comments in this task", HttpStatus.FORBIDDEN);
         }
+        
         taskCommentRepository.deleteAllByTask_Id(taskId);
+        
+        // Powiadom wszystkich przypisanych użytkowników
+        task.getAssignees().forEach(assignee -> {
+            // Nie powiadamiaj osoby usuwającej komentarze
+            if (!assignee.getUser().getId().equals(user.getId())) {
+                notificationHelper.notifyUser(
+                    assignee.getUser(),
+                    NotificationStatus.TASK_COMMENT_DELETED,
+                    "Wszystkie komentarze w zadaniu " + task.getName() + " zostały usunięte"
+                );
+            }
+        });
     }
 
     /**
@@ -163,8 +218,6 @@ public class TaskCommentService {
             throw new ApiException("You are not allowed to view this comment", HttpStatus.FORBIDDEN);
         }
         return comment;
-
     }
-
 }
 

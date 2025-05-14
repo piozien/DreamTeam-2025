@@ -14,6 +14,7 @@ import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.TaskAssigneeRepository;
 import tech.project.schedule.repositories.TaskRepository;
 import tech.project.schedule.services.utils.GetProjectRole;
+import tech.project.schedule.services.utils.NotificationHelper;
 
 import java.util.List;
 import java.util.Set;
@@ -23,7 +24,7 @@ import java.util.HashSet;
 /**
  * Service responsible for managing task assignments to users.
  * Handles the creation and removal of task-user associations with
- * appropriate permission checks and notification triggers.
+ * appropriate permission checks.
  */
 @Service
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class TaskAssigneeService {
 
     private final TaskRepository taskRepository;
     private final TaskAssigneeRepository taskAssigneeRepository;
-    private final NotificationService notificationService;
+    private final NotificationHelper notificationHelper;
 
      /**
      * Assigns a project member to a specific task.
@@ -69,16 +70,21 @@ public class TaskAssigneeService {
         taskRepository.save(task);
         
         TaskAssignee savedAssignee = taskAssigneeRepository.save(newAssignee);
-        notificationService.sendNotificationToUser(
-                user,
-                NotificationStatus.TASK_ASSIGNEE_ADDED,
-                "Pomyślnie dodano użytkownika "+userToBeAdded.getName()+" do zadania "+task.getName()
+        
+        // Powiadom użytkownika dodającego przypisanie
+        notificationHelper.notifyUser(
+            user,
+            NotificationStatus.TASK_ASSIGNEE_ADDED,
+            "Pomyślnie dodano użytkownika " + userToBeAdded.getName() + " do zadania " + task.getName()
         );
-        notificationService.sendNotificationToUser(
-                userToBeAdded,
-                NotificationStatus.TASK_ASSIGNEE_ADDED,
-                "Zostałeś dodany do zadania "+task.getName()
+        
+        // Powiadom dodanego użytkownika
+        notificationHelper.notifyTaskAssignee(
+            userToBeAdded,
+            NotificationStatus.TASK_ASSIGNEE_ADDED,
+            task.getName()
         );
+        
         return savedAssignee;
     }
 
@@ -101,9 +107,19 @@ public class TaskAssigneeService {
                 .findFirst()
                 .orElseThrow(() -> new ApiException("Assignee not found", HttpStatus.NOT_FOUND));
         
+        // Zapisz referencję do usuwanego użytkownika
+        User userToNotify = assigneeToRemove.getUser();
+        
         task.getAssignees().remove(assigneeToRemove);
         taskRepository.save(task);
         taskAssigneeRepository.delete(assigneeToRemove);
+        
+        // Powiadom usuniętego użytkownika
+        notificationHelper.notifyUser(
+            userToNotify,
+            NotificationStatus.TASK_UPDATED,
+            "Zostałeś usunięty z zadania " + task.getName()
+        );
     }
 
     /**
@@ -143,5 +159,4 @@ public class TaskAssigneeService {
         
         return new HashSet<>(task.getAssignees());
     }
-
 }

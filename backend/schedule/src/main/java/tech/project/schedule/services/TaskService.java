@@ -14,6 +14,7 @@ import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.services.utils.GetProjectRole;
+import tech.project.schedule.services.utils.NotificationHelper;
 import tech.project.schedule.utils.UserUtils;
 import tech.project.schedule.repositories.TaskAssigneeRepository;
 import java.util.stream.Collectors;
@@ -35,11 +36,11 @@ import tech.project.schedule.repositories.TaskRepository;
 @Service
 @RequiredArgsConstructor
 public class TaskService {
-    private final NotificationService notificationService;
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final TaskAssigneeRepository taskAssigneeRepository;
     private final tech.project.schedule.repositories.UserRepository userRepository;
+    private final NotificationHelper notificationHelper;
 
     /**
      * Creates a new task within a project.
@@ -73,14 +74,23 @@ public class TaskService {
         Task newTask = taskRepository.save(task);
         project.getTasks().add(newTask);
         projectRepository.save(project);
+        
+        // Powiadom członków projektu o utworzeniu nowego zadania
+        project.getMembers().values().forEach(member -> {
+            notificationHelper.notifyUser(
+                member.getUser(),
+                NotificationStatus.TASK_UPDATED,
+                "Utworzono nowe zadanie: " + task.getName() + " w projekcie " + project.getName()
+            );
+        });
+        
         return newTask;
     }
 
     /**
      * Updates an existing task.
      * Only project managers and task assignees can update tasks.
-     * Validates business rules like date constraints and sends
-     * notifications to all task assignees.
+     * Validates business rules like date constraints.
      * 
      * @param updatedTask Task with updated fields
      * @param taskId ID of the task to update
@@ -132,6 +142,7 @@ public class TaskService {
         if (updatedTask.getStatus() != null) {
             boolean wasCompleted = existingTask.getStatus() == TaskStatus.FINISHED;
             boolean isNowCompleted = updatedTask.getStatus() == TaskStatus.FINISHED;
+            
             if (!wasCompleted && isNowCompleted && existingTask.getEndDate() == null) {
                 existingTask.setEndDate(LocalDate.now());
             }
@@ -139,17 +150,34 @@ public class TaskService {
                 existingTask.setEndDate(null);
             }
             existingTask.setStatus(updatedTask.getStatus());
+            
+            // Powiadom o zakończeniu zadania
+            if (!wasCompleted && isNowCompleted) {
+                existingTask.getAssignees().forEach(assignee -> {
+                    notificationHelper.notifyTaskAssignee(
+                        assignee.getUser(),
+                        NotificationStatus.TASK_COMPLETED,
+                        existingTask.getName()
+                    );
+                });
+            }
         }
-        var saved = taskRepository.save(existingTask);
-        NotificationStatus statusNot = existingTask.getStatus() == TaskStatus.FINISHED  ? NotificationStatus.TASK_COMPLETED : NotificationStatus.TASK_UPDATED;
-        for(TaskAssignee assignee :  existingTask.getAssignees()) {
-            notificationService.sendNotificationToUser(
+        
+        Task savedTask = taskRepository.save(existingTask);
+        
+        // Powiadom przypisanych użytkowników o aktualizacji zadania
+        existingTask.getAssignees().forEach(assignee -> {
+            // Nie powiadamiaj osoby dokonującej aktualizacji
+            if (!assignee.getUser().getId().equals(user.getId())) {
+                notificationHelper.notifyTaskAssignee(
                     assignee.getUser(),
-                    statusNot,
-                    "Zadanie "+updatedTask.getName()+" zostało zaktualizowane."
-            );
-        }
-        return saved;
+                    NotificationStatus.TASK_UPDATED,
+                    existingTask.getName()
+                );
+            }
+        });
+        
+        return savedTask;
     }
 
     /**
@@ -167,7 +195,27 @@ public class TaskService {
         if(!isPM){
             throw new ApiException("You cannot delete this task", HttpStatus.FORBIDDEN);
         }
+        
+        // Przed usunięciem, zapisz listę przypisanych użytkowników
+        List<User> assignees = task.getAssignees().stream()
+            .map(TaskAssignee::getUser)
+            .collect(Collectors.toList());
+        
+        // Zapisz nazwę zadania do wykorzystania w powiadomieniach
+        String taskName = task.getName();
+        
         taskRepository.deleteById(taskId);
+        
+        // Powiadom przypisanych użytkowników o usunięciu zadania
+        assignees.forEach(assignee -> {
+            if (!assignee.getId().equals(user.getId())) {
+                notificationHelper.notifyTaskAssignee(
+                    assignee,
+                    NotificationStatus.TASK_DELETED,
+                    taskName
+                );
+            }
+        });
     }
 
     /**

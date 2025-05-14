@@ -4,19 +4,24 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.project.schedule.exception.ApiException;
-import tech.project.schedule.model.enums.*;
-import tech.project.schedule.model.notification.Notification;
+import tech.project.schedule.model.enums.GlobalRole;
+import tech.project.schedule.model.enums.NotificationStatus;
+import tech.project.schedule.model.enums.ProjectStatus;
+import tech.project.schedule.model.enums.ProjectUserRole;
+import tech.project.schedule.model.enums.TaskStatus;
 import tech.project.schedule.model.project.Project;
 import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.model.project.ProjectMember;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.ProjectRepository;
 import tech.project.schedule.services.utils.GetProjectRole;
+import tech.project.schedule.services.utils.NotificationHelper;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Service for managing projects and their members.
@@ -26,17 +31,18 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
-    private final NotificationService notificationService;
-    private final ProjectRepository projectRepository;
 
-     /**
-     * Creates a new project with the specified user as Project Manager.
-     * Sets initial project status based on start date and sends a confirmation notification.
+    private final ProjectRepository projectRepository;
+    private final NotificationHelper notificationHelper;
+
+    /**
+     * Creates a new project with the current user as Project Manager.
+     * Validates the project details and sets the current user as the PM.
      * 
-     * @param project The project to create
-     * @param user The user creating the project, who becomes the initial PM
-     * @return The saved project entity
-     * @throws ApiException if a project with the same name exists or required fields are missing
+     * @param project The project entity to create
+     * @param user The user creating the project (will become PM)
+     * @return The created and persisted project entity
+     * @throws ApiException if project name already exists or invalid dates
      */
     @Transactional
     public Project createProject(Project project, User user) {
@@ -60,12 +66,14 @@ public class ProjectService {
 
         newProject.addMember(user.getId(), setPM);
         Project savedProject = projectRepository.save(newProject);
-
-        notificationService.sendNotificationToUser(
-                user,
-                NotificationStatus.PROJECT_CREATED,
-                "Stworzono projekt: "+ project.getName()+" pomyślnie."
+        
+        // Powiadom twórcę projektu
+        notificationHelper.notifyProjectMember(
+            user,
+            NotificationStatus.PROJECT_CREATED,
+            savedProject.getName()
         );
+        
         return savedProject;
     }
 
@@ -117,7 +125,21 @@ public class ProjectService {
             existingProject.setProjectStatus(updatedProject.getProjectStatus());
         }
 
-        return projectRepository.save(existingProject);
+        Project savedProject = projectRepository.save(existingProject);
+        
+        // Powiadom wszystkich członków projektu o aktualizacji
+        existingProject.getMembers().values().forEach(member -> {
+            // Nie powiadamiaj osoby aktualizującej
+            if (!member.getUser().getId().equals(user.getId())) {
+                notificationHelper.notifyProjectMember(
+                    member.getUser(),
+                    NotificationStatus.PROJECT_UPDATED,
+                    existingProject.getName()
+                );
+            }
+        });
+        
+        return savedProject;
     }
 
     /**
@@ -141,7 +163,24 @@ public class ProjectService {
             throw new ApiException("You cannot delete this project", HttpStatus.FORBIDDEN);
         }
         
+        // Zapisz nazwę projektu i członków przed usunięciem
+        String projectName = project.getName();
+        List<User> members = project.getMembers().values().stream()
+            .map(ProjectMember::getUser)
+            .collect(Collectors.toList());
+        
         projectRepository.deleteById(projectId);
+        
+        // Powiadom wszystkich członków projektu o usunięciu
+        members.forEach(member -> {
+            if (!member.getId().equals(user.getId())) {
+                notificationHelper.notifyProjectMember(
+                    member,
+                    NotificationStatus.PROJECT_DELETED,
+                    projectName
+                );
+            }
+        });
     }
 
     /**
@@ -201,15 +240,19 @@ public class ProjectService {
         
         projectRepository.save(project);
         ProjectMember savedMember = project.getMembers().get(user.getId());
-        notificationService.sendNotificationToUser(
-                savedMember.getUser(),
-                NotificationStatus.PROJECT_MEMBER_ADDED,
-                "Zostałeś dodany do projektu: "+ project.getName()
+        
+        // Powiadom dodanego użytkownika
+        notificationHelper.notifyProjectMember(
+            user,
+            NotificationStatus.PROJECT_MEMBER_ADDED,
+            project.getName()
         );
-        notificationService.sendNotificationToUser(
-                principal,
-                NotificationStatus.PROJECT_MEMBER_ADDED,
-                "Dodano użytkownika "+ user.getUsername() + " do projektu: "+ project.getName()
+        
+        // Powiadom administratora projektu o pomyślnym dodaniu
+        notificationHelper.notifyUser(
+            principal,
+            NotificationStatus.PROJECT_MEMBER_ADDED,
+            "Dodano użytkownika " + user.getUsername() + " do projektu " + project.getName()
         );
 
         return savedMember;
@@ -249,8 +292,19 @@ public class ProjectService {
             }
         }
         
+        // Zachowaj referencję do usuwanego użytkownika przed usunięciem
+        User removedUser = project.getMembers().get(userId).getUser();
+        String projectName = project.getName();
+        
         project.getMembers().remove(userId);
         projectRepository.save(project);
+        
+        // Powiadom usuniętego użytkownika
+        notificationHelper.notifyUser(
+            removedUser,
+            NotificationStatus.PROJECT_UPDATED, 
+            "Zostałeś usunięty z projektu " + projectName
+        );
     }
 
     /**
@@ -289,8 +343,19 @@ public class ProjectService {
             }
         }
         
+        // Zapisz poprzednią rolę dla wiadomości
+        ProjectUserRole oldRole = member.getRole();
+        
         member.setRole(newRole);
         projectRepository.save(project);
+        
+        // Powiadom użytkownika o zmianie roli
+        notificationHelper.notifyUser(
+            member.getUser(),
+            NotificationStatus.PROJECT_UPDATED,
+            "Twoja rola w projekcie " + project.getName() + " została zmieniona z " + oldRole + " na " + newRole
+        );
+        
         return member;
     }
 
