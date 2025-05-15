@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import tech.project.schedule.dto.notification.NotificationDTO;
-import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.notification.Notification;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
@@ -83,5 +82,4 @@ public class NotificationController {
         notificationService.deleteAllNotifications(authenticatedUser);
         return ResponseEntity.noContent().build();
     }
-    
 } 
