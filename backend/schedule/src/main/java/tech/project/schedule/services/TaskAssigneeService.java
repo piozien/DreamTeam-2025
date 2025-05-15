@@ -15,7 +15,13 @@ import tech.project.schedule.repositories.TaskAssigneeRepository;
 import tech.project.schedule.repositories.TaskRepository;
 import tech.project.schedule.services.utils.GetProjectRole;
 import tech.project.schedule.services.utils.NotificationHelper;
+import tech.project.schedule.dto.calendar.EventDTO;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -33,10 +39,44 @@ public class TaskAssigneeService {
     private final TaskRepository taskRepository;
     private final TaskAssigneeRepository taskAssigneeRepository;
     private final NotificationHelper notificationHelper;
+    private final GoogleCalendarService calendarService;
 
-     /**
+    /**
+     * Creates a calendar event for a task assignment.
+     * 
+     * @param task The task to create an event for
+     * @param user The user to create the event for
+     * @return The ID of the created calendar event
+     */
+    private String createCalendarEvent(Task task, User user) {
+        // Convert task dates to datetime format
+        LocalDateTime startDateTime = task.getStartDate().atTime(LocalTime.of(9, 0)); // Default to 9 AM
+        LocalDateTime endDateTime = task.getEndDate() != null ? 
+            task.getEndDate().atTime(LocalTime.of(17, 0)) : // Default to 5 PM
+            task.getStartDate().atTime(LocalTime.of(17, 0));
+
+        // Format dates for Google Calendar
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy:HH:mm:ss");
+        String startDateTimeStr = startDateTime.format(formatter);
+        String endDateTimeStr = endDateTime.format(formatter);
+
+        // Create event DTO
+        EventDTO eventDTO = new EventDTO(
+            task.getName(),
+            "Task in project: " + task.getProject().getName() + "\n" + task.getDescription(),
+            startDateTimeStr,
+            endDateTimeStr,
+            "Europe/Warsaw"
+        );
+
+        // Create calendar event
+        return calendarService.createEvent(user.getId(), eventDTO);
+    }
+
+    /**
      * Assigns a project member to a specific task.
      * Only Project Managers can assign users to tasks.
+     * Creates a calendar event for the assigned user.
      * 
      * @param taskId ID of the task to assign a user to
      * @param user The user performing the assignment (must be a PM)
@@ -71,6 +111,16 @@ public class TaskAssigneeService {
         
         TaskAssignee savedAssignee = taskAssigneeRepository.save(newAssignee);
         
+        // Create calendar event for the assigned user
+        try {
+            String eventId = createCalendarEvent(task, userToBeAdded);
+            savedAssignee.setCalendarEventId(eventId);
+            taskAssigneeRepository.save(savedAssignee);
+        } catch (Exception e) {
+            // Log error but don't fail the assignment if calendar integration fails
+            System.err.println("Failed to create calendar event: " + e.getMessage());
+        }
+        
         // Powiadom użytkownika dodającego przypisanie
         notificationHelper.notifyUser(
             user,
@@ -91,6 +141,7 @@ public class TaskAssigneeService {
     /**
      * Removes a user assignment from a task.
      * Only Project Managers can remove assignments.
+     * Removes the associated calendar event.
      */
     @Transactional
     public void removeAssigneeFromTask(UUID taskId, UUID assigneeId, User currentUser) {
@@ -106,6 +157,16 @@ public class TaskAssigneeService {
                 .filter(assignee -> assignee.getId().equals(assigneeId))
                 .findFirst()
                 .orElseThrow(() -> new ApiException("Assignee not found", HttpStatus.NOT_FOUND));
+        
+        // Remove calendar event if it exists
+        if (assigneeToRemove.getCalendarEventId() != null) {
+            try {
+                calendarService.deleteEvent(assigneeToRemove.getUser().getId(), assigneeToRemove.getCalendarEventId());
+            } catch (Exception e) {
+                // Log error but don't fail the removal if calendar integration fails
+                System.err.println("Failed to delete calendar event: " + e.getMessage());
+            }
+        }
         
         // Zapisz referencję do usuwanego użytkownika
         User userToNotify = assigneeToRemove.getUser();

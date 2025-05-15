@@ -40,4 +40,11 @@ public class TaskAssignee {
     @JoinColumn(name = "user_id", nullable = false)
     @EqualsAndHashCode.Exclude
     private User user;
+
+    /**
+     * The ID of the Google Calendar event associated with this task assignment.
+     * Used to track and manage the calendar event when the assignment changes.
+     */
+    @Column(name = "calendar_event_id")
+    private String calendarEventId;
 }

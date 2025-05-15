@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import tech.project.schedule.repositories.ProjectRepository;
 import tech.project.schedule.repositories.TaskRepository;
+import tech.project.schedule.services.GoogleCalendarService;
 
 
 /**
@@ -41,6 +42,7 @@ public class TaskService {
     private final TaskAssigneeRepository taskAssigneeRepository;
     private final tech.project.schedule.repositories.UserRepository userRepository;
     private final NotificationHelper notificationHelper;
+    private final GoogleCalendarService calendarService;
 
     /**
      * Creates a new task within a project.
@@ -151,9 +153,20 @@ public class TaskService {
             }
             existingTask.setStatus(updatedTask.getStatus());
             
-            // Powiadom o zakończeniu zadania
+            // Handle calendar events when task is completed
             if (!wasCompleted && isNowCompleted) {
+                // Remove calendar events for all assignees
                 existingTask.getAssignees().forEach(assignee -> {
+                    if (assignee.getCalendarEventId() != null) {
+                        try {
+                            calendarService.deleteEvent(assignee.getUser().getId(), assignee.getCalendarEventId());
+                            assignee.setCalendarEventId(null);
+                            taskAssigneeRepository.save(assignee);
+                        } catch (Exception e) {
+                            // Log error but don't fail the update if calendar integration fails
+                            System.err.println("Failed to delete calendar event: " + e.getMessage());
+                        }
+                    }
                     notificationHelper.notifyTaskAssignee(
                         assignee.getUser(),
                         NotificationStatus.TASK_COMPLETED,
