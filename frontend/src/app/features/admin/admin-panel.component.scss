@@ -1,0 +1,38 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+mat-card {
+  margin-bottom: 20px;
+}
+
+mat-card-title {
+  margin-bottom: 20px;
+}
+
+mat-tab-group {
+  margin-top: 20px;
+}
+
+.system-tools-container {
+  padding: 20px;
+}
+
+.tool-section {
+  margin-bottom: 30px;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #3f51b5;
+}
+
+.tool-section h3 {
+  margin-top: 0;
+  color: #3f51b5;
+}
+
+.tool-section p {
+  margin-bottom: 15px;
+}

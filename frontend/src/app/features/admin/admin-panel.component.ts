@@ -28,80 +28,8 @@ import { GoogleCalendarService } from '../../shared/services/google-calendar.ser
     UserManagementComponent,
     RegisterUserComponent
   ],
-  template: `
-    <div class="container mt-4">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>
-            <h1>Admin Panel</h1>
-          </mat-card-title>
-        </mat-card-header>
-        
-        <mat-card-content>
-          <mat-tab-group animationDuration="0ms">
-            <mat-tab label="User Management">
-              <app-user-management></app-user-management>
-            </mat-tab>
-            <mat-tab label="Register New User">
-              <app-register-user></app-register-user>
-            </mat-tab>
-            <mat-tab label="System Tools">
-              <div class="system-tools-container">
-                <h2>Google Calendar Integration</h2>
-                <div class="tool-section">
-                  <p>Verify that the Google Calendar integration is working correctly.</p>
-                  <button mat-raised-button color="primary" (click)="testGoogleCalendarToken()" [disabled]="isTestingToken">
-                    <mat-icon>verified</mat-icon>
-                    {{ isTestingToken ? 'Testing...' : 'Test Calendar Token' }}
-                  </button>
-                </div>
-              </div>
-            </mat-tab>
-          </mat-tab-group>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  `,
-  styles: [`
-    .container {
-      padding: 20px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    
-    mat-card {
-      margin-bottom: 20px;
-    }
-    
-    mat-card-title {
-      margin-bottom: 20px;
-    }
-    
-    mat-tab-group {
-      margin-top: 20px;
-    }
-
-    .system-tools-container {
-      padding: 20px;
-    }
-
-    .tool-section {
-      margin-bottom: 30px;
-      background-color: #f9f9f9;
-      padding: 20px;
-      border-radius: 8px;
-      border-left: 4px solid #3f51b5;
-    }
-
-    .tool-section h3 {
-      margin-top: 0;
-      color: #3f51b5;
-    }
-
-    .tool-section p {
-      margin-bottom: 15px;
-    }
-  `]
+  templateUrl: './admin-panel.component.html',
+  styleUrls: ['./admin-panel.component.scss']
 })
 export class AdminPanelComponent implements OnInit {
   isTestingToken = false;
