@@ -16,35 +16,92 @@
     <span>Ładowanie projektów...</span>
   </div>
 
-  <div class="projects-grid" *ngIf="!loading">
-    <mat-card class="project-card" *ngFor="let project of projects" (click)="selectProject(project)" style="cursor: pointer;">
-      <mat-card-header>
-        <mat-card-title>{{ project.name }}</mat-card-title>
-        <div class="card-actions">
-          <button mat-icon-button class="view-button" color="primary" (click)="$event.stopPropagation(); selectProject(project)" matTooltip="Pokaż szczegóły">
-            <mat-icon>visibility</mat-icon>
-          </button>
-          <button mat-icon-button class="delete-button" (click)="$event.stopPropagation(); deleteProject(project)" matTooltip="Usuń projekt">
-            <mat-icon style="color: #f44336;">delete</mat-icon>
-          </button>
-        </div>
-      </mat-card-header>
-      
-      <mat-card-content>
-        <p class="description">{{ project.description }}</p>
+  <div *ngIf="!loading">
+    <!-- Projects the user is assigned to -->
+    <div class="category-header">
+      <h2>Moje projekty</h2>
+      <p>Projekty, do których zostałeś przypisany</p>
+    </div>
+
+    <div class="projects-grid">
+      <mat-card class="project-card" *ngFor="let project of assignedProjects" (click)="selectProject(project)" style="cursor: pointer;">
+        <mat-card-header>
+          <mat-card-title>{{ project.name }}</mat-card-title>
+          <div class="card-actions">
+            <button mat-icon-button class="view-button" color="primary" (click)="$event.stopPropagation(); selectProject(project)" matTooltip="Pokaż szczegóły">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button class="delete-button" (click)="$event.stopPropagation(); deleteProject(project)" matTooltip="Usuń projekt">
+              <mat-icon style="color: #f44336;">delete</mat-icon>
+            </button>
+          </div>
+        </mat-card-header>
         
-        <div class="project-dates">
-          <span>
-            <mat-icon>event</mat-icon>
-            <strong>Start:</strong> {{ project.startDate | date:'longDate':'':'pl-PL' }}
-          </span>
-          <span>
-            <mat-icon>event_available</mat-icon>
-            <strong>Koniec:</strong> {{ project.endDate | date:'longDate':'':'pl-PL' }}
-          </span>
-        </div>
-      </mat-card-content>
-    </mat-card>
+        <mat-card-content>
+          <p class="description">{{ project.description }}</p>
+          
+          <div class="project-dates">
+            <span>
+              <mat-icon>event</mat-icon>
+              <strong>Start:</strong> {{ project.startDate | date:'longDate':'':'pl-PL' }}
+            </span>
+            <span>
+              <mat-icon>event_available</mat-icon>
+              <strong>Koniec:</strong> {{ project.endDate | date:'longDate':'':'pl-PL' }}
+            </span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div *ngIf="assignedProjects.length === 0" class="no-projects">
+        <mat-icon>info</mat-icon>
+        <span>Nie jesteś przypisany do żadnego projektu.</span>
+      </div>
+    </div>
+
+    <mat-divider class="section-divider"></mat-divider>
+
+    <!-- Projects the user is not assigned to -->
+    <div class="category-header">
+      <h2>Inne dostępne projekty</h2>
+      <p>Projekty, do których nie zostałeś przypisany</p>
+    </div>
+
+    <div class="projects-grid">
+      <mat-card class="project-card" *ngFor="let project of unassignedProjects" (click)="selectProject(project)" style="cursor: pointer;">
+        <mat-card-header>
+          <mat-card-title>{{ project.name }}</mat-card-title>
+          <div class="card-actions">
+            <button mat-icon-button class="view-button" color="primary" (click)="$event.stopPropagation(); selectProject(project)" matTooltip="Pokaż szczegóły">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button class="delete-button" (click)="$event.stopPropagation(); deleteProject(project)" matTooltip="Usuń projekt">
+              <mat-icon style="color: #f44336;">delete</mat-icon>
+            </button>
+          </div>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <p class="description">{{ project.description }}</p>
+          
+          <div class="project-dates">
+            <span>
+              <mat-icon>event</mat-icon>
+              <strong>Start:</strong> {{ project.startDate | date:'longDate':'':'pl-PL' }}
+            </span>
+            <span>
+              <mat-icon>event_available</mat-icon>
+              <strong>Koniec:</strong> {{ project.endDate | date:'longDate':'':'pl-PL' }}
+            </span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div *ngIf="unassignedProjects.length === 0" class="no-projects">
+        <mat-icon>info</mat-icon>
+        <span>Brak dostępnych projektów.</span>
+      </div>
+    </div>
   </div>
 
   <div *ngIf="!loading && projects.length === 0" class="no-projects">

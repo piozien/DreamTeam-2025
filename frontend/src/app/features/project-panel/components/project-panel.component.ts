@@ -9,13 +9,16 @@ import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDividerModule } from '@angular/material/divider';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
 import { Project, ProjectCreate, ProjectUserRole } from '../../../shared/models/project.model';
 import { ProjectService } from '../../../shared/services/project.service';
 import { WebSocketService } from '../../../shared/services/websocket.service';
 import { ProjectDialogComponent } from './project-dialog/project-dialog.component';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable, forkJoin, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
+import { AuthService } from '../../../shared/services/auth.service';
 
 
 const MY_DATE_FORMATS = {
@@ -44,7 +47,8 @@ const MY_DATE_FORMATS = {
     MatListModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    MatDividerModule
   ],
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'pl-PL' },
@@ -53,22 +57,27 @@ const MY_DATE_FORMATS = {
 })
 export class ProjectPanelComponent implements OnInit, OnDestroy {
   projects: Project[] = [];
+  assignedProjects: Project[] = [];
+  unassignedProjects: Project[] = [];
   selectedProject: Project | null = null;
   projectRoles = Object.values(ProjectUserRole);
   loading = false;
   error: string | null = null;
   isCreating = false;
   private subscription: Subscription = new Subscription();
+  private currentUserId: string | null = null;
 
   constructor(
     private projectService: ProjectService,
     private router: Router,
     private dialog: MatDialog,
     private toastService: ToastrService,
-    private websocketService: WebSocketService
+    private websocketService: WebSocketService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.currentUserId = this.authService.getUserId();
     this.loadProjects();
     this.subscribeToNotifications();
   }
@@ -123,20 +132,30 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
     this.subscription.add(
       this.projectService.getProjects().subscribe({
         next: (projects) => {
-          this.projects = projects;
+          console.log('Projects loaded successfully:', projects.length);
+          this.projects = projects || [];
+          // We'll show a success message here but loading will be set to false
+          // after categorizeProjects() completes
           this.toastService.success('Projekty zostały pomyślnie załadowane.');
-          this.loading = false;
+          
+          // Start categorizing projects, which sets its own loading state
+          this.categorizeProjects();
         },
         error: (error) => {
           console.error('Error loading projects:', error);
           this.loading = false;
+          
+          // Make sure we have empty arrays if projects failed to load
+          this.projects = [];
+          this.assignedProjects = [];
+          this.unassignedProjects = [];
           
           // Check if this is an authentication error
           if (error && error.message === 'AUTHENTICATION_REQUIRED') {
             this.error = 'Wymagane zalogowanie się do systemu.';
             this.toastService.error('Wymagane zalogowanie. Zaloguj się, aby kontynuować.');
             // Redirect to login page once, not in a loop
-            this.router.navigate(['/login']);
+            this.router.navigate(['/auth/login']);
           } else {
             this.error = 'Wystąpił błąd podczas ładowania projektów.';
             this.toastService.error('Wystąpił błąd podczas ładowania projektów.');
@@ -179,6 +198,79 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Categorizes projects into assigned and unassigned based on current user
+   */
+  categorizeProjects(): void {
+    if (!this.currentUserId) {
+      console.warn('No current user ID available for project categorization');
+      this.assignedProjects = [];
+      this.unassignedProjects = this.projects;
+      return;
+    }
+
+    // Debug the structure of the first project to understand what we're working with
+    if (this.projects.length > 0) {
+      console.log('Project structure sample:', JSON.stringify(this.projects[0], null, 2));
+    }
+
+    // Initialize arrays
+    this.assignedProjects = [];
+    this.unassignedProjects = [];
+    this.loading = true;
+
+    // Create an Observable array of project member requests
+    const memberRequests: Observable<{project: Project, isMember: boolean}>[] = [];
+    
+    // For each project, check if the current user is a member
+    for (const project of this.projects) {
+      const memberCheck$ = this.projectService.getProjectMembers(project.id).pipe(
+        map(members => {
+          // Check if the current user is in the members list
+          const memberValues = Object.values(members);
+          const userIsMember = memberValues.some(member => member.userId === this.currentUserId);
+          return { project, isMember: userIsMember };
+        }),
+        catchError(error => {
+          console.error(`Error fetching members for project ${project.id}:`, error);
+          return of({ project, isMember: false });
+        })
+      );
+      memberRequests.push(memberCheck$);
+    }
+    
+    // If there are no projects, set loading to false and return
+    if (memberRequests.length === 0) {
+      this.loading = false;
+      return;
+    }
+
+    // Use forkJoin to wait for all requests to complete
+    this.subscription.add(
+      forkJoin(memberRequests).subscribe({
+        next: (results) => {
+          // Categorize projects based on membership
+          for (const result of results) {
+            if (result.isMember) {
+              this.assignedProjects.push(result.project);
+            } else {
+              this.unassignedProjects.push(result.project);
+            }
+          }
+          console.log(`Categorized ${this.assignedProjects.length} assigned projects and ${this.unassignedProjects.length} unassigned projects`);
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error categorizing projects:', error);
+          // On error, put all projects in unassigned category as fallback
+          this.assignedProjects = [];
+          this.unassignedProjects = this.projects;
+          this.loading = false;
+        }
+      })
+    );
+  }
+
   createProject(projectData: Partial<Project>): void {
     this.isCreating = true;
     console.log('Project data from dialog:', projectData);
@@ -198,6 +290,7 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
       this.projectService.createProject(newProject).subscribe({
         next: (project) => {
           this.projects.push(project);
+          this.categorizeProjects(); // Recategorize projects
           this.selectProject(project);
           this.isCreating = false;
           // Toast will come from the WebSocket notification
@@ -215,26 +308,22 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
   updateProject(projectId: string, projectData: Partial<Project>): void {
     this.loading = true;
     console.log('Project update data:', projectData);
-
-    // Create a partial update with only the fields we want to change
     const updatedProject = {
-      id: projectId,
-      name: projectData.name || '',
-      description: projectData.description || '',
-      startDate: projectData.startDate || new Date(),
-      endDate: projectData.endDate
-    };
-
+      ...projectData,
+      id: projectId
+    } as Project;
+    
     this.subscription.add(
-      this.projectService.updateProject(updatedProject as Project).subscribe({
+      this.projectService.updateProject(updatedProject).subscribe({
         next: (project) => {
-          // Find and update the project in the list
+          // Update the project in the array
           const index = this.projects.findIndex(p => p.id === projectId);
           if (index !== -1) {
             this.projects[index] = project;
           }
+          this.categorizeProjects(); // Recategorize projects
           this.loading = false;
-          this.toastService.success('Projekt został pomyślnie zaktualizowany.');
+          this.toastService.success('Projekt został zaktualizowany');
         },
         error: (error) => {
           console.error('Error updating project:', error);
@@ -247,22 +336,27 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
   }
 
   deleteProject(project: Project): void {
-    if (!confirm('Czy na pewno chcesz usunąć ten projekt?')) return;
-
-    this.subscription.add(
-      this.projectService.deleteProject(project.id).subscribe({
-        next: () => {
-          this.projects = this.projects.filter(p => p.id !== project.id);
-          if (this.selectedProject?.id === project.id) {
-            this.selectedProject = null;
+    if (confirm(`Czy na pewno chcesz usunąć projekt "${project.name}"?`)) {
+      this.loading = true;
+      
+      this.subscription.add(
+        this.projectService.deleteProject(project.id).subscribe({
+          next: () => {
+            // Remove the project from the array
+            this.projects = this.projects.filter(p => p.id !== project.id);
+            // Update categorized projects
+            this.categorizeProjects();
+            this.loading = false;
+            this.toastService.success('Projekt został usunięty');
+          },
+          error: (error) => {
+            console.error('Error deleting project:', error);
+            this.error = 'Wystąpił błąd podczas usuwania projektu.';
+            this.loading = false;
           }
-        },
-        error: (error) => {
-          console.error('Error deleting project:', error);
-          this.error = 'Wystąpił błąd podczas usuwania projektu.';
-        }
-      })
-    );
+        })
+      );
+    }
   }
 
   selectProject(project: Project): void {
