@@ -33,6 +33,7 @@ import { ProjectDialogComponent } from '../../../features/project-panel/componen
 import { MemberDialogComponent } from './member-dialog/member-dialog.component';
 import { TaskDialogComponent } from './task-dialog/task-dialog.component';
 import { ToastrService } from 'ngx-toastr';
+import { ProjectCalendarComponent } from './project-calendar/project-calendar.component';
 
 @Component({
   selector: 'app-project-view',
@@ -61,7 +62,8 @@ import { ToastrService } from 'ngx-toastr';
     MatBadgeModule,
     MatTableModule,
     MatSortModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    ProjectCalendarComponent
   ],
 })
 export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {

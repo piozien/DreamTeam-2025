@@ -343,11 +343,10 @@
         <div class="tab-content">
           <mat-card style="background-color: white !important;">
             <mat-card-content>
-              <div class="coming-soon">
-                <mat-icon>construction</mat-icon>
-                <h3>Funkcjonalność w trakcie budowy</h3>
-                <p>Widok kalendarza projektu będzie dostępny wkrótce.</p>
-              </div>
+              <app-project-calendar 
+                [project]="project" 
+                [projectTasks]="tasks">
+              </app-project-calendar>
             </mat-card-content>
           </mat-card>
         </div>

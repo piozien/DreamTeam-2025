@@ -27,6 +27,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/tasks/edit-task/edit-task.component').then(m => m.EditTaskComponent)
   },
   {
+    path: 'calendar',
+    loadComponent: () => import('./features/calendar/calendar.component').then(m => m.CalendarComponent)
+  },
+  {
     path: 'auth/login',
     loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent)
   },
