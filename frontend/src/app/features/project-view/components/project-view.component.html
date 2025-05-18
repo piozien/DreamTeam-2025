@@ -131,13 +131,8 @@
 
               <ng-container *ngIf="!isLoadingTasks && tasks && tasks.length > 0">
                 <div class="task-table-container mat-elevation-z2">
-                  <!-- Task filtering controls -->
-                  <div class="task-filter-container">
-                    <div class="search-input-container">
-                      <mat-icon>search</mat-icon>
-                      <input matInput (keyup)="applyFilter($event)" placeholder="Wpisz nazwę, status lub priorytet..." autocomplete="off">
-                    </div>
-                  </div>
+                  <!-- Task filtering controls removed -->
+
                   
                   <!-- Tasks table -->
                   <table mat-table [dataSource]="dataSource" matSort class="task-table">
