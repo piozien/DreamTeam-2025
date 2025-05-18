@@ -102,7 +102,7 @@ public class TaskController {
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
         UserUtils.assertAuthorized(user);
         Task task = TaskMapper.updateDtoToTask(taskUpdateDTO);
-        Task updatedTask = taskService.updateTask(task, taskId, user);
+        Task updatedTask = taskService.updateTask(taskId, task, user);
 
         return ResponseEntity.ok(TaskMapper.taskToDTO(updatedTask));
     }
