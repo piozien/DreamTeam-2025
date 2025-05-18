@@ -1,0 +1,84 @@
+<button mat-icon-button
+        [matMenuTriggerFor]="notificationMenu"
+        class="notification-button"
+        matTooltip="Powiadomienia"
+        (click)="loadNotifications()"
+        [matBadge]="unreadCount"
+        [matBadgeHidden]="unreadCount === 0"
+        matBadgeColor="accent"
+        matBadgeSize="small"
+        matBadgePosition="above after">
+  <mat-icon>notifications</mat-icon>
+</button>
+
+<mat-menu #notificationMenu="matMenu" class="notification-menu" xPosition="before">
+  <div class="notification-header">
+    <h3 class="notification-title">Powiadomienia</h3>
+    <div class="notification-actions">
+      <button mat-icon-button matTooltip="Odśwież" (click)="refreshNotifications($event)">
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button mat-icon-button matTooltip="Oznacz wszystkie jako przeczytane" 
+              [disabled]="unreadCount === 0 || notifications.length === 0"
+              (click)="markAllAsRead($event)">
+        <mat-icon>done_all</mat-icon>
+      </button>
+      <button mat-icon-button matTooltip="Usuń wszystkie powiadomienia"
+              [disabled]="notifications.length === 0"
+              (click)="deleteAllNotifications($event)">
+        <mat-icon>delete_sweep</mat-icon>
+      </button>
+    </div>
+  </div>
+  
+  <mat-divider></mat-divider>
+  
+  <div class="notification-content">
+    <!-- Loading spinner -->
+    <div *ngIf="isLoading" class="notification-loading">
+      <mat-icon class="rotating">refresh</mat-icon>
+      <span>Ładowanie powiadomień...</span>
+    </div>
+    
+    <!-- No notifications message -->
+    <div *ngIf="!isLoading && notifications.length === 0" class="notification-empty">
+      <mat-icon>notifications_off</mat-icon>
+      <span>Brak powiadomień</span>
+    </div>
+    
+    <!-- Notifications list -->
+    <div *ngIf="!isLoading && notifications.length > 0" class="notification-list">
+      <div *ngFor="let notification of notifications" 
+           class="notification-item"
+           [class.notification-unread]="!notification.isRead">
+        <div class="notification-item-content">
+          <!-- Read/unread indicator -->
+          <div class="notification-status">
+            <div class="notification-indicator" [class.unread]="!notification.isRead"></div>
+          </div>
+          
+          <!-- Notification message -->
+          <div class="notification-message">
+            <p class="message-text">{{ notification.message }}</p>
+            <p class="message-time">{{ notification.createdAt | date: 'dd.MM.yyyy, HH:mm' }}</p>
+          </div>
+          
+          <!-- Action buttons -->
+          <div class="notification-item-actions">
+            <button mat-icon-button matTooltip="Oznacz jako przeczytane" 
+                    [disabled]="notification.isRead"
+                    (click)="markAsRead(notification, $event)">
+              <mat-icon>done</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Usuń" 
+                    (click)="deleteNotification(notification, $event)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+        
+        <mat-divider *ngIf="!isLoading"></mat-divider>
+      </div>
+    </div>
+  </div>
+</mat-menu>

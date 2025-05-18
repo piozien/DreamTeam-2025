@@ -9,6 +9,8 @@ import { inject } from '@angular/core';
 import { AuthService } from '../../shared/services/auth.service';
 import { User } from '../../shared/models/user.model';
 import { WebSocketService } from '../../shared/services/websocket.service';
+import { NotificationService } from '../../shared/services/notification.service';
+import { NotificationCenterComponent } from '../notification-center/notification-center.component';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -21,12 +23,14 @@ import { Subscription } from 'rxjs';
     RouterModule,
     MatIconModule,
     MatToolbarModule,
-    MatButtonModule
+    MatButtonModule,
+    NotificationCenterComponent
   ]
 })
 export class NavbarComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private webSocketService = inject(WebSocketService);
+  private notificationService = inject(NotificationService);
   private router = inject(Router);
   private isBrowser: boolean;
   private subscriptions: Subscription[] = [];
