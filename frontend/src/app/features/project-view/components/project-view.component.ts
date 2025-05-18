@@ -501,21 +501,18 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
         submitButton: 'Zapisz',
         projectId: this.projectId,
         projectEndDate: this.project.endDate, // Pass project end date to limit task end date
-        isEditMode: true  // Indicate we're in edit mode to allow past dates for existing tasks
+        isEditMode: true,  // Indicate we're in edit mode to allow past dates for existing tasks
+        task: {  // Pass the task directly in the data object
+          id: task.id,
+          name: task.name,
+          description: task.description,
+          startDate: task.startDate,
+          endDate: task.endDate,
+          priority: task.priority,
+          status: task.status
+        }
       }
     });
-    
-    // Pre-fill the form with current task data
-    const dialogComponent = dialogRef.componentInstance;
-    dialogComponent.task = {
-      id: task.id,
-      name: task.name,
-      description: task.description,
-      startDate: task.startDate,
-      endDate: task.endDate,
-      priority: task.priority,
-      status: task.status
-    };
     
     dialogRef.afterClosed().subscribe(result => {
       if (result && this.projectId) {
@@ -593,18 +590,25 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
       width: '500px',
       data: {
         title: 'Edytuj projekt',
-        submitButton: 'Zapisz'
+        submitButton: 'Zapisz',
+        isEditMode: true  // Enable edit mode to allow keeping past start dates
       }
     });
     
     // Pre-fill the form with current project data
     const dialogComponent = dialogRef.componentInstance;
+    const originalStartDate = new Date(this.project.startDate);
+    
+    // Set project data
     dialogComponent.project = {
       name: this.project.name,
       description: this.project.description,
-      startDate: new Date(this.project.startDate),
+      startDate: originalStartDate,
       endDate: this.project.endDate ? new Date(this.project.endDate) : undefined
     };
+    
+    // Set the original start date to prevent choosing earlier dates
+    dialogComponent.setOriginalStartDate(originalStartDate);
     
     dialogRef.afterClosed().subscribe(result => {
       this.isEditing = false;

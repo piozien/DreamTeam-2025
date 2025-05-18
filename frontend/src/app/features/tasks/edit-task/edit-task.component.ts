@@ -65,10 +65,16 @@ export class EditTaskComponent implements OnInit {
   availableUsers: { id: string; name: string; }[] = []; // Simplified user objects with just id and name
   selectedAssigneeId: string | null = null;
   
-  // Date handling for validation
+  // Date and time handling for validation
   projectStartDate: Date | null = null;
+  projectEndDate: Date | null = null;
   originalStartDate: Date | null = null;
+  originalEndDate: Date | null = null;
   minStartDate: Date | null = null;
+  
+  // Time strings (HH:MM format)
+  startTimeString: string = '09:00'; // Default start time
+  endTimeString: string = '17:00';   // Default end time
   
   // For dependencies
   availableTasks: Task[] = [];
@@ -118,7 +124,9 @@ export class EditTaskComponent implements OnInit {
       name: ['', [Validators.required, Validators.maxLength(100)]],
       description: ['', Validators.maxLength(2000)],
       startDate: [null, Validators.required],
+      startTime: ['09:00'], // Default start time (9:00 AM)
       endDate: [null],
+      endTime: ['17:00'], // Default end time (5:00 PM)
       status: ['TO_DO', Validators.required],
       priority: ['OPTIONAL', Validators.required]
     });
@@ -157,9 +165,13 @@ export class EditTaskComponent implements OnInit {
             }
             console.log('Project data loaded:', project);
             
-            // Extract project start date for validation
+            // Extract project dates for validation
             if (project.startDate) {
               this.projectStartDate = new Date(project.startDate);
+            }
+            if (project.endDate) {
+              this.projectEndDate = new Date(project.endDate);
+              console.log('Project end date set for validation:', this.projectEndDate);
             }
             
             // Now update the form with task data
@@ -233,25 +245,175 @@ export class EditTaskComponent implements OnInit {
   }
   
   /**
+   * Handle changes to the start time input
+   */
+  onStartTimeChange(): void {
+    // Get the current time value from the form
+    const timeString = this.taskForm.get('startTime')?.value;
+    if (timeString) {
+      this.startTimeString = timeString;
+      console.log('Updated start time to:', this.startTimeString);
+    }
+  }
+  
+  /**
+   * Handle changes to the end time input
+   */
+  onEndTimeChange(): void {
+    // Get the current time value from the form
+    const timeString = this.taskForm.get('endTime')?.value;
+    if (timeString) {
+      this.endTimeString = timeString;
+      console.log('Updated end time to:', this.endTimeString);
+    }
+  }
+  
+  /**
+   * Filter function for the start date picker:
+   * - Only allows dates on or after the original start date when editing
+   * - Only allows dates on or before the project end date
+   * - If no original date, allows dates from today forward
+   */
+  startDateFilter = (date: Date | null): boolean => {
+    if (!date) return false;
+    
+    // Ensure we have a full loaded task with original date before filtering
+    // This is important as the filter might be called before the task is loaded
+    if (!this.task || this.loading) {
+      // During initial loading, allow all dates to prevent blocking the UI
+      // The proper validation will be applied once data is loaded
+      return true;
+    }
+    
+    // Set midnight time for proper date comparison
+    const dateToCheck = new Date(date);
+    dateToCheck.setHours(0, 0, 0, 0);
+    
+    // Check against original start date (minimum date allowed)
+    let isAfterMinDate = true;
+    let minDateRef = null;
+    
+    if (this.originalStartDate) {
+      // Create a new date to avoid timezone issues
+      const origStartDate = new Date(this.originalStartDate);
+      origStartDate.setHours(0, 0, 0, 0);
+      minDateRef = origStartDate;
+      isAfterMinDate = dateToCheck >= origStartDate;
+      
+      // If we're filtering a date that's between original start and today,
+      // log detailed information to debug
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (dateToCheck < today && dateToCheck >= origStartDate) {
+        console.log('Filtering date between original and today:', {
+          dateBeingChecked: dateToCheck.toISOString(),
+          originalStartDate: origStartDate.toISOString(),
+          result: isAfterMinDate ? 'ALLOWED' : 'BLOCKED'
+        });
+      }
+    } else {
+      // Fallback to today if no original date is available (shouldn't happen in edit mode)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      minDateRef = today;
+      isAfterMinDate = dateToCheck >= today;
+    }
+    
+    // Check against project end date (maximum date allowed)
+    let isBeforeMaxDate = true;
+    if (this.projectEndDate) {
+      const projEndDate = new Date(this.projectEndDate);
+      projEndDate.setHours(0, 0, 0, 0);
+      isBeforeMaxDate = dateToCheck <= projEndDate;
+    }
+    
+    // Once in a while, log the state of our date filter for debugging
+    if (Math.random() < 0.05) { // Log only ~5% of calls to avoid console spam
+      console.log('Date filter state:', {
+        dateBeingChecked: dateToCheck.toISOString(),
+        minDate: minDateRef ? minDateRef.toISOString() : 'none',
+        maxDate: this.projectEndDate ? this.projectEndDate.toISOString() : 'none',
+        isAfterMinDate,
+        isBeforeMaxDate,
+        result: (isAfterMinDate && isBeforeMaxDate) ? 'ALLOWED' : 'BLOCKED'
+      });
+    }
+    
+    // Date is valid if it's both after min date and before max date
+    return isAfterMinDate && isBeforeMaxDate;
+  };
+  
+  /**
+   * Filter function for the end date picker:
+   * - Only allows dates on or after the selected start date
+   * - Only allows dates on or before the project end date
+   */
+  endDateFilter = (date: Date | null): boolean => {
+    if (!date) return false;
+    
+    // Ensure we have a fully loaded task and project data before filtering
+    if (!this.task || this.loading) {
+      return true; // Skip validation during initial loading
+    }
+    
+    // Set midnight time for proper date comparison
+    const dateToCheck = new Date(date);
+    dateToCheck.setHours(0, 0, 0, 0);
+    
+    // Validate against start date (must be after start date)
+    let isAfterStartDate = true;
+    const startDate = this.taskForm.get('startDate')?.value;
+    if (startDate) {
+      const startDateCopy = new Date(startDate);
+      startDateCopy.setHours(0, 0, 0, 0);
+      isAfterStartDate = dateToCheck >= startDateCopy;
+    }
+    
+    // Validate against project end date (must be before project end date)
+    let isBeforeProjectEnd = true;
+    if (this.projectEndDate) {
+      const projectEndCopy = new Date(this.projectEndDate);
+      projectEndCopy.setHours(0, 0, 0, 0);
+      isBeforeProjectEnd = dateToCheck <= projectEndCopy;
+      
+      // Log when we're filtering out a date because it's after project end date
+      if (!isBeforeProjectEnd) {
+        console.log('Filtering out end date that exceeds project end date:', {
+          attemptedDate: dateToCheck.toISOString(),
+          projectEndDate: projectEndCopy.toISOString()
+        });
+      }
+    }
+    
+    return isAfterStartDate && isBeforeProjectEnd;
+  };
+
+  
+  /**
    * Setup date validation with the following rules:
-   * - Task start date cannot be earlier than project start date
-   * - Task start date cannot be earlier than today
+   * - Task start date cannot be earlier than original start date (when editing)
+   * - Start date cannot be later than project end date
    * - End date must be after or equal to start date
+   * - End date cannot be later than project end date
    */
   setupDateValidation(): void {
-    // Initialize minimum date to today (for new tasks)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    console.log('Setting up date validation with the following constraints:');
+    console.log('- Original start date:', this.originalStartDate);
+    console.log('- Original end date:', this.originalEndDate);
+    console.log('- Project start date:', this.projectStartDate);
+    console.log('- Project end date:', this.projectEndDate);
     
-    // Determine the minimum start date based on project start date and today
-    if (this.projectStartDate) {
-      const projectStartCopy = new Date(this.projectStartDate);
-      projectStartCopy.setHours(0, 0, 0, 0);
-      
-      // Use the later of today or project start date as the minimum date
-      this.minStartDate = projectStartCopy > today ? projectStartCopy : today;
+    // For editing tasks, the minimum start date is the original start date
+    // This preserves the ability to keep past start dates when editing
+    if (this.originalStartDate) {
+      this.minStartDate = this.originalStartDate;
+      console.log('Using original start date as the minimum date');
     } else {
+      // If no original start date (shouldn't happen in edit mode), use today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       this.minStartDate = today;
+      console.log('No original start date found, using today as fallback');
     }
     
     console.log('Min start date set to:', this.minStartDate ? this.minStartDate.toISOString() : 'not set');
@@ -263,18 +425,31 @@ export class EditTaskComponent implements OnInit {
         this.onStartDateChange();
         
         const selectedDate = new Date(value);
+        let isValid = true;
+        let errorMessage = '';
         
-        // If the selected date is before the minimum start date
-        if (this.minStartDate && selectedDate < this.minStartDate) {
-          // Reset to the minimum start date
-          this.taskForm.get('startDate')?.setValue(this.minStartDate);
-          
-          // Show appropriate error message
-          if (this.projectStartDate && this.minStartDate && this.minStartDate.getTime() === this.projectStartDate.getTime()) {
-            this.showError('Zadanie nie może rozpocząć się przed datą rozpoczęcia projektu');
-          } else {
-            this.showError('Zadanie nie może rozpocząć się przed dzisiejszą datą');
+        // Validate against original start date (can't be earlier)
+        if (this.originalStartDate && selectedDate < this.originalStartDate) {
+          isValid = false;
+          errorMessage = 'Data rozpoczęcia nie może być wcześniejsza niż oryginalna data rozpoczęcia zadania';
+        }
+        
+        // Validate against project end date (can't be later)
+        if (isValid && this.projectEndDate && selectedDate > this.projectEndDate) {
+          isValid = false;
+          errorMessage = 'Data rozpoczęcia nie może być późniejsza niż data zakończenia projektu';
+        }
+        
+        // If validation failed, reset to appropriate date and show error
+        if (!isValid) {
+          // Reset to original date if that was the issue
+          if (errorMessage.includes('oryginalna')) {
+            this.taskForm.get('startDate')?.setValue(this.originalStartDate);
+          } else if (this.projectEndDate) {
+            // Reset to project end date if that was the issue
+            this.taskForm.get('startDate')?.setValue(this.projectEndDate);
           }
+          this.showError(errorMessage);
         }
       }
     });
@@ -284,27 +459,44 @@ export class EditTaskComponent implements OnInit {
       if (value) {
         const startDate = this.taskForm.get('startDate')?.value;
         const endDate = new Date(value);
+        let isValid = true;
+        let errorMessage = '';
         
         // Validate that end date is not before start date
         if (startDate && endDate < startDate) {
-          // Either reset to start date + 1 day or show error
-          const correctedEndDate = new Date(startDate);
-          correctedEndDate.setDate(correctedEndDate.getDate() + 1);
-          this.taskForm.get('endDate')?.setValue(correctedEndDate);
-          this.showError('Data zakończenia nie może być wcześniejsza niż data rozpoczęcia');
-          console.log('Corrected invalid end date to:', correctedEndDate);
-        } else {
-          console.log('End date validated successfully:', endDate);
+          isValid = false;
+          errorMessage = 'Data zakończenia nie może być wcześniejsza niż data rozpoczęcia';
+        }
+        
+        // Validate that end date is not after project end date
+        if (isValid && this.projectEndDate && endDate > this.projectEndDate) {
+          isValid = false;
+          errorMessage = 'Data zakończenia nie może być późniejsza niż data zakończenia projektu';
+        }
+        
+        // If validation failed, reset to appropriate date and show error
+        if (!isValid) {
+          if (errorMessage.includes('rozpoczęcia')) {
+            // End date before start date, set to start date + 1 day
+            const correctedEndDate = new Date(startDate);
+            correctedEndDate.setDate(correctedEndDate.getDate() + 1);
+            this.taskForm.get('endDate')?.setValue(correctedEndDate);
+          } else if (this.projectEndDate) {
+            // End date after project end, set to project end date
+            this.taskForm.get('endDate')?.setValue(this.projectEndDate);
+          }
+          this.showError(errorMessage);
         }
       }
     });
   }
   
   /**
-   * Validates that:
-   * 1. Start date is not earlier than project start date
-   * 2. Start date is not earlier than today
+   * Validates dates with the following rules:
+   * 1. Start date is not earlier than the original start date (when editing)
+   * 2. Start date is not later than project end date
    * 3. End date is after or equal to start date
+   * 4. End date is not later than project end date
    * @returns true if date validation passes, false otherwise
    */
   isValidDateRange(): boolean {
@@ -314,41 +506,52 @@ export class EditTaskComponent implements OnInit {
       return false; // Start date must be set
     }
     
-    // Validate against the minimum start date (which is already the max of project start and today)
-    if (this.minStartDate && startDate < this.minStartDate) {
-      if (this.projectStartDate && this.minStartDate && this.minStartDate.getTime() === this.projectStartDate.getTime()) {
-        this.showError('Zadanie nie może rozpocząć się przed datą rozpoczęcia projektu');
-      } else {
-        this.showError('Zadanie nie może rozpocząć się przed dzisiejszą datą');
-      }
+    console.log('Validating dates with constraints:', {
+      startDate: startDate,
+      originalStartDate: this.originalStartDate,
+      projectEndDate: this.projectEndDate
+    });
+    
+    // 1. Validate against original start date (can't be earlier)
+    if (this.originalStartDate && startDate < this.originalStartDate) {
+      this.showError('Data rozpoczęcia nie może być wcześniejsza niż oryginalna data rozpoczęcia zadania');
       return false;
     }
     
-    // Validate end date is after start date
+    // 2. Validate against project end date (can't be later)
+    if (this.projectEndDate && startDate > this.projectEndDate) {
+      this.showError('Data rozpoczęcia nie może być późniejsza niż data zakończenia projektu');
+      return false;
+    }
+    
+    // 3. Validate end date is after start date
     const endDate = this.taskForm.get('endDate')?.value;
     if (endDate && endDate < startDate) {
       this.showError('Data zakończenia nie może być wcześniejsza niż data rozpoczęcia');
       return false;
     }
     
+    // 4. Validate end date is not after project end date
+    if (endDate && this.projectEndDate && endDate > this.projectEndDate) {
+      this.showError('Data zakończenia nie może być późniejsza niż data zakończenia projektu');
+      return false;
+    }
+    
+    // All validations passed
     return true;
   }
   
   /**
    * Returns a formatted date string for display in the error message
-   * Displays either project start date or today, whichever is later
+   * Always returns the original task start date for editing
    */
   getMinDateLabel(): string {
-    if (!this.minStartDate) {
-      return 'dziś';
+    if (!this.originalStartDate) {
+      return 'oryginalną datą rozpoczęcia';
     }
     
-    // Check if min date is the project start date
-    if (this.projectStartDate && this.minStartDate.getTime() === this.projectStartDate.getTime()) {
-      return `datą rozpoczęcia projektu (${this.datePipe.transform(this.projectStartDate, 'yyyy-MM-dd')})`;
-    } else {
-      return `dziś (${this.datePipe.transform(this.minStartDate, 'yyyy-MM-dd')})`;
-    }
+    // Always return the original task start date
+    return `oryginalną datą rozpoczęcia zadania (${this.datePipe.transform(this.originalStartDate, 'yyyy-MM-dd')})`;
   }
 
   /**
@@ -449,16 +652,35 @@ export class EditTaskComponent implements OnInit {
 
     // Get form values
     const formValue = this.taskForm.value;
-
-    // Format dates using direct extraction of date components to avoid timezone issues
-    const formattedStartDate = formValue.startDate ? this.formatDate(formValue.startDate) : null;
-    const formattedEndDate = formValue.endDate ? this.formatDate(formValue.endDate) : null;
-
+    
+    // Get time values
+    const startTime = formValue.startTime || '09:00';
+    const endTime = formValue.endTime || '17:00';
+    
+    // Create formatted ISO string dates with time components
+    let formattedStartDate = null;
+    let formattedEndDate = null;
+    
+    if (formValue.startDate) {
+      // Format date with time: YYYY-MM-DDThh:mm:00
+      const startDate = new Date(formValue.startDate);
+      const [hours, minutes] = startTime.split(':').map(Number);
+      formattedStartDate = `${this.formatDate(startDate)}T${startTime}:00`;
+      console.log('Formatted start date with time:', formattedStartDate);
+    }
+    
+    if (formValue.endDate) {
+      // Format date with time: YYYY-MM-DDThh:mm:00
+      const endDate = new Date(formValue.endDate);
+      formattedEndDate = `${this.formatDate(endDate)}T${endTime}:00`;
+      console.log('Formatted end date with time:', formattedEndDate);
+    }
+    
     // Debugging to verify correct date formatting
     console.log('Original startDate from form:', formValue.startDate);
-    console.log('Formatted startDate for API:', formattedStartDate);
+    console.log('Original startTime from form:', formValue.startTime);
     console.log('Original endDate from form:', formValue.endDate);
-    console.log('Formatted endDate for API:', formattedEndDate);
+    console.log('Original endTime from form:', formValue.endTime);
 
     // Create the task update object from form values
     const taskUpdate: TaskUpdate = {
@@ -873,51 +1095,82 @@ export class EditTaskComponent implements OnInit {
   /**
    * Update the form with values from the loaded task.
    */
+  
+  // Populate the form with task data and extract time components
   updateFormWithTaskData(task: Task): void {
     console.log('Updating form with task data:', task);
     
-    if (!task) {
-      console.error('No task data to update form with');
-      return;
-    }
+    // Important: Store the task reference first, used by our filter
+    this.task = task;
     
-    // Convert string dates to Date objects for the form
-    // Handle timezone properly to avoid date shifting
+    // Extract date and time components from task dates
     let startDate = null;
+    let startTime = '09:00'; // Default start time
     let endDate = null;
+    let endTime = '17:00';   // Default end time
     
+    // Process start date and time if available
     if (task.startDate) {
-      // Use the date string parts directly to create a date in local time
-      const [year, month, day] = task.startDate.split('-').map(num => parseInt(num));
-      startDate = new Date(year, month - 1, day);
-      this.originalStartDate = startDate; // Store original for validation comparisons
+      const dateTimeStr = task.startDate;
+      startDate = new Date(dateTimeStr);
+      
+      // Store original start date for validation - CRITICAL FOR CORRECT FILTERING
+      this.originalStartDate = new Date(dateTimeStr);
+      console.log('Set original start date for validation:', this.originalStartDate);
+      console.log('Original date in ISO format:', this.originalStartDate.toISOString());
+      console.log('Today is:', new Date().toISOString());
+      
+      // Extract time component if available (ISO format has a 'T' separator)
+      if (dateTimeStr.includes('T')) {
+        const timePart = dateTimeStr.split('T')[1];
+        if (timePart) {
+          startTime = timePart.substring(0, 5); // Get HH:MM part
+        }
+      }
     }
     
+    // Process end date and time if available
     if (task.endDate) {
-      // Use the date string parts directly to create a date in local time
-      const [year, month, day] = task.endDate.split('-').map(num => parseInt(num));
-      endDate = new Date(year, month - 1, day);
+      const dateTimeStr = task.endDate;
+      endDate = new Date(dateTimeStr);
+      
+      // Store original end date for reference
+      this.originalEndDate = new Date(dateTimeStr);
+      
+      // Extract time component if available
+      if (dateTimeStr.includes('T')) {
+        const timePart = dateTimeStr.split('T')[1];
+        if (timePart) {
+          endTime = timePart.substring(0, 5); // Get HH:MM part
+        }
+      }
     }
     
-    // Update the form control values
+    console.log('Extracted date-time values:', {
+      startDate: startDate,
+      startTime: startTime,
+      endDate: endDate,
+      endTime: endTime
+    });
+    
+    // Update form with all values including time
     this.taskForm.patchValue({
       name: task.name,
-      description: task.description || '',
+      description: task.description,
       startDate: startDate,
+      startTime: startTime,
       endDate: endDate,
+      endTime: endTime,
       status: task.status,
       priority: task.priority
     });
+    
+    // Store the time strings for later use
+    this.startTimeString = startTime;
+    this.endTimeString = endTime;
+    
+    this.loading = false;
   }
-  
-  /**
-   * Checks if the current user is an assignee for this task.
-   */
-  isUserAssigned(): boolean {
-    const userId = this.authService.getUserId();
-    return !!userId && !!this.task?.assigneeIds?.includes(userId);
-  }
-  
   /**
    * Cancels editing and returns to the project view.
    */

@@ -15,13 +15,26 @@
 
 .date-container {
   display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.date-field {
-  flex: 1;
-  min-width: 200px;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+  
+  .date-time-pair {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    
+    .date-field {
+      flex: 2;
+      min-width: 200px;
+    }
+    
+    .time-field {
+      flex: 1;
+      min-width: 120px;
+    }
+  }
 }
 
 .status-priority-container {

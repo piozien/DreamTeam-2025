@@ -24,28 +24,55 @@
               </mat-form-field>
           
               <div class="date-container">
-                <mat-form-field appearance="outline" class="date-field">
-                  <mat-label>Data rozpoczęcia</mat-label>
-                  <input matInput [matDatepicker]="startPicker" formControlName="startDate" required (dateChange)="onStartDateChange()" [min]="minStartDate">
-                  <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-                  <mat-datepicker #startPicker></mat-datepicker>
-                  <mat-error *ngIf="taskForm.get('startDate')?.hasError('required')">
-                    Data rozpoczęcia jest wymagana
-                  </mat-error>
-                  <mat-error *ngIf="taskForm.get('startDate')?.hasError('matDatepickerMin')">
-                    Data rozpoczęcia nie może być wcześniejsza niż {{ getMinDateLabel() }}
-                  </mat-error>
-                </mat-form-field>
+                <!-- Start Date and Time -->
+                <div class="date-time-pair">
+                  <mat-form-field appearance="outline" class="date-field">
+                    <mat-label>Data rozpoczęcia</mat-label>
+                    <!-- Explicitly set min to null to override any default behavior -->
+                    <input matInput [matDatepicker]="startPicker" formControlName="startDate" required (dateChange)="onStartDateChange()" [matDatepickerFilter]="startDateFilter" [min]="null">
+                    <!-- Hidden debug info to verify original date value -->
+                    <span style="display: none;">Original date: {{originalStartDate | date:'short'}}</span>
+                    <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #startPicker></mat-datepicker>
+                    <mat-error *ngIf="taskForm.get('startDate')?.hasError('required')">
+                      Data rozpoczęcia jest wymagana
+                    </mat-error>
+                    <!-- Only use custom validation messages, not the built-in min date validator -->
+                    <mat-error *ngIf="taskForm.get('startDate')?.invalid && !taskForm.get('startDate')?.hasError('required')">
+                      Data rozpoczęcia nie może być wcześniejsza niż {{ getMinDateLabel() }}
+                    </mat-error>
+                  </mat-form-field>
+                  
+                  <mat-form-field appearance="outline" class="time-field">
+                    <mat-label>Czas rozpoczęcia</mat-label>
+                    <input matInput type="time" formControlName="startTime" (change)="onStartTimeChange()">
+                  </mat-form-field>
+                </div>
             
-                <mat-form-field appearance="outline" class="date-field">
-                  <mat-label>Data zakończenia</mat-label>
-                  <input matInput [matDatepicker]="endPicker" formControlName="endDate" [min]="taskForm.get('startDate')?.value">
-                  <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-                  <mat-datepicker #endPicker></mat-datepicker>
-                  <mat-error *ngIf="taskForm.get('endDate')?.hasError('matDatepickerMin')">
-                    Data zakończenia nie może być wcześniejsza niż data rozpoczęcia
-                  </mat-error>
-                </mat-form-field>
+                <!-- End Date and Time -->
+                <div class="date-time-pair">
+                  <mat-form-field appearance="outline" class="date-field">
+                    <mat-label>Data zakończenia</mat-label>
+                    <!-- Use our endDateFilter to restrict selection of dates beyond project end date -->
+                    <input matInput [matDatepicker]="endPicker" formControlName="endDate" [matDatepickerFilter]="endDateFilter" [min]="null">
+                    <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #endPicker></mat-datepicker>
+                    <!-- Enhanced error messages -->
+                    <mat-error *ngIf="taskForm.get('endDate')?.invalid">
+                      <span *ngIf="taskForm.get('startDate')?.value && taskForm.get('endDate')?.value < taskForm.get('startDate')?.value">
+                        Data zakończenia nie może być wcześniejsza niż data rozpoczęcia
+                      </span>
+                      <span *ngIf="projectEndDate && taskForm.get('endDate')?.value > projectEndDate">
+                        Data zakończenia nie może być późniejsza niż data zakończenia projektu ({{projectEndDate | date:'yyyy-MM-dd'}})
+                      </span>
+                    </mat-error>
+                  </mat-form-field>
+                  
+                  <mat-form-field appearance="outline" class="time-field">
+                    <mat-label>Czas zakończenia</mat-label>
+                    <input matInput type="time" formControlName="endTime" (change)="onEndTimeChange()">
+                  </mat-form-field>
+                </div>
               </div>
           
               <div class="status-priority-container">

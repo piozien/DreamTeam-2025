@@ -18,10 +18,10 @@
           <mat-label>Data rozpoczęcia</mat-label>
           <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDateObj" 
                 name="startDate" required (dateChange)="onStartDateChange()"
-                #startDate="ngModel" [min]="today" [matDatepickerFilter]="dateFilter">
+                #startDate="ngModel" [min]="data.isEditMode ? null : today" [matDatepickerFilter]="dateFilter">
           <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
           <mat-datepicker #startPicker></mat-datepicker>
-          <mat-error *ngIf="!isStartDateValid() && startDateObj">
+          <mat-error *ngIf="!isStartDateValid() && startDateObj && !data.isEditMode">
             Data rozpoczęcia nie może być wcześniejsza niż dzisiejsza data
           </mat-error>
           <mat-error *ngIf="isStartDateAfterProjectEndDate() && startDateObj">

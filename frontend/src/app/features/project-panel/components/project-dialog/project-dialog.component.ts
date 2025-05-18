@@ -48,12 +48,27 @@ export class ProjectDialogComponent {
     startDate: new Date(),
   };
   
+  // Track the original start date for editing mode
+  originalStartDate: Date | null = null;
+  
   today = new Date();
 
-  // Date filter to disable all dates before today
+  // Date filter to disable all dates before today (except in edit mode)
   dateFilter = (date: Date | null): boolean => {
     if (!date) return false;
     const currentDate = new Date(date);
+    
+    // In edit mode, allow dates that are not earlier than original start date
+    if (this.data.isEditMode && this.originalStartDate) {
+      // Create a copy of the date and set to start of day for comparison
+      const originalDate = new Date(this.originalStartDate);
+      originalDate.setHours(0, 0, 0, 0);
+      
+      // Don't allow choosing dates earlier than the original
+      return currentDate >= originalDate;
+    }
+    
+    // For new projects, don't allow dates before today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return currentDate >= today;
@@ -71,13 +86,24 @@ export class ProjectDialogComponent {
 
   constructor(
     public dialogRef: MatDialogRef<ProjectDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { title: string; submitButton: string }
+    @Inject(MAT_DIALOG_DATA) public data: { title: string; submitButton: string; isEditMode?: boolean }
   ) {
     // Reset hours to start of day for date comparison
     this.today.setHours(0, 0, 0, 0);
     
-    // Initialize start date to today to avoid starting with invalid date
-    this.project.startDate = new Date(this.today);
+    // Initialize start date to today only for new projects
+    if (!data.isEditMode) {
+      // Initialize start date to today to avoid starting with invalid date
+      this.project.startDate = new Date(this.today);
+    }
+  }
+  
+  // Method to set the original start date when pre-filling in edit mode
+  // This should be called when setting project data in edit mode
+  setOriginalStartDate(startDate: Date): void {
+    if (this.data.isEditMode) {
+      this.originalStartDate = new Date(startDate);
+    }
   }
 
   onStartDateChange(): void {
@@ -93,8 +119,11 @@ export class ProjectDialogComponent {
       return false;
     }
     
-    // Check if start date is not before today
-    const startDateValid = this.project.startDate >= this.today;
+    // Check if start date is not before today (except in edit mode)
+    let startDateValid = true;
+    if (!this.data.isEditMode) {
+      startDateValid = this.project.startDate >= this.today;
+    }
     
     // Check if end date is after start date (if end date exists)
     const endDateValid = !this.project.endDate || this.project.endDate >= this.project.startDate;
@@ -103,7 +132,15 @@ export class ProjectDialogComponent {
   }
   
   isStartDateValid(): boolean {
-    return !!this.project.startDate && this.project.startDate >= this.today;
+    if (!this.project.startDate) return false;
+    
+    // In edit mode, allow any start date including those in the past
+    if (this.data.isEditMode) {
+      return true;
+    }
+    
+    // For new projects, don't allow dates before today
+    return this.project.startDate >= this.today;
   }
 
   onSubmit(): void {

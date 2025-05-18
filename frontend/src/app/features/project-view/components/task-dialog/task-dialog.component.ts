@@ -65,6 +65,9 @@ export class TaskDialogComponent {
   startDateObj: Date = new Date();
   endDateObj: Date | null = null;
   
+  // Track the original start date when editing to prevent choosing earlier dates
+  originalStartDateObj: Date | null = null;
+  
   // Time strings for time inputs (HH:MM format)
   startTimeString: string = '09:00';
   endTimeString: string = '17:00';
@@ -89,9 +92,12 @@ export class TaskDialogComponent {
       }
     }
     
-    // In edit mode, we should allow keeping the original start date even if it's in the past
-    if (this.data.isEditMode && this.task.id) {
-      return true;
+    // In edit mode, allow dates that are not earlier than original start date
+    if (this.data.isEditMode && this.task.id && this.originalStartDateObj) {
+      // Don't allow choosing dates earlier than the original
+      const originalDate = new Date(this.originalStartDateObj);
+      originalDate.setHours(0, 0, 0, 0);
+      return currentDate >= originalDate;
     }
     
     // For new tasks, don't allow dates before today
@@ -172,6 +178,9 @@ export class TaskDialogComponent {
       // Create Date objects for the date pickers based on string dates
       if (this.task.startDate) {
         this.startDateObj = new Date(this.task.startDate);
+        // Store the original start date to prevent setting earlier dates
+        this.originalStartDateObj = new Date(this.task.startDate);
+        
         // Extract time from the ISO string if available
         const startTime = this.task.startDate.split('T')[1];
         if (startTime) {
@@ -216,8 +225,14 @@ export class TaskDialogComponent {
       return false;
     }
     
-    // Check if start date is not before today
-    const startDateValid = this.startDateObj >= this.today;
+    // Check if start date is not before today (except in edit mode)
+    let startDateValid = true;
+    if (!this.data.isEditMode) {
+      startDateValid = this.startDateObj >= this.today;
+    } else if (this.originalStartDateObj) {
+      // In edit mode, check that start date is not earlier than original start date
+      startDateValid = this.startDateObj >= this.originalStartDateObj;
+    }
     
     // Check if end date is after start date (if end date exists)
     let endDateValid = true;

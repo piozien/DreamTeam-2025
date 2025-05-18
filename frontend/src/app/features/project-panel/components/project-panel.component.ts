@@ -187,9 +187,24 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
       data: {
         title: 'Edytuj Projekt',
         submitButton: 'Zapisz',
-        project: { ...project } // Pass a copy of the project to edit
+        isEditMode: true  // Enable edit mode to allow keeping past start dates
       }
     });
+    
+    // Pre-fill the form with current project data - this needs to be done after dialog creation
+    const dialogComponent = dialogRef.componentInstance;
+    const originalStartDate = new Date(project.startDate);
+    
+    // Set project data
+    dialogComponent.project = {
+      name: project.name,
+      description: project.description,
+      startDate: originalStartDate,
+      endDate: project.endDate ? new Date(project.endDate) : undefined
+    };
+    
+    // Set the original start date to prevent choosing earlier dates
+    dialogComponent.setOriginalStartDate(originalStartDate);
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
