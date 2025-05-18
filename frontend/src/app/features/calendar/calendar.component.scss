@@ -28,16 +28,18 @@ $border-radius-lg: 12px;
 .calendar-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 104px);
+  height: auto;
+  min-height: calc(100vh - 90px);
   font-family: 'Inter', 'Roboto', sans-serif;
   background-color: white;
   border-radius: 12px;
   box-shadow: var(--shadow-lg);
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgba(var(--primary-color-rgb), 0.1);
   position: relative;
   color: $text-color;
-  box-shadow: $shadow-sm;
+  flex: 1 1 auto;
+  margin-bottom: 20px;
 }
 
 .calendar-header {
@@ -88,8 +90,10 @@ $border-radius-lg: 12px;
 .calendar-controls {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
   flex-wrap: wrap;
+  margin-left: auto; /* Push to the right side */
+  padding-right: 5px; /* Add some space on the right */
 }
 
 .calendar-controls button {
@@ -116,11 +120,12 @@ $border-radius-lg: 12px;
   gap: 12px;
   margin-left: 16px;
   flex: 1;
-  max-width: 400px;
+  max-width: 450px; /* Increased to prevent cutting off */
+  min-width: 250px; /* Ensure minimum width for small screens */
   justify-content: space-between;
   background-color: $background-light;
   border-radius: 24px;
-  padding: 6px;
+  padding: 6px 12px; /* Increased horizontal padding */
   box-shadow: $shadow-sm;
 }
 
@@ -128,12 +133,16 @@ $border-radius-lg: 12px;
   background-color: white;
   color: $primary-color;
   box-shadow: $shadow-sm;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  margin: 0 3px;
 }
 
 .date-controls button:hover {
-  transform: scale(1.1);
-  box-shadow: $shadow-md;
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+  color: var(--primary-color-dark);
 }
 
 .date-picker-container {
@@ -147,10 +156,16 @@ $border-radius-lg: 12px;
 .month-year-display {
   display: flex;
   gap: 8px;
+  flex-wrap: nowrap;
+  justify-content: center;
+  width: 100%;
+  padding: 0 5px;
 }
 
 .month-year-display mat-form-field {
-  width: 120px;
+  width: 110px;
+  margin: 0 2px;
+  font-size: 14px;
 }
 
 .current-date-display {
