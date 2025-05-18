@@ -20,10 +20,8 @@ import tech.project.schedule.utils.UserUtils;
 import tech.project.schedule.repositories.TaskAssigneeRepository;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,8 +29,6 @@ import java.util.UUID;
 
 import tech.project.schedule.repositories.ProjectRepository;
 import tech.project.schedule.repositories.TaskRepository;
-import tech.project.schedule.services.GoogleCalendarService;
-
 
 /**
  * Service for managing tasks within projects.
@@ -68,12 +64,11 @@ public class TaskService {
         if(role == null){
             throw new ApiException("You don't have permission to create tasks in this project", HttpStatus.FORBIDDEN);
         }
-        if(task.getStartDate().isBefore(project.getStartDate())){
+        if(task.getStartDate().toLocalDate().isBefore(project.getStartDate())){
             throw new ApiException("Task start date must be after project start date", HttpStatus.BAD_REQUEST);
         }
         task.setAssignees(new HashSet<>());
         task.setComments(new HashSet<>());
-        task.setHistory(new HashSet<>());
         task.setDependencies(new HashSet<>());
         task.setDependentTasks(new HashSet<>());
         task.setFiles(new HashSet<>());
@@ -127,17 +122,17 @@ public class TaskService {
         }
         if (updatedTask.getStartDate() != null) {
             // Validate start date against project dates
-            if (updatedTask.getStartDate().isBefore(existingTask.getProject().getStartDate())) {
+            if (updatedTask.getStartDate().toLocalDate().isBefore(existingTask.getProject().getStartDate())) {
                 throw new ApiException("Task start date cannot be before project start date", HttpStatus.BAD_REQUEST);
             }
             if (existingTask.getProject().getEndDate() != null && 
-                updatedTask.getStartDate().isAfter(existingTask.getProject().getEndDate())) {
+                updatedTask.getStartDate().toLocalDate().isAfter(existingTask.getProject().getEndDate())) {
                 throw new ApiException("Task start date cannot be after project end date", HttpStatus.BAD_REQUEST);
             }
             existingTask.setStartDate(updatedTask.getStartDate());
         }
         if (updatedTask.getEndDate() != null) {
-            LocalDate startDate = existingTask.getStartDate();
+            LocalDateTime startDate = existingTask.getStartDate();
             if (updatedTask.getStartDate() != null) {
                 startDate = updatedTask.getStartDate();
             }
@@ -146,7 +141,7 @@ public class TaskService {
             }
             // Validate end date against project dates
             if (existingTask.getProject().getEndDate() != null && 
-                updatedTask.getEndDate().isAfter(existingTask.getProject().getEndDate())) {
+                updatedTask.getEndDate().toLocalDate().isAfter(existingTask.getProject().getEndDate())) {
                 throw new ApiException("Task end date cannot be after project end date", HttpStatus.BAD_REQUEST);
             }
             existingTask.setEndDate(updatedTask.getEndDate());
@@ -159,10 +154,10 @@ public class TaskService {
                 if (assignee.getCalendarEventId() != null) {
                     try {
                         // Create new event DTO with updated dates
-                        LocalDateTime startDateTime = existingTask.getStartDate().atTime(LocalTime.of(9, 0));
+                        LocalDateTime startDateTime = existingTask.getStartDate();
                         LocalDateTime endDateTime = existingTask.getEndDate() != null ? 
-                            existingTask.getEndDate().atTime(LocalTime.of(17, 0)) :
-                            existingTask.getStartDate().atTime(LocalTime.of(17, 0));
+                            existingTask.getEndDate():
+                            existingTask.getStartDate();
 
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy:HH:mm:ss");
                         String startDateTimeStr = startDateTime.format(formatter);
@@ -190,7 +185,7 @@ public class TaskService {
             boolean isNowCompleted = updatedTask.getStatus() == TaskStatus.FINISHED;
             
             if (!wasCompleted && isNowCompleted && existingTask.getEndDate() == null) {
-                existingTask.setEndDate(LocalDate.now());
+                existingTask.setEndDate(LocalDateTime.now());
             }
             if (wasCompleted && !isNowCompleted && updatedTask.getEndDate() == null) {
                 existingTask.setEndDate(null);

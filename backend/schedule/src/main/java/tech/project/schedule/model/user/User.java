@@ -11,7 +11,6 @@ import tech.project.schedule.model.project.ProjectMember;
 import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.task.TaskComment;
 import tech.project.schedule.model.task.TaskFile;
-import tech.project.schedule.model.task.TaskHistory;
 
 import java.util.Set;
 import java.util.UUID;
@@ -93,13 +92,6 @@ public class User {
     @OneToMany(mappedBy = "user")
     @EqualsAndHashCode.Exclude
     private Set<TaskComment> taskComments;
-
-    /**
-     * Task status changes made by this user.
-     */
-    @OneToMany(mappedBy = "changedBy")
-    @EqualsAndHashCode.Exclude
-    private Set<TaskHistory> taskHistories;
 
      /**
      * Files uploaded by this user.

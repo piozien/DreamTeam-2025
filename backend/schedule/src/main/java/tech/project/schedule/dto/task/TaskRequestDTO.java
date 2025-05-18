@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import tech.project.schedule.model.enums.TaskPriority;
 import tech.project.schedule.model.enums.TaskStatus;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,9 +24,9 @@ public record TaskRequestDTO(
         String description,
 
         @NotNull(message = "Start date is required")
-        LocalDate startDate,
+        LocalDateTime startDate,
 
-        LocalDate endDate,
+        LocalDateTime endDate,
 
         @NotNull(message = "Priority is required")
         TaskPriority priority,

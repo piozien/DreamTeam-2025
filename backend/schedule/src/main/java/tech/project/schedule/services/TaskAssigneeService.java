@@ -17,10 +17,7 @@ import tech.project.schedule.services.utils.GetProjectRole;
 import tech.project.schedule.services.utils.NotificationHelper;
 import tech.project.schedule.dto.calendar.EventDTO;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
@@ -50,10 +47,10 @@ public class TaskAssigneeService {
      */
     private String createCalendarEvent(Task task, User user) {
         // Convert task dates to datetime format
-        LocalDateTime startDateTime = task.getStartDate().atTime(LocalTime.of(9, 0)); // Default to 9 AM
+        LocalDateTime startDateTime = task.getStartDate();
         LocalDateTime endDateTime = task.getEndDate() != null ? 
-            task.getEndDate().atTime(LocalTime.of(17, 0)) : // Default to 5 PM
-            task.getStartDate().atTime(LocalTime.of(17, 0));
+            task.getEndDate():
+            task.getStartDate().plusHours(8);
 
         // Format dates for Google Calendar
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy:HH:mm:ss");

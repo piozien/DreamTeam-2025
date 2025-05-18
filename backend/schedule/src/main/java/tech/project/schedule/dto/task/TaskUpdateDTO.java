@@ -3,7 +3,7 @@ package tech.project.schedule.dto.task;
 import tech.project.schedule.model.enums.TaskPriority;
 import tech.project.schedule.model.enums.TaskStatus;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -18,8 +18,8 @@ public record TaskUpdateDTO(
         UUID projectId,
         String name,
         String description,
-        LocalDate startDate,
-        LocalDate endDate,
+        LocalDateTime startDate,
+        LocalDateTime endDate,
         TaskPriority priority,
         TaskStatus status,
         Set<UUID> assigneeIds,

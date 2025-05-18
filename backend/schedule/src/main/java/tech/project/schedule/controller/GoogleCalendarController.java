@@ -7,14 +7,12 @@ import tech.project.schedule.dto.calendar.EventDTO;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
 import tech.project.schedule.services.GoogleCalendarService;
-import tech.project.schedule.services.OAuth2TokenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
-import java.util.HashMap;
-import java.util.Map;
+
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -33,7 +31,6 @@ public class GoogleCalendarController {
 
     private final GoogleCalendarService calendarService;
     private final UserRepository userRepository;
-    private final OAuth2TokenService tokenService;
     
     /**
      * Helper method to extract the current authenticated user's ID

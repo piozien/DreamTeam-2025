@@ -8,7 +8,7 @@ import tech.project.schedule.model.enums.TaskPriority;
 import tech.project.schedule.model.enums.TaskStatus;
 import tech.project.schedule.model.project.Project;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -53,13 +53,13 @@ public class Task {
      * The date when work on the task should begin.
      */
     @Column(name = "startdate", nullable = false)
-    private LocalDate startDate;
+    private LocalDateTime startDate;
 
     /**
      * Optional date when the task should be completed.
      */
     @Column(name = "enddate")
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
     /**
      * The priority level of the task (e.g., CRITICAL, IMPORTANT, OPTIONAL).
@@ -75,7 +75,6 @@ public class Task {
     @Column(nullable = false)
     private TaskStatus status;
 
-    // ToDo: reference to ProejctMembers int the Project
      /**
      * Users who are assigned to work on this task.
      */
@@ -89,13 +88,6 @@ public class Task {
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude
     private Set<TaskComment> comments;
-
-    /**
-     * Historical record of status changes for this task.
-     */
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    private Set<TaskHistory> history;
 
     /**
      * Files attached to the task.
@@ -118,13 +110,6 @@ public class Task {
     @EqualsAndHashCode.Exclude
     private Set<TaskDependency> dependentTasks;
 
-    /**
-     * Adds a user assignment to this task.
-     * 
-     * @param assignee The TaskAssignee entity to add
-     */
-    public void addAssignee(TaskAssignee assignee) {this.assignees.add(assignee);}
-
      /**
      * Creates a new task with essential information.
      * 
@@ -135,7 +120,7 @@ public class Task {
      * @param status The initial status of the task
      */
     public Task(Project project, String name, String description,
-                LocalDate startDate, TaskStatus status) {
+                LocalDateTime startDate, TaskStatus status) {
         this.project = project;
         this.name = name;
         this.description = description;
@@ -143,7 +128,6 @@ public class Task {
         this.status = status;
         this.assignees = new HashSet<>();
         this.comments = new HashSet<>();
-        this.history = new HashSet<>();
         this.dependencies = new HashSet<>();
         this.dependentTasks = new HashSet<>();
         this.files = new HashSet<>();
@@ -161,9 +145,6 @@ public class Task {
         }
         if(comments == null){
             comments = new HashSet<>();
-        }
-        if(history == null){
-            history = new HashSet<>();
         }
         if(dependencies == null){
             dependencies = new HashSet<>();
