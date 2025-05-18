@@ -45,6 +45,6 @@ public class TaskAssignee {
      * The ID of the Google Calendar event associated with this task assignment.
      * Used to track and manage the calendar event when the assignment changes.
      */
-    @Column(name = "calendar_event_id")
+    @Column(name = "calendar_event_id", length = 1024)
     private String calendarEventId;
 }

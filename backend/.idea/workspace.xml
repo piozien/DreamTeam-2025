@@ -6,16 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/GoogleCalendarController.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/controller/GoogleCalendarController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/mappers/TaskMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/mappers/TaskMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/task/TaskDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/task/TaskDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/task/TaskHistoryDTO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/task/TaskRequestDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/task/TaskRequestDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/task/TaskUpdateDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/dto/task/TaskUpdateDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/notification/Notification.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/notification/Notification.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/task/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/task/Task.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/task/TaskHistory.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/user/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/user/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/config/AppConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/config/AppConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/task/TaskAssignee.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/model/task/TaskAssignee.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/GoogleCalendarService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/GoogleCalendarService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskAssigneeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskAssigneeService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" afterDir="false" />
@@ -200,7 +193,7 @@
       <workItem from="1746462771083" duration="2306000" />
       <workItem from="1747027948407" duration="620000" />
       <workItem from="1747135921076" duration="10496000" />
-      <workItem from="1747581351136" duration="4415000" />
+      <workItem from="1747581351136" duration="8167000" />
     </task>
     <servers />
   </component>

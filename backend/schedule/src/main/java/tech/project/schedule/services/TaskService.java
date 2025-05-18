@@ -77,7 +77,7 @@ public class TaskService {
         project.getTasks().add(newTask);
         projectRepository.save(project);
         
-        // Powiadom członków projektu o utworzeniu nowego zadania
+        // Notify project members that a new task has been created
         project.getMembers().values().forEach(member -> {
             notificationHelper.notifyUser(
                 member.getUser(),
@@ -246,17 +246,28 @@ public class TaskService {
             throw new ApiException("You cannot delete this task", HttpStatus.FORBIDDEN);
         }
         
-        // Przed usunięciem, zapisz listę przypisanych użytkowników
+        // Before deleting, save the list of assigned users
         List<User> assignees = task.getAssignees().stream()
             .map(TaskAssignee::getUser)
             .collect(Collectors.toList());
+            
+        // Remove events from Google Calendar for all assigned users
+        task.getAssignees().forEach(assignee -> {
+            if (assignee.getCalendarEventId() != null) {
+                try {
+                    calendarService.deleteEvent(assignee.getUser().getId(), assignee.getCalendarEventId());
+                } catch (Exception e) {
+                    System.err.println("Failed to delete calendar event during task deletion: " + e.getMessage());
+                }
+            }
+        });
         
-        // Zapisz nazwę zadania do wykorzystania w powiadomieniach
+        // Save the task name for use in notifications
         String taskName = task.getName();
         
         taskRepository.deleteById(taskId);
         
-        // Powiadom przypisanych użytkowników o usunięciu zadania
+        // Notify assigned users of task deletion
         assignees.forEach(assignee -> {
             if (!assignee.getId().equals(user.getId())) {
                 notificationHelper.notifyTaskAssignee(

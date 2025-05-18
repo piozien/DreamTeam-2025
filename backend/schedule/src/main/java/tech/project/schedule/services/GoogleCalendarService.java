@@ -247,7 +247,6 @@ public class GoogleCalendarService {
     private Map<String, Object> buildEventBody(EventDTO eventDTO) {
         Map<String, Object> event = new HashMap<>();
         event.put("summary", eventDTO.summary());
-        //event.put("location", eventDTO.location());
         event.put("description", eventDTO.description());
 
         Map<String, Object> start = new HashMap<>();

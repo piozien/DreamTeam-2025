@@ -66,7 +66,7 @@ public class TaskAssigneeService {
             "Europe/Warsaw"
         );
 
-        // Create calendar event
+        // Create calendar event only for the assigned user
         return calendarService.createEvent(user.getId(), eventDTO);
     }
 
