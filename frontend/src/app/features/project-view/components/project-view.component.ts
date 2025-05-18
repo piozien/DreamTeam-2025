@@ -446,7 +446,7 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openAddTaskDialog(): void {
-    if (!this.projectId) return;
+    if (!this.projectId || !this.project) return;
     
     this.isAddingTask = true;
     
@@ -455,7 +455,9 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
       data: {
         title: 'Dodaj nowe zadanie',
         submitButton: 'Dodaj',
-        projectId: this.projectId
+        projectId: this.projectId,
+        projectEndDate: this.project.endDate, // Pass project end date to limit task end date
+        isEditMode: false
       }
     });
     
@@ -488,16 +490,18 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
   }
-  
+
   openEditTaskDialog(task: Task): void {
-    if (!this.projectId) return;
+    if (!this.projectId || !this.project) return;
     
     const dialogRef = this.dialog.open(TaskDialogComponent, {
       width: '500px',
       data: {
         title: 'Edytuj zadanie',
         submitButton: 'Zapisz',
-        projectId: this.projectId
+        projectId: this.projectId,
+        projectEndDate: this.project.endDate, // Pass project end date to limit task end date
+        isEditMode: true  // Indicate we're in edit mode to allow past dates for existing tasks
       }
     });
     

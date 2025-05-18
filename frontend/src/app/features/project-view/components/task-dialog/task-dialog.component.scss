@@ -16,14 +16,28 @@
   margin-bottom: 15px;
 }
 
-.date-fields,
+.date-time-fields,
 .status-priority-fields {
   display: flex;
+  flex-direction: column;
   gap: 15px;
   margin-bottom: 15px;
 }
 
-.date-field,
+.date-time-group {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+.date-field {
+  width: 60%;
+}
+
+.time-field {
+  width: 40%;
+}
+
 .status-field,
 .priority-field {
   width: 50%;

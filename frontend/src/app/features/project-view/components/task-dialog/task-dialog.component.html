@@ -11,30 +11,51 @@
       <textarea matInput [(ngModel)]="task.description" name="description" rows="3"></textarea>
     </mat-form-field>
 
-    <div class="date-fields">
-      <mat-form-field appearance="fill" class="date-field">
-        <mat-label>Data rozpoczęcia</mat-label>
-        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDateObj" 
-               name="startDate" required (dateChange)="onStartDateChange()"
-               #startDate="ngModel" [min]="today" [matDatepickerFilter]="dateFilter">
-        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-        <mat-datepicker #startPicker></mat-datepicker>
-        <mat-error *ngIf="!isStartDateValid() && startDateObj">
-          Data rozpoczęcia nie może być wcześniejsza niż dzisiejsza data
-        </mat-error>
-      </mat-form-field>
+    <div class="date-time-fields">
+      <!-- Start Date and Time -->
+      <div class="date-time-group">
+        <mat-form-field appearance="fill" class="date-field">
+          <mat-label>Data rozpoczęcia</mat-label>
+          <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDateObj" 
+                name="startDate" required (dateChange)="onStartDateChange()"
+                #startDate="ngModel" [min]="today" [matDatepickerFilter]="dateFilter">
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+          <mat-error *ngIf="!isStartDateValid() && startDateObj">
+            Data rozpoczęcia nie może być wcześniejsza niż dzisiejsza data
+          </mat-error>
+          <mat-error *ngIf="isStartDateAfterProjectEndDate() && startDateObj">
+            Data rozpoczęcia zadania nie może być późniejsza niż data zakończenia projektu
+          </mat-error>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill" class="time-field">
+          <mat-label>Czas rozpoczęcia</mat-label>
+          <input matInput type="time" [(ngModel)]="startTimeString" 
+                name="startTime" (change)="onStartTimeChange()">
+        </mat-form-field>
+      </div>
 
-      <mat-form-field appearance="fill" class="date-field">
-        <mat-label>Data zakończenia</mat-label>
-        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDateObj" 
-               name="endDate" [min]="startDateObj || null" 
-               #endDate="ngModel" [matDatepickerFilter]="endDateFilter" (dateChange)="onEndDateChange()">
-        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-        <mat-datepicker #endPicker></mat-datepicker>
-        <mat-error *ngIf="endDate.errors?.['matDatepickerMin']">
-          Data zakończenia nie może być wcześniejsza niż data rozpoczęcia
-        </mat-error>
-      </mat-form-field>
+      <!-- End Date and Time -->
+      <div class="date-time-group">
+        <mat-form-field appearance="fill" class="date-field">
+          <mat-label>Data zakończenia</mat-label>
+          <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDateObj" 
+                name="endDate" [min]="startDateObj || null" 
+                #endDate="ngModel" [matDatepickerFilter]="endDateFilter" (dateChange)="onEndDateChange()">
+          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+          <mat-error *ngIf="endDate.errors?.['matDatepickerMin']">
+            Data zakończenia nie może być wcześniejsza niż data rozpoczęcia
+          </mat-error>
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill" class="time-field">
+          <mat-label>Czas zakończenia</mat-label>
+          <input matInput type="time" [(ngModel)]="endTimeString" 
+                name="endTime" (change)="onEndTimeChange()" [disabled]="!endDateObj">
+        </mat-form-field>
+      </div>
     </div>
 
     <div class="status-priority-fields">

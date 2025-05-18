@@ -14,7 +14,9 @@ export interface TaskDialogData {
   title: string;
   submitButton: string;
   projectId: string;
+  projectEndDate?: string; // Project end date to limit task end date
   task?: Partial<Task>;
+  isEditMode?: boolean; // Flag to indicate edit mode
 }
 
 const MY_DATE_FORMATS = {
@@ -63,27 +65,85 @@ export class TaskDialogComponent {
   startDateObj: Date = new Date();
   endDateObj: Date | null = null;
   
+  // Time strings for time inputs (HH:MM format)
+  startTimeString: string = '09:00';
+  endTimeString: string = '17:00';
+  
   taskPriorities = Object.values(TaskPriority);
   taskStatuses = Object.values(TaskStatus);
   today = new Date();
 
-  // Date filter to disable all dates before today
+  // Store project end date if provided
+  projectEndDate: Date | null = null;
+  
+  // Date filter for start date
   dateFilter = (date: Date | null): boolean => {
     if (!date) return false;
     const currentDate = new Date(date);
+    
+    // First check if date is within project bounds
+    if (this.projectEndDate) {
+      // Don't allow task start date to be after project end date
+      if (currentDate > this.projectEndDate) {
+        return false;
+      }
+    }
+    
+    // In edit mode, we should allow keeping the original start date even if it's in the past
+    if (this.data.isEditMode && this.task.id) {
+      return true;
+    }
+    
+    // For new tasks, don't allow dates before today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return currentDate >= today;
   };
   
-  // Date filter for end date to ensure it's after start date
+  // Check if start date is valid
+  isStartDateValid(): boolean {
+    if (!this.startDateObj) return false;
+    
+    // In edit mode, we allow any start date
+    if (this.data.isEditMode) return true;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return this.startDateObj >= today;
+  }
+  
+  // Check if start date is after project end date
+  isStartDateAfterProjectEndDate(): boolean {
+    if (!this.startDateObj || !this.projectEndDate) return false;
+    
+    // Compare dates without time
+    const startDate = new Date(this.startDateObj);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const projectEnd = new Date(this.projectEndDate);
+    projectEnd.setHours(23, 59, 59, 999); // End of the project end day
+    
+    return startDate > projectEnd;
+  }
+  
+  // Date filter for end date to ensure it's after start date and before project end date
   endDateFilter = (date: Date | null): boolean => {
     if (!date) return false;
-    if (!this.task.startDate) return true; // If no start date, allow any date
     
     const endDate = new Date(date);
-    const startDate = new Date(this.task.startDate);
-    return endDate >= startDate;
+    let isValid = true;
+    
+    // Check if after start date
+    if (this.startDateObj) {
+      isValid = endDate >= this.startDateObj;
+    }
+    
+    // Check if before project end date (if project end date is defined)
+    if (isValid && this.projectEndDate) {
+      isValid = endDate <= this.projectEndDate;
+    }
+    
+    return isValid;
   };
 
   constructor(
@@ -93,9 +153,17 @@ export class TaskDialogComponent {
     // Reset hours to start of day for date comparison
     this.today.setHours(0, 0, 0, 0);
     
-    // Initialize start date to today to avoid starting with invalid date
-    this.task.startDate = this.formatDateToString(this.today);
-    this.startDateObj = new Date(this.today);
+    // Initialize projectEndDate if provided
+    if (data.projectEndDate) {
+      this.projectEndDate = new Date(data.projectEndDate);
+    }
+    
+    // Default behavior for new tasks
+    if (!data.isEditMode) {
+      // Initialize start date to today to avoid starting with invalid date
+      this.task.startDate = this.formatDateToString(this.today);
+      this.startDateObj = new Date(this.today);
+    }
     
     // If we're editing an existing task, populate the form
     if (data.task) {
@@ -104,18 +172,28 @@ export class TaskDialogComponent {
       // Create Date objects for the date pickers based on string dates
       if (this.task.startDate) {
         this.startDateObj = new Date(this.task.startDate);
+        // Extract time from the ISO string if available
+        const startTime = this.task.startDate.split('T')[1];
+        if (startTime) {
+          this.startTimeString = startTime.substring(0, 5); // Get HH:MM part
+        }
       }
       
       if (this.task.endDate) {
         this.endDateObj = new Date(this.task.endDate);
+        // Extract time from the ISO string if available
+        const endTime = this.task.endDate.split('T')[1];
+        if (endTime) {
+          this.endTimeString = endTime.substring(0, 5); // Get HH:MM part
+        }
       }
     }
   }
 
   // Handle changes to the start date picker
   onStartDateChange(): void {
-    // Update the string date in the task model
-    this.task.startDate = this.formatDateToString(this.startDateObj);
+    // Update the string date in the task model with the combined date and time
+    this.updateStartDateTime();
     
     // If end date is before start date, set it to start date + 1 day
     if (this.endDateObj && this.startDateObj) {
@@ -123,9 +201,14 @@ export class TaskDialogComponent {
         const newEndDate = new Date(this.startDateObj);
         newEndDate.setDate(this.startDateObj.getDate() + 1);
         this.endDateObj = newEndDate;
-        this.task.endDate = this.formatDateToString(newEndDate);
+        this.updateEndDateTime();
       }
     }
+  }
+  
+  // Handle changes to the start time picker
+  onStartTimeChange(): void {
+    this.updateStartDateTime();
   }
 
   isValidDateRange(): boolean {
@@ -145,33 +228,60 @@ export class TaskDialogComponent {
     return startDateValid && endDateValid;
   }
   
-  isStartDateValid(): boolean {
-    if (!this.startDateObj) return false;
-    return this.startDateObj >= this.today;
-  }
+  // isStartDateValid is already implemented above
   
-  // Helper method to format a Date object to YYYY-MM-DD string
+  // Helper method to format a Date object to YYYY-MM-DD string (without time)
   formatDateToString(date: Date): string {
     if (!date) return '';
     // Use local timezone to avoid date shifting due to UTC conversion
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
   
-  // Handle changes to the end date picker
-  onEndDateChange(): void {
+  // Helper method to format a Date object to ISO string with time
+  formatDateTimeToString(date: Date, timeString: string): string {
+    if (!date) return '';
+    
+    // Get the date part in YYYY-MM-DD format
+    const datePart = this.formatDateToString(date);
+    
+    // Combine with the time string
+    return `${datePart}T${timeString}:00`;
+  }
+  
+  // Update the start date and time in the task model
+  updateStartDateTime(): void {
+    if (this.startDateObj) {
+      this.task.startDate = this.formatDateTimeToString(this.startDateObj, this.startTimeString);
+    }
+  }
+  
+  // Update the end date and time in the task model
+  updateEndDateTime(): void {
     if (this.endDateObj) {
-      this.task.endDate = this.formatDateToString(this.endDateObj);
+      this.task.endDate = this.formatDateTimeToString(this.endDateObj, this.endTimeString);
     } else {
       this.task.endDate = undefined;
+    }
+  }
+  
+  // Handle changes to the end date picker
+  onEndDateChange(): void {
+    this.updateEndDateTime();
+  }
+  
+  // Handle changes to the end time picker
+  onEndTimeChange(): void {
+    if (this.endDateObj) {
+      this.updateEndDateTime();
     }
   }
 
   onSubmit(): void {
     if (this.isValidDateRange()) {
-      // Ensure dates are in the correct string format
-      this.task.startDate = this.formatDateToString(this.startDateObj);
+      // Ensure dates are in the correct string format with time
+      this.updateStartDateTime();
       if (this.endDateObj) {
-        this.task.endDate = this.formatDateToString(this.endDateObj);
+        this.updateEndDateTime();
       }
       
       // Create a copy of the task to send
