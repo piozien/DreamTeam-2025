@@ -67,6 +67,11 @@ public class GoogleCalendarService {
                     String.class
             );
 
+            if (response.getStatusCode() != HttpStatus.OK) {
+                log.error("Failed to create calendar event. Status code: {}", response.getStatusCode());
+                throw new RuntimeException("Failed to create calendar event. Status code: " + response.getStatusCode());
+            }
+
             log.info("Event created successfully with response: {}", response.getStatusCode());
             return response.getBody();
         } catch (RestClientException e) {
@@ -92,15 +97,22 @@ public class GoogleCalendarService {
      */
     public String updateEvent(UUID userId, String eventId, EventDTO eventDTO) {
         try {
+            log.info("Updating calendar event for user: {}, eventId: {}", userId, eventId);
+            log.info("Updated event details: summary={}, start={}, end={}, timeZone={}", 
+                    eventDTO.summary(), eventDTO.startDateTime(), eventDTO.endDateTime(), eventDTO.timeZone());
+
             String accessToken = tokenService.getAccessToken(userId);
             if (accessToken == null) {
+                log.error("No access token available for user: {}", userId);
                 throw new RuntimeException("No access token available for user. Please authorize Google Calendar access.");
             }
             
             String url = CALENDAR_API_BASE_URL + "/" + eventId;
             HttpHeaders headers = createHeaders(accessToken);
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(buildEventBody(eventDTO), headers);
+            Map<String, Object> eventBody = buildEventBody(eventDTO);
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(eventBody, headers);
 
+            log.info("Sending update request to Google Calendar API: {}", url);
             ResponseEntity<String> response = restTemplate.exchange(
                     url,
                     HttpMethod.PUT,
@@ -108,10 +120,21 @@ public class GoogleCalendarService {
                     String.class
             );
 
+            if (response.getStatusCode() != HttpStatus.OK) {
+                log.error("Failed to update calendar event. Status code: {}", response.getStatusCode());
+                throw new RuntimeException("Failed to update calendar event. Status code: " + response.getStatusCode());
+            }
+
+            log.info("Event updated successfully");
             return response.getBody();
         } catch (RestClientException e) {
             log.error("Error updating calendar event: {}", e.getMessage());
-            throw new RuntimeException("Unable to update event in calendar.");
+            log.error("Exception details: ", e);
+            throw new RuntimeException("Unable to update event in calendar: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error updating event: {}", e.getMessage());
+            log.error("Exception details: ", e);
+            throw new RuntimeException("Unexpected error updating event: " + e.getMessage());
         }
     }
 
@@ -124,8 +147,11 @@ public class GoogleCalendarService {
      */
     public void deleteEvent(UUID userId, String eventId) {
         try {
+            log.info("Deleting calendar event for user: {}, eventId: {}", userId, eventId);
+
             String accessToken = tokenService.getAccessToken(userId);
             if (accessToken == null) {
+                log.error("No access token available for user: {}", userId);
                 throw new RuntimeException("No access token available for user. Please authorize Google Calendar access.");
             }
             
@@ -133,15 +159,28 @@ public class GoogleCalendarService {
             HttpHeaders headers = createHeaders(accessToken);
             HttpEntity<Void> request = new HttpEntity<>(headers);
 
-            restTemplate.exchange(
+            log.info("Sending delete request to Google Calendar API: {}", url);
+            ResponseEntity<Void> response = restTemplate.exchange(
                     url,
                     HttpMethod.DELETE,
                     request,
                     Void.class
             );
+
+            if (response.getStatusCode() != HttpStatus.NO_CONTENT) {
+                log.error("Failed to delete calendar event. Status code: {}", response.getStatusCode());
+                throw new RuntimeException("Failed to delete calendar event. Status code: " + response.getStatusCode());
+            }
+
+            log.info("Event deleted successfully");
         } catch (RestClientException e) {
             log.error("Error deleting event: {}", e.getMessage());
-            throw new RuntimeException("Unable to delete event in calendar.");
+            log.error("Exception details: ", e);
+            throw new RuntimeException("Unable to delete event in calendar: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error deleting event: {}", e.getMessage());
+            log.error("Exception details: ", e);
+            throw new RuntimeException("Unexpected error deleting event: " + e.getMessage());
         }
     }
     

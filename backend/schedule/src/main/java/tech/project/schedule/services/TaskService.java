@@ -100,22 +100,20 @@ public class TaskService {
      * @return The updated task entity
      */
     @Transactional
-    public Task updateTask(Task updatedTask, UUID taskId, User user) {
-
+    public Task updateTask(UUID taskId, Task updatedTask, User user) {
         Task existingTask = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
-
+        
+        // Check permissions
         ProjectUserRole role = GetProjectRole.getProjectRole(user, existingTask.getProject());
         boolean isAssignee = existingTask.getAssignees().stream()
                 .anyMatch(assignee -> assignee.getUser().getId().equals(user.getId()));
-
+        
         if (role != ProjectUserRole.PM && !isAssignee) {
             throw new ApiException("You don't have permission to update this task", HttpStatus.FORBIDDEN);
         }
 
-        if (updatedTask.getName() != null && !updatedTask.getName().equals(existingTask.getName()) && taskRepository.existsByName(updatedTask.getName())) {
-            throw new ApiException("Task by name: " + updatedTask.getName() + " already exists.", HttpStatus.CONFLICT);
-        }
+        // Update basic task properties
         if (updatedTask.getName() != null) {
             existingTask.setName(updatedTask.getName());
         }
@@ -123,13 +121,15 @@ public class TaskService {
             existingTask.setDescription(updatedTask.getDescription());
         }
         if (updatedTask.getStartDate() != null) {
+            // Validate start date against project dates
             if (updatedTask.getStartDate().isBefore(existingTask.getProject().getStartDate())) {
-                throw new ApiException("Task start date must be after project start date", HttpStatus.BAD_REQUEST);
+                throw new ApiException("Task start date cannot be before project start date", HttpStatus.BAD_REQUEST);
+            }
+            if (existingTask.getProject().getEndDate() != null && 
+                updatedTask.getStartDate().isAfter(existingTask.getProject().getEndDate())) {
+                throw new ApiException("Task start date cannot be after project end date", HttpStatus.BAD_REQUEST);
             }
             existingTask.setStartDate(updatedTask.getStartDate());
-        }
-        if (updatedTask.getPriority() != null) {
-            existingTask.setPriority(updatedTask.getPriority());
         }
         if (updatedTask.getEndDate() != null) {
             LocalDate startDate = existingTask.getStartDate();
@@ -139,8 +139,47 @@ public class TaskService {
             if (updatedTask.getEndDate().isBefore(startDate)) {
                 throw new ApiException("End date cannot be before start date", HttpStatus.BAD_REQUEST);
             }
+            // Validate end date against project dates
+            if (existingTask.getProject().getEndDate() != null && 
+                updatedTask.getEndDate().isAfter(existingTask.getProject().getEndDate())) {
+                throw new ApiException("Task end date cannot be after project end date", HttpStatus.BAD_REQUEST);
+            }
             existingTask.setEndDate(updatedTask.getEndDate());
         }
+
+        // Handle calendar events when task dates change
+        boolean datesChanged = (updatedTask.getStartDate() != null || updatedTask.getEndDate() != null);
+        if (datesChanged) {
+            existingTask.getAssignees().forEach(assignee -> {
+                if (assignee.getCalendarEventId() != null) {
+                    try {
+                        // Create new event DTO with updated dates
+                        LocalDateTime startDateTime = existingTask.getStartDate().atTime(LocalTime.of(9, 0));
+                        LocalDateTime endDateTime = existingTask.getEndDate() != null ? 
+                            existingTask.getEndDate().atTime(LocalTime.of(17, 0)) :
+                            existingTask.getStartDate().atTime(LocalTime.of(17, 0));
+
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy:HH:mm:ss");
+                        String startDateTimeStr = startDateTime.format(formatter);
+                        String endDateTimeStr = endDateTime.format(formatter);
+
+                        EventDTO eventDTO = new EventDTO(
+                            existingTask.getName(),
+                            "Task in project: " + existingTask.getProject().getName() + "\n" + existingTask.getDescription(),
+                            startDateTimeStr,
+                            endDateTimeStr,
+                            "Europe/Warsaw"
+                        );
+
+                        // Update the calendar event
+                        calendarService.updateEvent(assignee.getUser().getId(), assignee.getCalendarEventId(), eventDTO);
+                    } catch (Exception e) {
+                        System.err.println("Failed to update calendar event: " + e.getMessage());
+                    }
+                }
+            });
+        }
+
         if (updatedTask.getStatus() != null) {
             boolean wasCompleted = existingTask.getStatus() == TaskStatus.FINISHED;
             boolean isNowCompleted = updatedTask.getStatus() == TaskStatus.FINISHED;
@@ -163,7 +202,6 @@ public class TaskService {
                             assignee.setCalendarEventId(null);
                             taskAssigneeRepository.save(assignee);
                         } catch (Exception e) {
-                            // Log error but don't fail the update if calendar integration fails
                             System.err.println("Failed to delete calendar event: " + e.getMessage());
                         }
                     }
@@ -178,9 +216,8 @@ public class TaskService {
         
         Task savedTask = taskRepository.save(existingTask);
         
-        // Powiadom przypisanych użytkowników o aktualizacji zadania
+        // Notify assignees about task update
         existingTask.getAssignees().forEach(assignee -> {
-            // Nie powiadamiaj osoby dokonującej aktualizacji
             if (!assignee.getUser().getId().equals(user.getId())) {
                 notificationHelper.notifyTaskAssignee(
                     assignee.getUser(),
