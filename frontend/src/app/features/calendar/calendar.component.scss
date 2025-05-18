@@ -1,21 +1,23 @@
-// Modern variables
-$primary-color: #2563eb;
-$primary-light: #3b82f6;
-$primary-dark: #1d4ed8;
-$secondary-color: #8b5cf6;
+// Use global CSS variables from styles.scss instead of hardcoded colors
+// Primary and accent colors
+$primary-color: var(--primary-color);
+$primary-light: var(--primary-color-light);
+$primary-dark: var(--primary-color-dark);
+$secondary-color: var(--accent-color);
 
-// Priority colors
-$critical-color: #ef4444;
-$critical-dark: #b91c1c;
-$important-color: #f59e0b;
-$important-dark: #d97706;
-$optional-color: #10b981;
-$optional-dark: #059669;
+// Priority colors from global CSS variables
+$critical-color: var(--priority-critical-color);
+$critical-dark: rgba(var(--priority-critical-color-rgb), 0.8);
+$important-color: var(--priority-important-color);
+$important-dark: rgba(var(--priority-important-color-rgb), 0.8);
+$optional-color: var(--priority-optional-color);
+$optional-dark: rgba(var(--priority-optional-color-rgb), 0.8);
 
-$text-color: #1f2937;
-$text-light: #6b7280;
+// Text and background colors
+$text-color: var(--text-color);
+$text-light: var(--text-color-light, rgba(var(--text-color-rgb), 0.7));
 $border-color: #e5e7eb;
-$background-light: #f9fafb;
+$background-light: var(--background-color);
 $shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 $shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -26,12 +28,15 @@ $border-radius-lg: 12px;
 .calendar-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 64px);
-  padding: 24px;
+  height: calc(100vh - 104px);
   font-family: 'Inter', 'Roboto', sans-serif;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  border: 1px solid rgba(var(--primary-color-rgb), 0.1);
+  position: relative;
   color: $text-color;
-  background-color: #fff;
-  border-radius: $border-radius-lg;
   box-shadow: $shadow-sm;
 }
 
@@ -39,10 +44,21 @@ $border-radius-lg: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  padding-bottom: 16px;
-  border-bottom: 1px solid $border-color;
+  padding: 20px 24px;
+  background: linear-gradient(to right, rgba(var(--primary-color-rgb), 0.05), rgba(var(--primary-color-rgb), 0.1));
+  border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.03), transparent);
+  }
 }
 
 .calendar-title {
@@ -88,7 +104,6 @@ $border-radius-lg: 12px;
 .calendar-controls button.active {
   background-color: $primary-color;
   color: white;
-  box-shadow: $shadow-sm;
 }
 
 .calendar-controls button:not(.active):hover {
@@ -360,6 +375,22 @@ $border-radius-lg: 12px;
   margin-top: 2px;
 }
 
+.calendar-controls button {
+  border: none;
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+  color: var(--primary-color);
+  border-radius: $border-radius-md;
+  padding: 6px 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+}
+
 /* Week View */
 .week-view {
   display: flex;
@@ -579,28 +610,28 @@ $border-radius-lg: 12px;
 
 /* Priority classes */
 .priority-critical {
-  background-color: $critical-color !important;
+  background-color: var(--priority-critical-color) !important;
 }
 
 .priority-critical.end-date {
   border: 2px dashed rgba(255, 255, 255, 0.7);
-  box-shadow: 0 0 8px rgba($critical-color, 0.6);
+  box-shadow: 0 0 8px rgba(var(--priority-critical-color-rgb), 0.6);
 }
 
 .priority-important {
-  background-color: $important-color !important;
+  background-color: var(--priority-important-color) !important;
 }
 
 .priority-important.end-date {
   border: 2px dashed rgba(255, 255, 255, 0.7);
-  box-shadow: 0 0 8px rgba($important-color, 0.6);
+  box-shadow: 0 0 8px rgba(var(--priority-important-color-rgb), 0.6);
 }
 
 .priority-optional {
-  background-color: $optional-color !important;
+  background-color: var(--priority-optional-color) !important;
 }
 
 .priority-optional.end-date {
   border: 2px dashed rgba(255, 255, 255, 0.7);
-  box-shadow: 0 0 8px rgba($optional-color, 0.6);
-} 
+  box-shadow: 0 0 8px rgba(var(--priority-optional-color-rgb), 0.6);
+}

@@ -98,7 +98,7 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
     private authService: AuthService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private toastService: ToastrService 
+    private toastService: ToastrService
   ) {}
   
   ngOnInit(): void {
@@ -159,42 +159,117 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscription.add(
       this.taskService.getTasksByProject(this.project.id, userId).subscribe({
         next: (tasks) => {
-          console.log('Tasks loaded:', tasks);
+          // Store the original tasks array
           this.tasks = tasks;
-          // Update the data source with the new tasks
+          
+          // Initialize or update the data source
           if (!this.dataSource) {
             this.dataSource = new MatTableDataSource<Task>(this.tasks);
           } else {
             this.dataSource.data = this.tasks;
           }
           
-          // Apply paginator and sort if already available
-          if (this.paginator && this.dataSource) {
-            this.dataSource.paginator = this.paginator;
-          }
-          if (this.sort && this.dataSource) {
-            this.dataSource.sort = this.sort;
-          }
+          // Configure sorting and filtering
+          this.setupDataSource();
+          
+          // Make sure pagination works correctly
+          this.setupTableControls();
           
           this.isLoadingTasks = false;
         },
         error: (error) => {
           console.error('Error loading tasks:', error);
           this.isLoadingTasks = false;
-          this.snackBar.open('Problem z zaladowaniem zadań', 'Zamknij', { duration: 3000 });
+          this.snackBar.open('Problem z załadowaniem zadań', 'Zamknij', { duration: 3000 });
         }
       })
     );
+  }
+  
+  /**
+   * Sets up the data source with proper filtering, pagination and sorting
+   */
+  private setupDataSource(): void {
+    if (!this.dataSource) return;
+    
+    // Set up filtering predicate
+    this.dataSource.filterPredicate = (data: Task, filter: string) => {
+      const filterValue = filter.toLowerCase().trim();
+      const name = data.name.toLowerCase();
+      const status = this.getTaskStatusDisplayName(data.status).toLowerCase();
+      const priority = this.getTaskPriorityDisplayName(data.priority).toLowerCase();
+      
+      return name.includes(filterValue) || 
+             status.includes(filterValue) || 
+             priority.includes(filterValue);
+    };
+    
+    // Connect to paginator and sort if available
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
+    
+    if (this.sort) {
+      this.dataSource.sort = this.sort;
+    }
   }
 
   /**
    * After view init lifecycle hook - sets up the table sorting and pagination
    */
   ngAfterViewInit(): void {
-    if (this.dataSource && this.paginator && this.sort) {
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
+    this.setupTableControls();
+  }
+  
+  /**
+   * Sets up the table controls (sorting and pagination)
+   */
+  private setupTableControls(): void {
+    // Reset the paginator first
+    if (this.paginator) {
+      // Reset the page index to ensure we start at the first page
+      this.paginator.pageIndex = 0;
+      
+      // Set default page size if not set
+      if (!this.paginator.pageSize) {
+        this.paginator.pageSize = 5;
+      }
+      
+      // Customize the labels for Polish language
+      this.paginator._intl.itemsPerPageLabel = 'Zadań na stronie:';
+      this.paginator._intl.nextPageLabel = 'Następna strona';
+      this.paginator._intl.previousPageLabel = 'Poprzednia strona';
+      this.paginator._intl.firstPageLabel = 'Pierwsza strona';
+      this.paginator._intl.lastPageLabel = 'Ostatnia strona';
+      this.paginator._intl.getRangeLabel = (page: number, pageSize: number, length: number) => {
+        if (length === 0 || pageSize === 0) {
+          return `0 z ${length}`;
+        }
+        length = Math.max(length, 0);
+        const startIndex = page * pageSize;
+        const endIndex = startIndex < length ? Math.min(startIndex + pageSize, length) : startIndex + pageSize;
+        return `${startIndex + 1} - ${endIndex} z ${length}`;
+      };
     }
+
+    // Add the data source connections with a small delay to ensure view stability
+    setTimeout(() => {
+      if (this.dataSource && this.tasks) {
+        // Create a new array reference to trigger change detection
+        this.dataSource.data = [...this.tasks];
+        
+        if (this.paginator) {
+          // Connect the paginator to the data source
+          this.dataSource.paginator = this.paginator;
+          // Force update the page length
+          this.paginator._changePageSize(this.paginator.pageSize);
+        }
+        
+        if (this.sort) {
+          this.dataSource.sort = this.sort;
+        }
+      }
+    }, 100);
   }
 
   /**
@@ -275,10 +350,10 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
   
   getPriorityColorClass(priority: TaskPriority): string {
     switch (priority) {
-      case TaskPriority.OPTIONAL: return 'priority-low';
-      case TaskPriority.IMPORTANT: return 'priority-medium';
-      case TaskPriority.CRITICAL: return 'priority-high';
-      default: return 'priority-low';
+      case TaskPriority.OPTIONAL: return 'priority-optional';
+      case TaskPriority.IMPORTANT: return 'priority-important';
+      case TaskPriority.CRITICAL: return 'priority-critical';
+      default: return 'priority-optional';
     }
   }
 

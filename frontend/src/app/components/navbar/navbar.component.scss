@@ -37,12 +37,12 @@
 .user-info {
   display: flex;
   align-items: center;
-  color: white;
+  color: var(--text-color-on-dark);
   margin-right: 0.5rem;
 }
 
 .logout-btn {
-  color: white;
+  color: var(--text-color-on-dark);
 }
 
 .active {

@@ -1,61 +1,4 @@
 <div class="project-view-container">
-  <!-- Global styles for material components -->
-  <style>
-    /* Force dark text on all Material components */
-    .mat-paginator *,
-    .mat-table *,
-    .mat-sort-header-button,
-    .mat-select-value,
-    .mat-select-arrow,
-    .mat-option-text,
-    .mat-form-field-label,
-    .cdk-overlay-container .mat-option,
-    .mat-paginator-page-size-select.mat-form-field-appearance-outline .mat-form-field-infix {
-      color: #333 !important;
-    }
-    
-    /* Special handling for paginator controls */
-    .mat-paginator-navigation-first,
-    .mat-paginator-navigation-previous,
-    .mat-paginator-navigation-next,
-    .mat-paginator-navigation-last {
-      background-color: #f5f5f5 !important;
-      border: 1px solid #ddd !important;
-      margin: 0 2px !important;
-    }
-    
-    /* Force white backgrounds */
-    .mat-paginator,
-    .mat-table,
-    .mat-header-row,
-    .mat-row,
-    .mat-cell,
-    .mat-header-cell,
-    .cdk-overlay-container .mat-select-panel {
-      background-color: white !important;
-    }
-    
-    /* Fix paginator arrows */
-    .mat-paginator-icon {
-      fill: black !important;
-      transform: scale(1.2);
-    }
-    
-    /* Fix header row */
-    .mat-header-row {
-      background-color: #f0f0f0 !important;
-    }
-    
-    /* Ensure dropdown items are visible */
-    .mat-select-panel .mat-option {
-      background-color: white !important;
-      color: #333 !important;
-    }
-    
-    .mat-select-panel .mat-option:hover {
-      background-color: #f5f5f5 !important;
-    }
-  </style>
   <div class="back-button-container">
     <button mat-button style="color: black;" (click)="goBack()">
       <mat-icon>arrow_back</mat-icon>
@@ -102,7 +45,7 @@
                 <div class="detail-section">
                   <div class="section-header">
                     <h3>Szczegóły projektu</h3>
-                    <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="openEditDialog()" [disabled]="isEditing">
+                    <button mat-raised-button class="primary-action-button" (click)="openEditDialog()" [disabled]="isEditing">
                       <mat-icon>edit</mat-icon>
                       Edytuj Projekt
                     </button>
@@ -124,7 +67,7 @@
                 <div class="detail-section">
                   <div class="section-header">
                     <h3>Członkowie projektu</h3>
-                    <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="openAddMemberDialog()" [disabled]="isAddingMember">
+                    <button mat-raised-button class="primary-action-button" (click)="openAddMemberDialog()" [disabled]="isAddingMember">
                       <mat-icon>person_add</mat-icon>
                       Dodaj członka
                     </button>
@@ -173,7 +116,7 @@
             <mat-card-content>
               <div class="tasks-header">
                 <h2>Zarządzanie zadaniami</h2>
-                <button mat-raised-button (click)="openAddTaskDialog()" [disabled]="isAddingTask">
+                <button mat-raised-button class="primary-action-button" (click)="openAddTaskDialog()" [disabled]="isAddingTask">
                   <mat-icon>add</mat-icon>
                   Dodaj zadanie
                 </button>
@@ -188,29 +131,26 @@
 
               <ng-container *ngIf="!isLoadingTasks && tasks && tasks.length > 0">
                 <div class="task-table-container mat-elevation-z2">
-                  <!-- Task filtering controls with forced styling -->
-                  <div class="task-filter-container" style="background-color: white !important; padding: 20px; border-bottom: 1px solid #e0e0e0;">
-                    <div style="border: 1px solid #ccc; background-color: white; padding: 10px; border-radius: 4px; display: flex; align-items: center; width: 100%; max-width: 500px;">
-                      <mat-icon style="color: #555; margin-right: 8px;">search</mat-icon>
-                      <input matInput style="border: none; outline: none; width: 100%; color: black; font-size: 16px; background-color: white;" 
-                             (keyup)="applyFilter($event)" 
-                             placeholder="Wpisz nazwę, status lub priorytet..." 
-                             autocomplete="off">
+                  <!-- Task filtering controls -->
+                  <div class="task-filter-container">
+                    <div class="search-input-container">
+                      <mat-icon>search</mat-icon>
+                      <input matInput (keyup)="applyFilter($event)" placeholder="Wpisz nazwę, status lub priorytet..." autocomplete="off">
                     </div>
                   </div>
                   
-                  <!-- Tasks table with forced styles -->
-                  <table mat-table [dataSource]="dataSource" matSort class="task-table" style="background-color: white !important;">
+                  <!-- Tasks table -->
+                  <table mat-table [dataSource]="dataSource" matSort class="task-table">
                     <!-- Name Column -->
                     <ng-container matColumnDef="name">
-                      <th mat-header-cell *matHeaderCellDef mat-sort-header style="background-color: #f0f0f0 !important; color: #333 !important; font-weight: 500; padding: 16px 12px;"> Nazwa </th>
-                      <td mat-cell *matCellDef="let task" style="color: #333 !important; padding: 12px; border-bottom: 1px solid #eee;"> {{task.name}} </td>
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header> Nazwa </th>
+                      <td mat-cell *matCellDef="let task"> {{task.name}} </td>
                     </ng-container>
 
                     <!-- Status Column -->
                     <ng-container matColumnDef="status">
-                      <th mat-header-cell *matHeaderCellDef mat-sort-header style="background-color: #f0f0f0 !important; color: #333 !important; font-weight: 500; padding: 16px 12px;"> Status </th>
-                      <td mat-cell *matCellDef="let task" style="color: #333 !important; padding: 12px; border-bottom: 1px solid #eee;"> 
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+                      <td mat-cell *matCellDef="let task"> 
                         <span class="task-status-badge" [ngClass]="getStatusColorClass(task.status)">
                           {{ getTaskStatusDisplayName(task.status) }}
                         </span>
@@ -219,8 +159,8 @@
 
                     <!-- Priority Column -->
                     <ng-container matColumnDef="priority">
-                      <th mat-header-cell *matHeaderCellDef mat-sort-header style="background-color: #f0f0f0 !important; color: #333 !important; font-weight: 500; padding: 16px 12px;"> Priorytet </th>
-                      <td mat-cell *matCellDef="let task" style="color: #333 !important; padding: 12px; border-bottom: 1px solid #eee;"> 
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header> Priorytet </th>
+                      <td mat-cell *matCellDef="let task"> 
                         <span class="task-priority-badge" [ngClass]="getPriorityColorClass(task.priority)">
                           {{ getTaskPriorityDisplayName(task.priority) }}
                         </span>
@@ -229,26 +169,26 @@
 
                     <!-- Start Date Column -->
                     <ng-container matColumnDef="startDate">
-                      <th mat-header-cell *matHeaderCellDef mat-sort-header style="background-color: #f0f0f0 !important; color: #333 !important; font-weight: 500; padding: 16px 12px;"> Data rozpoczęcia </th>
-                      <td mat-cell *matCellDef="let task" style="color: #333 !important; padding: 12px; border-bottom: 1px solid #eee;"> {{task.startDate | date:'shortDate':'':'pl-PL'}} </td>
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header> Data rozpoczęcia </th>
+                      <td mat-cell *matCellDef="let task"> {{task.startDate | date:'shortDate':'':'pl-PL'}} </td>
                     </ng-container>
                     
                     <!-- End Date Column -->
                     <ng-container matColumnDef="endDate">
-                      <th mat-header-cell *matHeaderCellDef mat-sort-header style="background-color: #f0f0f0 !important; color: #333 !important; font-weight: 500; padding: 16px 12px;"> Data zakończenia </th>
-                      <td mat-cell *matCellDef="let task" style="color: #333 !important; padding: 12px; border-bottom: 1px solid #eee;"> {{task.endDate ? (task.endDate | date:'shortDate':'':'pl-PL') : '—'}} </td>
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header> Data zakończenia </th>
+                      <td mat-cell *matCellDef="let task"> {{task.endDate ? (task.endDate | date:'shortDate':'':'pl-PL') : '—'}} </td>
                     </ng-container>
                     
                     <!-- Assignees Column -->
                     <ng-container matColumnDef="assignees">
-                      <th mat-header-cell *matHeaderCellDef style="background-color: #f0f0f0 !important; color: #333 !important; font-weight: 500; padding: 16px 12px;"> Przypisani </th>
-                      <td mat-cell *matCellDef="let task" style="color: #333 !important; padding: 12px; border-bottom: 1px solid #eee;"> {{getAssigneeNames(task)}} </td>
+                      <th mat-header-cell *matHeaderCellDef> Przypisani </th>
+                      <td mat-cell *matCellDef="let task"> {{getAssigneeNames(task)}} </td>
                     </ng-container>
 
                     <!-- Actions Column -->
                     <ng-container matColumnDef="actions">
-                      <th mat-header-cell *matHeaderCellDef style="background-color: #f0f0f0 !important; color: #333 !important; font-weight: 500; padding: 16px 12px;"> Akcje </th>
-                      <td mat-cell *matCellDef="let task" style="color: #333 !important; padding: 12px; border-bottom: 1px solid #eee;"> 
+                      <th mat-header-cell *matHeaderCellDef> Akcje </th>
+                      <td mat-cell *matCellDef="let task"> 
                         <div class="action-buttons">
                           <button mat-icon-button class="edit-button" matTooltip="Edytuj zadanie" [routerLink]="['/tasks', task.id, 'edit']" routerLinkActive="active">
                             <mat-icon>edit</mat-icon>
@@ -260,65 +200,22 @@
                       </td>
                     </ng-container>
 
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" style="background-color: #f0f0f0 !important;"></tr>
-                    <tr mat-row *matRowDef="let task; columns: displayedColumns;" style="background-color: white !important;"></tr>
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                    <tr mat-row *matRowDef="let task; columns: displayedColumns;"></tr>
                     
                     <!-- Row shown when there is no matching data -->
                     <tr class="mat-row" *matNoDataRow>
-                      <td class="mat-cell" colspan="7" style="color: #333 !important; padding: 12px; border-bottom: 1px solid #eee;">Brak pasujących zadań</td>
+                      <td class="mat-cell" colspan="7">Brak pasujących zadań</td>
                     </tr>
                   </table>
                   
-                  <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons style="background-color: white !important; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 4px 4px;">
-                    <ng-container *ngTemplateOutlet="forcedStyles"></ng-container>
+                  <mat-paginator #paginator
+                     [pageSize]="5"
+                     [pageSizeOptions]="[5, 10, 25]"
+                     [showFirstLastButtons]="true"
+                     [length]="dataSource && dataSource.data ? dataSource.data.length : 0"
+                     aria-label="Select page of tasks">
                   </mat-paginator>
-                  
-                  <!-- Global style forcing template -->
-                  <ng-template #forcedStyles>
-                    <style>
-                      /* Fix white text in pagination controls */
-                      .mat-paginator,
-                      .mat-paginator-container,
-                      .mat-select-value,
-                      .mat-option-text,
-                      .mat-paginator-range-label,
-                      .mat-paginator-page-size-label,
-                      .mat-select-arrow,
-                      .mat-form-field-label, 
-                      .mat-form-field-required-marker,
-                      .mat-sort-header-button,
-                      .mat-icon-button,
-                      .mat-select,
-                      .mat-select-value-text,
-                      .mat-select-min-line,
-                      .mat-option,
-                      .mat-paginator-page-size,
-                      .mat-select-trigger,
-                      .mat-paginator-navigation-next,
-                      .mat-paginator-navigation-previous {
-                        color: #333 !important;
-                      }
-                      
-                      /* Fix paginator icons */
-                      .mat-paginator-icon {
-                        fill: #333 !important;
-                      }
-                      
-                      /* Fix dropdown panels */
-                      .mat-select-panel {
-                        background-color: white !important;
-                      }
-                      
-                      .mat-option, .mat-option.mat-selected:not(.mat-option-disabled) {
-                        color: #333 !important;
-                      }
-                      
-                      /* Fix sort header colors */
-                      .mat-sort-header-arrow {
-                        color: #333 !important;
-                      }
-                    </style>
-                  </ng-template>
                 </div>
               </ng-container>
 

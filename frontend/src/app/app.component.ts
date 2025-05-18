@@ -25,10 +25,25 @@ import { FooterComponent } from './components/footer/footer.component';
     
     .content {
       flex: 1;
-      padding: 20px;
+      padding: 30px 20px;
       max-width: 1200px;
-      margin: 0 auto;
-      width: 100%;
+      margin: 20px auto;
+      width: calc(100% - 40px);
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
     }
   `]
 })

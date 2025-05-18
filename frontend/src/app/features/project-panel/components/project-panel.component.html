@@ -1,6 +1,6 @@
 <div class="project-panel">
   <div class="header">
-    <button mat-raised-button style="color: white;" (click)="openCreateDialog()" [disabled]="isCreating">
+    <button mat-raised-button color="primary" (click)="openCreateDialog()" [disabled]="isCreating">
       <mat-icon>add</mat-icon>
       Nowy Projekt
     </button>
@@ -18,21 +18,21 @@
 
   <div *ngIf="!loading">
     <!-- Projects the user is assigned to -->
-    <div class="category-header">
+    <div class="category-header assigned-header">
       <h2>Moje projekty</h2>
       <p>Projekty, do których zostałeś przypisany</p>
     </div>
 
     <div class="projects-grid">
-      <mat-card class="project-card" *ngFor="let project of assignedProjects" (click)="selectProject(project)" style="cursor: pointer;">
-        <mat-card-header>
+      <mat-card class="project-card assigned-card" *ngFor="let project of assignedProjects" (click)="selectProject(project)" style="cursor: pointer;">
+        <mat-card-header class="assigned-header">
           <mat-card-title>{{ project.name }}</mat-card-title>
           <div class="card-actions">
             <button mat-icon-button class="view-button" color="primary" (click)="$event.stopPropagation(); selectProject(project)" matTooltip="Pokaż szczegóły">
               <mat-icon>visibility</mat-icon>
             </button>
             <button mat-icon-button class="delete-button" (click)="$event.stopPropagation(); deleteProject(project)" matTooltip="Usuń projekt">
-              <mat-icon style="color: #f44336;">delete</mat-icon>
+              <mat-icon class="text-danger">delete</mat-icon>
             </button>
           </div>
         </mat-card-header>
@@ -62,21 +62,21 @@
     <mat-divider class="section-divider"></mat-divider>
 
     <!-- Projects the user is not assigned to -->
-    <div class="category-header">
+    <div class="category-header unassigned-header">
       <h2>Inne dostępne projekty</h2>
       <p>Projekty, do których nie zostałeś przypisany</p>
     </div>
 
     <div class="projects-grid">
-      <mat-card class="project-card" *ngFor="let project of unassignedProjects" (click)="selectProject(project)" style="cursor: pointer;">
-        <mat-card-header>
+      <mat-card class="project-card unassigned-card" *ngFor="let project of unassignedProjects" (click)="selectProject(project)" style="cursor: pointer;">
+        <mat-card-header class="unassigned-header">
           <mat-card-title>{{ project.name }}</mat-card-title>
           <div class="card-actions">
             <button mat-icon-button class="view-button" color="primary" (click)="$event.stopPropagation(); selectProject(project)" matTooltip="Pokaż szczegóły">
               <mat-icon>visibility</mat-icon>
             </button>
             <button mat-icon-button class="delete-button" (click)="$event.stopPropagation(); deleteProject(project)" matTooltip="Usuń projekt">
-              <mat-icon style="color: #f44336;">delete</mat-icon>
+              <mat-icon class="text-danger">delete</mat-icon>
             </button>
           </div>
         </mat-card-header>
