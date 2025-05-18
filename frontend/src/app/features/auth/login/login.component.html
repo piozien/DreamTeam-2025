@@ -1,39 +1,51 @@
 <div class="login-container">
-  <h2>Logowanie</h2>
-  
-  <!-- Error message alert -->
-  <div *ngIf="errorMessage" class="alert alert-danger mb-3" role="alert">
-    {{ errorMessage }}
-  </div>
-  
-  <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
-    <div class="mb-3">
-      <label for="email" class="form-label">Adres email</label>
-      <input type="email" class="form-control" id="email" name="email" [(ngModel)]="user.email" required
-             [class.is-invalid]="errorMessage && !user.email">
-      <div class="invalid-feedback" *ngIf="errorMessage && !user.email">
-        Adres email jest wymagany
-      </div>
+  <div class="login-card">
+    <div class="login-header">
+      <h2>Logowanie do systemu</h2>
+      <p class="login-subtitle">Wprowadź swoje dane logowania</p>
     </div>
     
-    <div class="mb-3">
-      <label for="password" class="form-label">Hasło</label>
-      <input type="password" class="form-control" id="password" name="password" [(ngModel)]="user.password" required
-             [class.is-invalid]="errorMessage && !user.password">
-      <div class="invalid-feedback" *ngIf="errorMessage && !user.password">
-        Hasło jest wymagane
-      </div>
+    <!-- Error message alert -->
+    <div *ngIf="errorMessage" class="error-message">
+      <mat-icon>error</mat-icon>
+      <span>{{ errorMessage }}</span>
     </div>
     
-    <div class="d-flex gap-2">
-      <button type="submit" class="btn btn-primary" [disabled]="isLoading">
-        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-        Zaloguj się
-      </button>
-      <button type="button" class="btn btn-secondary" routerLink="/auth/register" [disabled]="isLoading">
-        Zarejestruj się
-      </button>
-    </div>
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form">
+      <div class="form-field">
+        <label for="email">Adres email</label>
+        <div class="input-container">
+          <mat-icon>email</mat-icon>
+          <input type="email" id="email" name="email" [(ngModel)]="user.email" required
+                 [class.is-invalid]="errorMessage && !user.email" placeholder="Wprowadź adres email">
+        </div>
+        <div class="field-error" *ngIf="errorMessage && !user.email">
+          Adres email jest wymagany
+        </div>
+      </div>
+      
+      <div class="form-field">
+        <label for="password">Hasło</label>
+        <div class="input-container">
+          <mat-icon>lock</mat-icon>
+          <input type="password" id="password" name="password" [(ngModel)]="user.password" required
+                 [class.is-invalid]="errorMessage && !user.password" placeholder="Wprowadź hasło">
+        </div>
+        <div class="field-error" *ngIf="errorMessage && !user.password">
+          Hasło jest wymagane
+        </div>
+      </div>
+      
+      <div class="login-actions">
+        <button type="submit" class="login-button" [disabled]="isLoading">
+          <span *ngIf="isLoading" class="spinner"></span>
+          <span>Zaloguj się</span>
+        </button>
+        
+        <p class="register-info">
+          Rejestracja nowych kont jest możliwa tylko przez administratora systemu.
+        </p>
+      </div>
   </form>
   
   <div class="separator my-4">
