@@ -109,12 +109,34 @@ export class UserManagementComponent implements OnInit {
   }
 
   changeUserRole(user: User, newRole: GlobalRole): void {
-    // API endpoint for this would be needed but hasn't been implemented yet
-    this.snackBar.open(`Changing user role to ${newRole} - API not implemented`, 'Close', {
-      duration: 3000
-    });
+    if (!this.canChangeRole(user)) {
+      this.snackBar.open('You cannot change your own role for security reasons', 'Close', {
+        duration: 5000,
+        panelClass: 'warning-snackbar'
+      });
+      return;
+    }
     
-    // For demo purposes, update the local user object
-    user.globalRole = newRole;
+    // Show loading indicator or disable actions if needed
+    const originalRole = user.globalRole;
+    user.globalRole = newRole; // Optimistic update
+    
+    this.adminService.updateUserRole(user.id, newRole).subscribe({
+      next: (response) => {
+        // Success: role updated on the server
+        this.snackBar.open(`User role changed to ${newRole}`, 'Close', {
+          duration: 3000,
+          panelClass: 'success-snackbar'
+        });
+      },
+      error: (err) => {
+        // Error: revert the optimistic update and show error
+        user.globalRole = originalRole;
+        this.snackBar.open(`Failed to change user role: ${err.message || 'Unknown error'}`, 'Close', {
+          duration: 5000,
+          panelClass: 'error-snackbar'
+        });
+      }
+    });
   }
 }
