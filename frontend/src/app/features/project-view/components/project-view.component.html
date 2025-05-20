@@ -114,9 +114,9 @@
         <div class="tab-content">
           <mat-card style="background-color: white !important;">
             <mat-card-content>
-              <div class="tasks-header">
+              <div class="tasks-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
                 <h2>Zarządzanie zadaniami</h2>
-                <button mat-raised-button class="primary-action-button" (click)="openAddTaskDialog()" [disabled]="isAddingTask">
+                <button mat-raised-button class="primary-action-button" (click)="openAddTaskDialog()" [disabled]="isAddingTask" style="margin-left: auto;">
                   <mat-icon>add</mat-icon>
                   Dodaj zadanie
                 </button>

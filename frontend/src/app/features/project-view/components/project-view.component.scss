@@ -53,6 +53,27 @@
     }
   }
 
+  .primary-action-button {
+    // This style is now moved to be more generally applicable within .project-view-container
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); // Keep shadow consistent with other buttons
+    transition: background-color 0.3s ease;
+    
+    &:hover:not([disabled]) {
+      background-color: var(--primary-color-dark);
+    }
+    
+    &[disabled] {
+      opacity: 0.6;
+    }
+    
+    mat-icon {
+      margin-right: 4px;
+    }
+  }
+
   .project-header {
     display: flex;
     justify-content: space-between;
@@ -152,25 +173,6 @@
         
         button {
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .primary-action-button {
-          background-color: var(--primary-color);
-          color: white;
-          border-radius: 4px;
-          transition: background-color 0.3s ease;
-          
-          &:hover:not([disabled]) {
-            background-color: var(--primary-color-dark);
-          }
-          
-          &[disabled] {
-            opacity: 0.6;
-          }
-          
-          mat-icon {
-            margin-right: 4px;
-          }
         }
       }
       
@@ -376,6 +378,22 @@
     }
   }
   
+  .tasks-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 32px !important; /* Increased spacing between header and table */
+    
+    h2 {
+      margin: 0 !important;
+      color: var(--primary-color-dark) !important;
+    }
+    
+    button.primary-action-button {
+      margin-left: auto !important; /* Pushes the button to the right */
+    }
+  }
+  
   .task-table-container {
     background-color: white !important;
     border-radius: 0 0 4px 4px;
@@ -406,6 +424,35 @@
       }
       
       td.mat-cell {
+        // Styles for action buttons in the table
+        .action-buttons {
+          display: flex;
+          align-items: center;
+          gap: 4px; // Adjust spacing as needed
+
+          .edit-button {
+            mat-icon {
+              color: var(--primary-color);
+            }
+            &:hover {
+              mat-icon {
+                color: var(--primary-color-dark);
+              }
+            }
+          }
+
+          .delete-button {
+            mat-icon {
+              color: var(--danger-color);
+            }
+            &:hover {
+              mat-icon {
+                color: var(--accent-color-dark); // Or a darker shade of danger
+              }
+            }
+          }
+        }
+
         padding: 14px 12px;
         color: var(--text-color) !important;
         border-bottom: 1px solid rgba(var(--background-color-rgb), 0.5);
