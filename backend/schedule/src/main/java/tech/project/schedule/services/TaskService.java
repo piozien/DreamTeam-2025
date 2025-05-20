@@ -1,6 +1,8 @@
 package tech.project.schedule.services;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +13,7 @@ import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.enums.ProjectUserRole;
 import tech.project.schedule.model.enums.TaskStatus;
 import tech.project.schedule.model.project.Project;
+import tech.project.schedule.model.project.ProjectMember;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.user.User;
@@ -44,6 +47,8 @@ public class TaskService {
     private final tech.project.schedule.repositories.UserRepository userRepository;
     private final NotificationHelper notificationHelper;
     private final GoogleCalendarService calendarService;
+    
+    private static final Logger log = LoggerFactory.getLogger(TaskService.class);
 
     /**
      * Creates a new task within a project.
@@ -250,17 +255,21 @@ public class TaskService {
         List<User> assignees = task.getAssignees().stream()
             .map(TaskAssignee::getUser)
             .collect(Collectors.toList());
-            
-        // Remove events from Google Calendar for all assigned users
-        task.getAssignees().forEach(assignee -> {
-            if (assignee.getCalendarEventId() != null) {
-                try {
-                    calendarService.deleteEvent(assignee.getUser().getId(), assignee.getCalendarEventId());
-                } catch (Exception e) {
-                    System.err.println("Failed to delete calendar event during task deletion: " + e.getMessage());
+
+        if (task.getCalendarEventId() != null && !task.getCalendarEventId().isEmpty()) {
+            try {
+                // Find the project administrator to delete the event
+                UUID adminUserId = getAdminUserId(task.getProject());
+                if (adminUserId == null) {
+                    adminUserId = user.getId();
                 }
+
+                calendarService.deleteEvent(adminUserId, task.getCalendarEventId());
+                log.info("Deleted calendar event {} for task {}", task.getCalendarEventId(), task.getName());
+            } catch (Exception e) {
+                System.err.println("Failed to delete main calendar event during task deletion: " + e.getMessage());
             }
-        });
+        }
         
         // Save the task name for use in notifications
         String taskName = task.getName();
@@ -353,5 +362,29 @@ public class TaskService {
                 .collect(Collectors.toList());
         
         return tasks;
+    }
+    
+    /**
+     * Gets an admin user ID for calendar operations
+     * 
+     * @param project The project to get admin for
+     * @return User ID of a project manager or system admin
+     */
+    private UUID getAdminUserId(Project project) {
+        //First, we are looking for a Project Manager on the project
+        for (ProjectMember member : project.getMembers().values()) {
+            if (member.getRole() == ProjectUserRole.PM) {
+                return member.getUser().getId();
+            }
+        }
+        
+        // If there is no PM, look for a user with the ADMIN role among the project members
+        for (ProjectMember member : project.getMembers().values()) {
+            if (member.getUser().getGlobalRole() == GlobalRole.ADMIN) {
+                return member.getUser().getId();
+            }
+        }
+
+        return null;
     }
 }

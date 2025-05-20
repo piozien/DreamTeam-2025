@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.core.io.ResourceLoader;
 import tech.project.schedule.dto.calendar.EventDTO;
 
 import java.io.BufferedWriter;
@@ -29,10 +28,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -44,7 +42,6 @@ import java.util.UUID;
 public class GoogleCalendarService {
 
     private final OAuth2TokenService tokenService;
-    private final ResourceLoader resourceLoader;
     
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final Logger log = LoggerFactory.getLogger(GoogleCalendarService.class);
@@ -194,19 +191,33 @@ public class GoogleCalendarService {
                                ZonedDateTime end, String userEmail) throws IOException, GeneralSecurityException {
         Calendar service = getCalendarService(adminUserId);
         String calendarId = getTeamCalendarId(adminUserId);
+
+        ZonedDateTime warsawStart = start.withZoneSameInstant(ZoneId.of(TIMEZONE));
+        ZonedDateTime warsawEnd = end.withZoneSameInstant(ZoneId.of(TIMEZONE));
+        
+        log.info("Creating task event: {} from {} to {}", summary, warsawStart, warsawEnd);
+        
+        DateTime startDateTime = new DateTime(warsawStart.toInstant().toEpochMilli());
+        DateTime endDateTime = new DateTime(warsawEnd.toInstant().toEpochMilli());
+        
+        log.info("Start DateTime: {}, End DateTime: {}", startDateTime.toStringRfc3339(), endDateTime.toStringRfc3339());
         
         Event event = new Event()
             .setSummary(summary)
+            .setDescription("Zadanie z aplikacji DreamTeam")
             .setStart(new EventDateTime()
-                .setDateTime(new DateTime(start.toInstant().toEpochMilli()))
+                .setDateTime(startDateTime)
                 .setTimeZone(TIMEZONE))
             .setEnd(new EventDateTime()
-                .setDateTime(new DateTime(end.toInstant().toEpochMilli()))
-                .setTimeZone(TIMEZONE));
+                .setDateTime(endDateTime)
+                .setTimeZone(TIMEZONE))
+            .setVisibility("default")
+            .set("guestsCanSeeOtherGuests", true);
         
-        // Add the user as an attendee if specified
         if (userEmail != null && !userEmail.isEmpty()) {
-            EventAttendee attendee = new EventAttendee().setEmail(userEmail);
+            EventAttendee attendee = new EventAttendee()
+                .setEmail(userEmail);
+            
             event.setAttendees(Collections.singletonList(attendee));
         }
         
@@ -227,27 +238,37 @@ public class GoogleCalendarService {
             throws IOException, GeneralSecurityException {
         Calendar service = getCalendarService(adminUserId);
         String calendarId = getTeamCalendarId(adminUserId);
-        
-        // Get the current event
+
         Event event = service.events().get(calendarId, eventId).execute();
-        
-        // Add the new attendee
+
+        String normalizedUserEmail = userEmail.toLowerCase().trim();
+        log.info("Adding user {} to event {}", userEmail, eventId);
+
         List<EventAttendee> attendees = event.getAttendees();
         if (attendees == null) {
-            attendees = Collections.singletonList(new EventAttendee().setEmail(userEmail));
+            attendees = new ArrayList<>();
+            attendees.add(new EventAttendee()
+                .setEmail(userEmail));
         } else {
-            // Check if the user is already an attendee
             boolean isAlreadyAttendee = attendees.stream()
-                .anyMatch(a -> a.getEmail().equals(userEmail));
+                .anyMatch(a -> a.getEmail() != null && a.getEmail().toLowerCase().trim().equals(normalizedUserEmail));
                 
             if (!isAlreadyAttendee) {
-                attendees.add(new EventAttendee().setEmail(userEmail));
+                attendees.add(new EventAttendee()
+                    .setEmail(userEmail));
+            } else {
+                log.info("User {} is already an attendee of event {}", userEmail, eventId);
+
+                attendees.stream()
+                    .filter(a -> a.getEmail() != null && a.getEmail().toLowerCase().trim().equals(normalizedUserEmail))
+                    .findFirst()
+                    .ifPresent(a -> {
+                    });
             }
         }
-        
+
         event.setAttendees(attendees);
-        
-        // Update the event
+
         return service.events().update(calendarId, eventId, event).execute();
     }
     
