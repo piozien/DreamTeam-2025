@@ -87,6 +87,26 @@ public class GoogleCalendarController {
 
         return ResponseEntity.ok("Adjusted DateTime: " + adjustedDateTime);
     }
+    
+    /**
+     * Creates a dedicated DreamTeam calendar with Warsaw timezone.
+     * This is a one-time setup operation that should only be run once.
+     * The calendar ID will be saved in application.properties for future use.
+     *
+     * @return Response with the created calendar ID or error message
+     */
+    @PostMapping("/create-team-calendar")
+    public ResponseEntity<String> createTeamCalendar() {
+        try {
+            UUID userId = getCurrentUserId();
+            String calendarId = calendarService.createTeamCalendar(userId);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                   .body("Successfully created DreamTeam calendar with ID: " + calendarId);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                   .body("Failed to create team calendar: " + e.getMessage());
+        }
+    }
 
     /**
      * Updates an existing event in the user's Google Calendar.

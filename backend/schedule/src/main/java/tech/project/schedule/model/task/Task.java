@@ -60,6 +60,12 @@ public class Task {
      */
     @Column(name = "enddate")
     private LocalDateTime endDate;
+    
+    /**
+     * The ID of the Google Calendar event associated with this task.
+     */
+    @Column(name = "calendar_event_id", length = 1024)
+    private String calendarEventId;
 
     /**
      * The priority level of the task (e.g., CRITICAL, IMPORTANT, OPTIONAL).
