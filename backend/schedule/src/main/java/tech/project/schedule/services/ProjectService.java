@@ -127,9 +127,8 @@ public class ProjectService {
 
         Project savedProject = projectRepository.save(existingProject);
         
-        // Powiadom wszystkich członków projektu o aktualizacji
+        // All project members get notified about the update
         existingProject.getMembers().values().forEach(member -> {
-            // Nie powiadamiaj osoby aktualizującej
             if (!member.getUser().getId().equals(user.getId())) {
                 notificationHelper.notifyProjectMember(
                     member.getUser(),
@@ -171,7 +170,7 @@ public class ProjectService {
         
         projectRepository.deleteById(projectId);
         
-        // Powiadom wszystkich członków projektu o usunięciu
+        // All project members get notified about the project deletion.
         members.forEach(member -> {
             if (!member.getId().equals(user.getId())) {
                 notificationHelper.notifyProjectMember(
@@ -240,15 +239,15 @@ public class ProjectService {
         
         projectRepository.save(project);
         ProjectMember savedMember = project.getMembers().get(user.getId());
-        
-        // Powiadom dodanego użytkownika
+
+        // The user getting added gets notified
         notificationHelper.notifyProjectMember(
             user,
             NotificationStatus.PROJECT_MEMBER_ADDED,
             project.getName()
         );
         
-        // Powiadom administratora projektu o pomyślnym dodaniu
+        // The admin gets notified that the project member has been added successfully
         notificationHelper.notifyUser(
             principal,
             NotificationStatus.PROJECT_MEMBER_ADDED,

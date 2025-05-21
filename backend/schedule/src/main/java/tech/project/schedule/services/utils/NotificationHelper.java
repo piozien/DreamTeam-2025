@@ -32,7 +32,7 @@ public class NotificationHelper {
      * Sends a notification about a task to its assignee with predefined message formats.
      *
      * @param assignee The task assignee to notify
-     * @param status The type of notification 
+     * @param status The type of notification
      * @param taskName The name of the task
      * @return The created notification
      */
@@ -75,44 +75,5 @@ public class NotificationHelper {
         };
 
         return notifyUser(member, status, message);
-    }
-    
-    /**
-     * Sends an error notification to a user.
-     *
-     * @param user The user to notify about the error
-     * @param errorType Short description of the error type
-     * @param details Detailed information about what went wrong
-     * @return The created notification
-     */
-    public Notification notifyError(User user, String errorType, String details) {
-        String message = "Błąd: " + errorType + ". " + details;
-        return notifyUser(user, NotificationStatus.ERROR, message);
-    }
-    
-    /**
-     * Notifies a user about permission issues.
-     *
-     * @param user The user to notify
-     * @param resource The resource they tried to access
-     * @param action The action they tried to perform
-     * @return The created notification
-     */
-    public Notification notifyPermissionDenied(User user, String resource, String action) {
-        String message = "Brak uprawnień: nie możesz " + action + " dla " + resource;
-        return notifyUser(user, NotificationStatus.PERMISSION_DENIED, message);
-    }
-    
-    /**
-     * Sends a system notification to a user.
-     *
-     * @param user The user to notify
-     * @param title The notification title
-     * @param content The notification content
-     * @return The created notification
-     */
-    public Notification notifySystem(User user, String title, String content) {
-        String message = title + ": " + content;
-        return notifyUser(user, NotificationStatus.SYSTEM, message);
     }
 } 
