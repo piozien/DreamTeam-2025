@@ -80,22 +80,7 @@ public class OAuth2TokenService {
             return null;
         }
     }
-    
-    /**
-     * Updates the refresh token for a user following OAuth2 login.
-     * 
-     * @param userId User ID
-     * @param refreshToken The new refresh token
-     */
-    public void saveRefreshToken(UUID userId, String refreshToken) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException("User not found", org.springframework.http.HttpStatus.NOT_FOUND));
-        
-        user.setGoogleRefreshToken(refreshToken);
-        userRepository.save(user);
-        log.info("Saved refresh token for user {}", userId);
-    }
-    
+
     /**
      * Uses a refresh token to obtain a new access token from Google OAuth2 server.
      * 
@@ -132,19 +117,19 @@ public class OAuth2TokenService {
             throw new ApiException("Failed to refresh access token", org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Inner class for caching access tokens with their expiration time.
      */
     private static class CachedTokenInfo {
         private final String accessToken;
         private final Instant expiresAt;
-        
+
         public CachedTokenInfo(String accessToken, Instant expiresAt) {
             this.accessToken = accessToken;
             this.expiresAt = expiresAt;
         }
-        
+
         public boolean isExpired() {
             return Instant.now().isAfter(expiresAt);
         }

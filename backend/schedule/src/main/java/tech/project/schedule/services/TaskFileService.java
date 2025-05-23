@@ -68,88 +68,6 @@ public class TaskFileService {
     }
 
     /**
-     * Updates the file path for all files associated with a specific task.
-     * Only project managers and users assigned to the task can update files.
-     *
-     * @param taskId The ID of the task
-     * @param newFilePath The new file path to set
-     * @param user The user performing the update
-     * @throws ApiException if task not found or user lacks permission
-     */
-    @Transactional
-    public void updateFilePathByTaskId(UUID taskId, String newFilePath, User user) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
-                
-        if (PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)) {
-            throw new ApiException("You don't have permission to update files on this task", HttpStatus.FORBIDDEN);
-        }
-        
-        taskFileRepository.setFilePathByTaskId(taskId, newFilePath);
-    }
-
-    /**
-     * Updates the file path for a specific file attached to a task.
-     * Only project managers and users assigned to the task can update files.
-     *
-     * @param taskId The ID of the task
-     * @param fileId The ID of the file to update
-     * @param newFilePath The new file path to set
-     * @param user The user performing the update
-     * @throws ApiException if task or file not found, user lacks permission, or file doesn't belong to task
-     */
-    @Transactional
-    public void updateFilePath(UUID taskId, UUID fileId, String newFilePath, User user) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new ApiException("Task not found", HttpStatus.NOT_FOUND));
-                
-        TaskFile file = taskFileRepository.findById(fileId)
-                .orElseThrow(() -> new ApiException("File not found", HttpStatus.NOT_FOUND));
-                
-        if (!file.getTask().getId().equals(taskId)) {
-            throw new ApiException("File does not belong to this task", HttpStatus.BAD_REQUEST);
-        }
-        
-        if (PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId, user)) {
-            throw new ApiException("You don't have permission to update files on this task", HttpStatus.FORBIDDEN);
-        }
-        
-        taskFileRepository.setFilePathById(fileId, newFilePath);
-    }
-
-    /**
-     * Checks if a file with the specified path exists in the system.
-     *
-     * @param filePath The file path to check
-     * @return true if a file with this path exists, false otherwise
-     */
-    @Transactional
-    public boolean doesFileExist(String filePath) {
-        return taskFileRepository.existsByFilePath(filePath);
-    }
-
-    /**
-     * Deletes a task file by its file path.
-     * Only project managers and users assigned to the task can delete files.
-     *
-     * @param filePath The path of the file to delete
-     * @param taskId The ID of the task the file belongs to
-     * @param user The user attempting the deletion
-     * @throws ApiException if file not found or user lacks permission
-     */
-    @Transactional
-    public void deleteTaskFileByPath(String filePath, UUID taskId, User user) {
-        TaskFile taskFile = taskFileRepository.findByFilePath(filePath);
-        if(!doesFileExist(taskFile.getFilePath())){
-            throw new ApiException("TaskFile with task ID " + taskId + " not found", HttpStatus.NOT_FOUND);
-        }
-        if (PmAndAssigneeCheck.checkIfNotPmAndAssignee(taskId,user)) {
-            throw new ApiException("You dont have permission to delete files on this task");
-        }
-        taskFileRepository.delete(taskFile);
-    }
-
-    /**
      * Deletes a task file by its ID.
      * Only project managers and users assigned to the task can delete files.
      *
@@ -228,29 +146,4 @@ public class TaskFileService {
                 .orElseThrow(() -> new ApiException("File not found", HttpStatus.NOT_FOUND));
     }
 
-    /**
-     * Retrieves a file by its path.
-     * Only administrators can access files directly by path.
-     *
-     * @param filePath The path of the file to retrieve
-     * @param user The user requesting the file
-     * @return The requested TaskFile entity
-     * @throws ApiException if file not found, file path is null, or user lacks permission
-     */
-    @Transactional
-    public TaskFile getTaskFileByPath(String filePath, User user) {
-        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
-        if(filePath == null){
-            throw new ApiException("File path cannot be empty", HttpStatus.BAD_REQUEST);
-        }
-        TaskFile file = taskFileRepository.findByFilePath(filePath);
-        if(!doesFileExist(filePath)){
-            throw new ApiException("File with file path: " + filePath + " does not exist.", HttpStatus.NOT_FOUND);
-        }
-
-        if(!isAdmin){
-            throw new ApiException("You don't have permission to view files by path", HttpStatus.FORBIDDEN);
-        }
-        return file;
-    }
 }

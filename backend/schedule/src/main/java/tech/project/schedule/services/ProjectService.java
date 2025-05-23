@@ -162,7 +162,7 @@ public class ProjectService {
             throw new ApiException("You cannot delete this project", HttpStatus.FORBIDDEN);
         }
         
-        // Zapisz nazwę projektu i członków przed usunięciem
+        // Save project name and members before deletion
         String projectName = project.getName();
         List<User> members = project.getMembers().values().stream()
             .map(ProjectMember::getUser)

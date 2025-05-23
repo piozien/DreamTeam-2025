@@ -3,7 +3,6 @@ package tech.project.schedule.services.utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import tech.project.schedule.model.enums.NotificationStatus;
-import tech.project.schedule.model.notification.Notification;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.services.NotificationService;
 
@@ -20,23 +19,21 @@ public class NotificationHelper {
      * Sends a generic notification to a user.
      *
      * @param recipient The user to receive the notification
-     * @param status The type of notification
-     * @param message The notification message content
-     * @return The created notification entity
+     * @param status    The type of notification
+     * @param message   The notification message content
      */
-    public Notification notifyUser(User recipient, NotificationStatus status, String message) {
-        return notificationService.sendNotificationToUser(recipient.getId(), status, message);
+    public void notifyUser(User recipient, NotificationStatus status, String message) {
+        notificationService.sendNotificationToUser(recipient.getId(), status, message);
     }
 
     /**
      * Sends a notification about a task to its assignee with predefined message formats.
      *
      * @param assignee The task assignee to notify
-     * @param status The type of notification
+     * @param status   The type of notification
      * @param taskName The name of the task
-     * @return The created notification
      */
-    public Notification notifyTaskAssignee(User assignee, NotificationStatus status, String taskName) {
+    public void notifyTaskAssignee(User assignee, NotificationStatus status, String taskName) {
         String message = switch (status) {
             case TASK_ASSIGNEE_ADDED -> "Zostałeś dodany do zadania " + taskName;
             case TASK_UPDATED -> "Zadanie " + taskName + " zostało zaktualizowane";
@@ -54,18 +51,17 @@ public class NotificationHelper {
             default -> "Nastąpiła zmiana w zadaniu " + taskName;
         };
 
-        return notifyUser(assignee, status, message);
+        notifyUser(assignee, status, message);
     }
 
     /**
      * Notifies a project member about project changes with predefined message formats.
      *
-     * @param member The project member to notify
-     * @param status The type of notification
+     * @param member      The project member to notify
+     * @param status      The type of notification
      * @param projectName The name of the project
-     * @return The created notification
      */
-    public Notification notifyProjectMember(User member, NotificationStatus status, String projectName) {
+    public void notifyProjectMember(User member, NotificationStatus status, String projectName) {
         String message = switch (status) {
             case PROJECT_MEMBER_ADDED -> "Zostałeś dodany do projektu " + projectName;
             case PROJECT_UPDATED -> "Projekt " + projectName + " został zaktualizowany";
@@ -74,6 +70,6 @@ public class NotificationHelper {
             default -> "Nastąpiła zmiana w projekcie " + projectName;
         };
 
-        return notifyUser(member, status, message);
+        notifyUser(member, status, message);
     }
-} 
+}

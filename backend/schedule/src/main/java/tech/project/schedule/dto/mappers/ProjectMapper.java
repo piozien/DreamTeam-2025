@@ -2,7 +2,6 @@ package tech.project.schedule.dto.mappers;
 
 import tech.project.schedule.dto.project.ProjectDTO;
 import tech.project.schedule.dto.project.ProjectMemberDTO;
-import tech.project.schedule.dto.project.ProjectUpdateDTO;
 import tech.project.schedule.model.project.Project;
 import tech.project.schedule.model.project.ProjectMember;
 
@@ -38,28 +37,7 @@ public class ProjectMapper {
         return project;
     }
 
-      /**
-     * Converts a ProjectUpdateDTO to a Project entity.
-     * 
-     * @param dto The ProjectUpdateDTO to convert
-     * @return A new Project entity with properties set from the update DTO
-     */
-    public static Project updateDtoToProject(ProjectUpdateDTO dto) {
-        Project project = new Project();
-        
-        if (dto.id() != null) {
-            project.setId(dto.id());
-        }
-        project.setName(dto.name());
-        project.setDescription(dto.description());
-        project.setStartDate(dto.startDate());
-        project.setEndDate(dto.endDate());
-        project.setProjectStatus(dto.projectStatus());
-        
-        return project;
-    }
-
-     /**
+    /**
      * Converts a Project entity to a ProjectDTO.
      * Also handles conversion of associated members and task IDs.
      * 

@@ -41,7 +41,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public Notification sendNotificationToUser(UUID userId, NotificationStatus status, String message) {
+    public void sendNotificationToUser(UUID userId, NotificationStatus status, String message) {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new ApiException("User not found", HttpStatus.NOT_FOUND)
         );
@@ -53,7 +53,6 @@ public class NotificationService {
                 .build();
         Notification savedNotification = notificationRepository.save(notification);
         sendNotification(user.getId(), savedNotification);
-        return savedNotification;
     }
 
     @Transactional
