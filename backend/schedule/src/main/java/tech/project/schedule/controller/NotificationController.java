@@ -16,7 +16,11 @@ import tech.project.schedule.utils.UserUtils;
 import java.util.List;
 import java.util.UUID;
 
-
+/**
+ * REST controller managing user notifications.
+ * Provides endpoints for retrieving, updating, and deleting notifications
+ * with appropriate authorization checks for user-specific operations.
+ */
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
@@ -25,6 +29,14 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final UserRepository userRepository;
 
+    /**
+     * Retrieves notifications for a specific user.
+     * Validates that the requesting user is authorized to view these notifications.
+     * 
+     * @param userId ID of the user whose notifications to retrieve
+     * @param authenticatedUserId ID of the user making the request
+     * @return List of notifications as DTOs
+     */
     @GetMapping("")
     public ResponseEntity<List<NotificationDTO>> getUserNotifications(
             @RequestParam UUID userId,
@@ -37,6 +49,13 @@ public class NotificationController {
         return ResponseEntity.ok(NotificationMapper.notificationToDtoList(notifications));
     }
 
+     /**
+     * Marks a specific notification as read.
+     * 
+     * @param notificationId ID of the notification to mark as read
+     * @param userId ID of the user making the request
+     * @return The updated notification as DTO
+     */
     @PutMapping("/{notificationId}")
     public ResponseEntity<NotificationDTO> markNotificationAsRead(
             @PathVariable UUID notificationId,
@@ -49,6 +68,12 @@ public class NotificationController {
         return ResponseEntity.ok(NotificationMapper.notificationToDto(notification));
     }
 
+    /**
+     * Marks all notifications for a user as read.
+     * 
+     * @param userId ID of the user making the request
+     * @return List of updated notifications as DTOs
+     */
     @PutMapping("/read-all")
     public ResponseEntity<List<NotificationDTO>> markAllNotificationsAsRead(
             @RequestParam UUID userId) {
@@ -60,6 +85,13 @@ public class NotificationController {
         return ResponseEntity.ok(NotificationMapper.notificationToDtoList(notifications));
     }
 
+    /**
+     * Deletes a specific notification.
+     * 
+     * @param notificationId ID of the notification to delete
+     * @param userId ID of the user making the request
+     * @return Empty response with 204 No Content status
+     */
     @DeleteMapping("/{notificationId}")
     public ResponseEntity<String> deleteNotification(
             @PathVariable UUID notificationId,
@@ -72,6 +104,12 @@ public class NotificationController {
         return ResponseEntity.noContent().build();
     }
 
+     /**
+     * Deletes all notifications for a user.
+     * 
+     * @param userId ID of the user making the request
+     * @return Empty response with 204 No Content status
+     */
     @DeleteMapping("/all")
     public ResponseEntity<String> deleteAllNotifications(
             @RequestParam UUID userId) {
