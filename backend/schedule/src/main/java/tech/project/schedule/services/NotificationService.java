@@ -19,6 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Service for managing user notifications throughout the application.
+ * Handles both persistence of notifications in the database and real-time
+ * delivery to users via WebSockets. Provides methods for creating, reading,
+ * updating, and deleting notifications with appropriate permission checks.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -27,6 +33,14 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
+      /**
+     * Sends a notification to a user via WebSocket.
+     * Converts notification entity to a simplified payload format and
+     * delivers it to the user's specific notification queue.
+     * 
+     * @param userId ID of the user to receive the notification
+     * @param notification The notification entity to send
+     */
     @Transactional
     public void sendNotification(UUID userId, Notification notification) {
         Map<String, Object> payload = new HashMap<>();
@@ -40,6 +54,15 @@ public class NotificationService {
         messagingTemplate.convertAndSend(destination, payload);
     }
 
+     /**
+     * Creates and sends a notification to a specific user.
+     * Persists the notification in the database and delivers it
+     * via WebSocket if the user is currently connected.
+     * 
+     * @param userId ID of the user to receive the notification
+     * @param status The type of notification being sent
+     * @param message The content of the notification
+     */
     @Transactional
     public void sendNotificationToUser(UUID userId, NotificationStatus status, String message) {
         User user = userRepository.findById(userId).orElseThrow(
@@ -55,6 +78,14 @@ public class NotificationService {
         sendNotification(user.getId(), savedNotification);
     }
 
+    /**
+     * Retrieves all notifications for a specific user.
+     * Only the user themselves or an admin can access a user's notifications.
+     * 
+     * @param currUserId ID of the user whose notifications to retrieve
+     * @param authenticatedUser The user making the request
+     * @return List of notifications for the specified user
+     */
     @Transactional
     public List<Notification> getUserNotifications(UUID currUserId, User authenticatedUser) {
         boolean isAdmin = authenticatedUser.getGlobalRole() == GlobalRole.ADMIN;
@@ -68,6 +99,14 @@ public class NotificationService {
         return notificationRepository.findByUser(currUser);
     }
 
+     /**
+     * Marks a specific notification as read.
+     * Only the notification recipient can mark it as read.
+     * 
+     * @param user The user performing the action
+     * @param notificationId ID of the notification to mark as read
+     * @return The updated notification entity
+     */
     @Transactional
     public Notification markNotificationAsRead(User user, UUID notificationId) {
         Notification notification = notificationRepository.findById(notificationId).orElseThrow(
@@ -81,6 +120,12 @@ public class NotificationService {
         return notification;
     }
 
+    /**
+     * Marks all of a user's notifications as read.
+     * 
+     * @param user The user whose notifications to mark as read
+     * @return List of updated notification entities
+     */
     @Transactional
     public List<Notification> markAllNotificationsAsRead(User user) {
         List<Notification> notifications = notificationRepository.findByUser(user);
@@ -93,6 +138,13 @@ public class NotificationService {
         return notificationRepository.saveAll(notifications);
     }
 
+     /**
+     * Deletes a specific notification.
+     * Only the notification recipient or an admin can delete a notification.
+     * 
+     * @param user The user performing the deletion
+     * @param notificationId ID of the notification to delete
+     */
     @Transactional
     public void deleteNotification(User user, UUID notificationId){
         boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
@@ -105,6 +157,12 @@ public class NotificationService {
         notificationRepository.delete(notification);
     }
 
+    /**
+     * Deletes all notifications for a user.
+     * Only the user themselves or an admin can delete a user's notifications.
+     * 
+     * @param user The user whose notifications to delete
+     */
     @Transactional
     public void deleteAllNotifications(User user) {
         boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
