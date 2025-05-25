@@ -72,6 +72,16 @@ export class EditTaskComponent implements OnInit {
   originalEndDate: Date | null = null;
   minStartDate: Date | null = null;
   
+  // Time selection for 24-hour format
+  hours: string[] = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+  minutes: string[] = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+  
+  // Individual time components
+  startHour: string = '09';
+  startMinute: string = '00';
+  endHour: string = '17';
+  endMinute: string = '00';
+  
   // Time strings (HH:MM format)
   startTimeString: string = '09:00'; // Default start time
   endTimeString: string = '17:00';   // Default end time
@@ -245,26 +255,61 @@ export class EditTaskComponent implements OnInit {
   }
   
   /**
-   * Handle changes to the start time input
+   * Handle changes to time pickers
    */
-  onStartTimeChange(): void {
-    // Get the current time value from the form
-    const timeString = this.taskForm.get('startTime')?.value;
-    if (timeString) {
-      this.startTimeString = timeString;
-      console.log('Updated start time to:', this.startTimeString);
+  onTimeChange(type: 'start' | 'end'): void {
+    if (type === 'start') {
+      this.startTimeString = `${this.startHour}:${this.startMinute}`;
+      this.taskForm.get('startTime')?.setValue(this.startTimeString);
+      this.updateStartDateTime();
+    } else {
+      this.endTimeString = `${this.endHour}:${this.endMinute}`;
+      this.taskForm.get('endTime')?.setValue(this.endTimeString);
+      this.updateEndDateTime();
     }
   }
   
   /**
-   * Handle changes to the end time input
+   * Updates the start date and time in internal model
    */
-  onEndTimeChange(): void {
-    // Get the current time value from the form
-    const timeString = this.taskForm.get('endTime')?.value;
-    if (timeString) {
-      this.endTimeString = timeString;
-      console.log('Updated end time to:', this.endTimeString);
+  updateStartDateTime(): void {
+    // This method ensures the form time changes are applied to the task model
+    const startDate = this.taskForm.get('startDate')?.value;
+    if (startDate) {
+      console.log('Updating start date/time with:', this.startTimeString);
+    }
+  }
+  
+  /**
+   * Updates the end date and time in internal model
+   */
+  updateEndDateTime(): void {
+    // This method ensures the form time changes are applied to the task model
+    const endDate = this.taskForm.get('endDate')?.value;
+    if (endDate) {
+      console.log('Updating end date/time with:', this.endTimeString);
+    }
+  }
+  
+  // Legacy method kept for compatibility
+  onStartTimeChange() {
+    const startTime = this.taskForm.get('startTime')?.value;
+    if (startTime) {
+      this.startTimeString = startTime;
+      const [hour, minute] = this.startTimeString.split(':');
+      this.startHour = hour;
+      this.startMinute = minute;
+    }
+  }
+  
+  // Legacy method kept for compatibility
+  onEndTimeChange() {
+    const endTime = this.taskForm.get('endTime')?.value;
+    if (endTime) {
+      this.endTimeString = endTime;
+      const [hour, minute] = this.endTimeString.split(':');
+      this.endHour = hour;
+      this.endMinute = minute;
     }
   }
   
@@ -1125,6 +1170,11 @@ export class EditTaskComponent implements OnInit {
         const timePart = dateTimeStr.split('T')[1];
         if (timePart) {
           startTime = timePart.substring(0, 5); // Get HH:MM part
+          // Update the time components for the new UI
+          const [hour, minute] = startTime.split(':');
+          this.startHour = hour;
+          this.startMinute = minute;
+          this.startTimeString = startTime;
         }
       }
     }
@@ -1134,7 +1184,7 @@ export class EditTaskComponent implements OnInit {
       const dateTimeStr = task.endDate;
       endDate = new Date(dateTimeStr);
       
-      // Store original end date for reference
+      // Store original end date for validation
       this.originalEndDate = new Date(dateTimeStr);
       
       // Extract time component if available
@@ -1142,6 +1192,11 @@ export class EditTaskComponent implements OnInit {
         const timePart = dateTimeStr.split('T')[1];
         if (timePart) {
           endTime = timePart.substring(0, 5); // Get HH:MM part
+          // Update the time components for the new UI
+          const [hour, minute] = endTime.split(':');
+          this.endHour = hour;
+          this.endMinute = minute;
+          this.endTimeString = endTime;
         }
       }
     }
@@ -1150,10 +1205,14 @@ export class EditTaskComponent implements OnInit {
       startDate: startDate,
       startTime: startTime,
       endDate: endDate,
-      endTime: endTime
+      endTime: endTime,
+      startHour: this.startHour,
+      startMinute: this.startMinute,
+      endHour: this.endHour,
+      endMinute: this.endMinute
     });
     
-    // Update form with all values including time
+    // Update the form with all values including date and time
     this.taskForm.patchValue({
       name: task.name,
       description: task.description,
@@ -1165,7 +1224,7 @@ export class EditTaskComponent implements OnInit {
       priority: task.priority
     });
     
-    // Store the time strings for later use
+    // Make sure time values are synchronized between form and component properties
     this.startTimeString = startTime;
     this.endTimeString = endTime;
     

@@ -68,6 +68,16 @@ export class TaskDialogComponent {
   // Track the original start date when editing to prevent choosing earlier dates
   originalStartDateObj: Date | null = null;
   
+  // Time selection for 24-hour format
+  hours: string[] = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+  minutes: string[] = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+  
+  // Individual time components
+  startHour: string = '09';
+  startMinute: string = '00';
+  endHour: string = '17';
+  endMinute: string = '00';
+  
   // Time strings for time inputs (HH:MM format)
   startTimeString: string = '09:00';
   endTimeString: string = '17:00';
@@ -185,6 +195,9 @@ export class TaskDialogComponent {
         const startTime = this.task.startDate.split('T')[1];
         if (startTime) {
           this.startTimeString = startTime.substring(0, 5); // Get HH:MM part
+          const [hour, minute] = this.startTimeString.split(':');
+          this.startHour = hour;
+          this.startMinute = minute;
         }
       }
       
@@ -194,6 +207,9 @@ export class TaskDialogComponent {
         const endTime = this.task.endDate.split('T')[1];
         if (endTime) {
           this.endTimeString = endTime.substring(0, 5); // Get HH:MM part
+          const [hour, minute] = this.endTimeString.split(':');
+          this.endHour = hour;
+          this.endMinute = minute;
         }
       }
     }
@@ -215,7 +231,18 @@ export class TaskDialogComponent {
     }
   }
   
-  // Handle changes to the start time picker
+  // Handle changes to time pickers
+  onTimeChange(type: 'start' | 'end'): void {
+    if (type === 'start') {
+      this.startTimeString = `${this.startHour}:${this.startMinute}`;
+      this.updateStartDateTime();
+    } else {
+      this.endTimeString = `${this.endHour}:${this.endMinute}`;
+      this.updateEndDateTime();
+    }
+  }
+  
+  // Legacy method kept for compatibility
   onStartTimeChange(): void {
     this.updateStartDateTime();
   }

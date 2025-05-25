@@ -33,6 +33,38 @@
     .time-field {
       flex: 1;
       min-width: 120px;
+      
+      .time-picker-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        
+        .time-field-container {
+          display: flex;
+          flex-direction: column;
+          width: 42%;
+          
+          .time-label {
+            font-size: 12px;
+            color: var(--text-color-light, #666);
+            margin-bottom: 4px;
+          }
+          
+          .time-select {
+            width: 100%;
+          }
+        }
+        
+        .time-separator {
+          font-weight: bold;
+          margin: 0 8px;
+          padding: 0 4px;
+          color: var(--text-color, #233142);
+          flex: 0 0 auto;
+          align-self: flex-end;
+          margin-bottom: 5px;
+        }
+      }
     }
   }
 }
