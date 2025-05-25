@@ -9,7 +9,7 @@ const adminGuard = () => {
 };
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'projects', pathMatch: 'full' },
+  { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
   { 
     path: 'projects', 
     loadComponent: () => import('./features/project-panel/components/project-panel.component').then(m => m.ProjectPanelComponent)
@@ -43,5 +43,5 @@ export const routes: Routes = [
     loadComponent: () => import('./features/admin/admin-panel.component').then(m => m.AdminPanelComponent),
     canMatch: [adminGuard]
   },
-  { path: '**', redirectTo: 'projects' }
+  { path: '**', redirectTo: 'auth/login' }
 ];
