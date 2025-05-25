@@ -146,7 +146,9 @@ export class AuthService {
   }
 
   setPassword(request: SetPasswordRequest): Observable<string> {
-    return this.http.post<string>(`${this.apiUrl}/set-password`, request);
+    return this.http.post(`${this.apiUrl}/set-password`, request, {
+      responseType: 'text'
+    });
   }
 
   logout(): void {

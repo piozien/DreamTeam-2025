@@ -26,12 +26,22 @@
             <!-- Notification Center -->
             <app-notification-center></app-notification-center>
             
-            <span class="user-info me-2" *ngIf="currentUser">
-              <mat-icon>person</mat-icon> {{ currentUser.name }}
-            </span>
-            <button mat-button (click)="logout()" class="logout-btn">
-              <mat-icon class="me-1">logout</mat-icon> Wyloguj
+            <!-- User Profile Menu -->
+            <button mat-button [matMenuTriggerFor]="profileMenu" class="user-menu-btn" *ngIf="currentUser">
+              <mat-icon>account_circle</mat-icon>
+              <span class="user-name">{{ currentUser.name }}</span>
             </button>
+            
+            <mat-menu #profileMenu="matMenu" xPosition="before">
+              <a mat-menu-item routerLink="/auth/change-password">
+                <mat-icon>vpn_key</mat-icon>
+                <span>Zmień hasło</span>
+              </a>
+              <button mat-menu-item (click)="logout()">
+                <mat-icon>logout</mat-icon>
+                <span>Wyloguj</span>
+              </button>
+            </mat-menu>
           </ng-container>
         </div>
     </div>

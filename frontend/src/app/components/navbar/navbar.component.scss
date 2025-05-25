@@ -34,15 +34,30 @@
   gap: 8px; // Add spacing between items
 }
 
-.user-info {
+.user-menu-btn {
   display: flex;
   align-items: center;
-  color: var(--text-color-on-dark);
-  margin-right: 0.5rem;
-}
-
-.logout-btn {
-  color: var(--text-color-on-dark);
+  color: var(--text-color-on-dark, white);
+  margin-left: 0.5rem;
+  padding: 0 8px;
+  height: 36px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .mat-icon {
+    margin-right: 4px;
+  }
+  
+  .user-name {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .active {

@@ -39,6 +39,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/oauth-callback/oauth-callback.component').then(m => m.OAuthCallbackComponent)
   },
   {
+    path: 'auth/change-password',
+    loadComponent: () => import('./features/auth/change-password/change-password.component').then(m => m.ChangePasswordComponent)
+  },
+  {
     path: 'admin',
     loadComponent: () => import('./features/admin/admin-panel.component').then(m => m.AdminPanelComponent),
     canMatch: [adminGuard]

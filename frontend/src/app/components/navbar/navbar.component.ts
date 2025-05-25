@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
 import { inject } from '@angular/core';
 import { AuthService } from '../../shared/services/auth.service';
 import { User } from '../../shared/models/user.model';
@@ -24,6 +25,7 @@ import { Subscription } from 'rxjs';
     MatIconModule,
     MatToolbarModule,
     MatButtonModule,
+    MatMenuModule,
     NotificationCenterComponent
   ]
 })
