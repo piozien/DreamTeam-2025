@@ -44,23 +44,16 @@ public class TaskAssigneeService {
     private final GoogleCalendarService calendarService;
 
     /**
-     * Creates a calendar event for a task.
+     * Creates a calendar event for a task using the service account.
      * If the task doesn't have an associated event yet, a new one is created.
-     * Otherwise, the user is added as an attendee to the existing event.
+     * Otherwise, the user is added to the event description.
      * 
      * @param task The task to create an event for
-     * @param user The user to create the event for or add as attendee
+     * @param user The user to create the event for or add to description
      * @return The ID of the created or updated calendar event
      */
     private String createOrUpdateCalendarEvent(Task task, User user) {
         try {
-            // Get project admin or system admin user ID to manage the calendar
-            UUID adminUserId = getAdminUserId(task.getProject());
-            if (adminUserId == null) {
-                // Fallback to current user if no admin found
-                adminUserId = user.getId(); 
-            }
-            
             // Convert task dates to ZonedDateTime
             LocalDateTime startDateTime = task.getStartDate();
             LocalDateTime endDateTime = task.getEndDate() != null ? 
@@ -72,31 +65,32 @@ public class TaskAssigneeService {
             
             // Check if task already has an event
             if (task.getCalendarEventId() == null || task.getCalendarEventId().isEmpty()) {
-                // Create new event for the task
+                // Create new event for the task using service account
                 String eventSummary = task.getName() + " (" + task.getProject().getName() + ")"; 
-                Event event = calendarService.createTaskEvent(
-                    adminUserId, 
+                
+                Event event = calendarService.createTaskEventWithServiceAccount(
                     eventSummary,
                     startZoned,
                     endZoned,
-                    user.getEmail()
+                    user.getEmail(),
+                    user.getFirstName() + " " + user.getLastName()
                 );
                 
                 // Save event ID to task
                 task.setCalendarEventId(event.getId());
                 return event.getId();
             } else {
-                // Add user as attendee to existing event
-                Event updatedEvent = calendarService.addAttendeeToEvent(
-                    adminUserId,
+                // Add user to the event description
+                Event updatedEvent = calendarService.updateEventDescriptionWithAssignee(
                     task.getCalendarEventId(),
-                    user.getEmail()
+                    user.getEmail(),
+                    user.getFirstName() + " " + user.getLastName()
                 );
                 return updatedEvent.getId();
             }
         } catch (Exception e) {
             // Log error but don't fail the assignment
-            System.err.println("Failed to manage calendar event: " + e.getMessage());
+            log.error("Failed to manage calendar event with service account: {}", e.getMessage());
             return null;
         }
     }
@@ -206,23 +200,17 @@ public class TaskAssigneeService {
                 .findFirst()
                 .orElseThrow(() -> new ApiException("Assignee not found", HttpStatus.NOT_FOUND));
         
-        // Remove user as attendee from calendar event
+        // Remove user from calendar event description using service account
         if (task.getCalendarEventId() != null) {
             try {
-                // Get an admin to perform the calendar operation
-                UUID adminUserId = getAdminUserId(task.getProject());
-                if (adminUserId == null) {
-                    adminUserId = currentUser.getId(); // Fallback to current user
-                }
-                
-                calendarService.removeAttendeeFromEvent(
-                    adminUserId,
+                calendarService.removeAssigneeFromEventDescription(
                     task.getCalendarEventId(),
                     assigneeToRemove.getUser().getEmail()
                 );
             } catch (Exception e) {
                 // Log error but don't fail the removal if calendar integration fails
-                System.err.println("Failed to remove user from calendar event: " + e.getMessage());
+                System.err.println("Failed to remove user from calendar event description with service account: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 

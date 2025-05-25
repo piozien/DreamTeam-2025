@@ -5,7 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ea44284-c0d1-4fbf-98bb-15b50503457c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/GoogleCalendarService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/GoogleCalendarService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskAssigneeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskAssigneeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/java/tech/project/schedule/services/TaskService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/schedule/src/main/resources/application.properties" afterDir="false" />
     </list>
     <list id="34ade4eb-b0f4-4a6a-a179-8c4f2a927fe1" name="Changes by tomci" comment="" />
     <list id="09b865cc-bab5-44d0-bb58-d68cb411adc5" name="Changes by zient" comment="" />
@@ -54,7 +60,7 @@
     &quot;Spring Boot.ScheduleApplication.executor&quot;: &quot;Run&quot;,
     &quot;git-widget-placeholder&quot;: &quot;connect-notif-calendar&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/bundam/Desktop/git_uwm/DreamTeam-2025/backend&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/uwm/rok3/semestr6/DreamTeam-2025/backend&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -67,6 +73,9 @@
   }
 }</component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\uwm\rok3\semestr6\DreamTeam-2025\backend" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\uwm\rok3\semestr6\DreamTeam-2025\backend\schedule\src\main\java\tech\project\schedule\services" />
       <recent name="C:\uwm\rok3\semestr6\DreamTeam-2025\backend\schedule\src\main\java\tech\project\schedule\model\enums" />
@@ -190,6 +199,8 @@
       <workItem from="1747581351136" duration="8167000" />
       <workItem from="1747644175959" duration="2983000" />
       <workItem from="1747737391047" duration="8243000" />
+      <workItem from="1748106159732" duration="1720000" />
+      <workItem from="1748165717113" duration="5492000" />
     </task>
     <servers />
   </component>

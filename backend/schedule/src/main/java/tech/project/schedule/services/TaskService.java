@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tech.project.schedule.dto.calendar.EventDTO;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.enums.GlobalRole;
 import tech.project.schedule.model.enums.NotificationStatus;
@@ -23,7 +22,8 @@ import tech.project.schedule.utils.UserUtils;
 import tech.project.schedule.repositories.TaskAssigneeRepository;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -154,35 +154,31 @@ public class TaskService {
 
         // Handle calendar events when task dates change
         boolean datesChanged = (updatedTask.getStartDate() != null || updatedTask.getEndDate() != null);
-        if (datesChanged) {
-            existingTask.getAssignees().forEach(assignee -> {
-                if (assignee.getCalendarEventId() != null) {
-                    try {
-                        // Create new event DTO with updated dates
-                        LocalDateTime startDateTime = existingTask.getStartDate();
-                        LocalDateTime endDateTime = existingTask.getEndDate() != null ? 
-                            existingTask.getEndDate():
-                            existingTask.getStartDate();
-
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy:HH:mm:ss");
-                        String startDateTimeStr = startDateTime.format(formatter);
-                        String endDateTimeStr = endDateTime.format(formatter);
-
-                        EventDTO eventDTO = new EventDTO(
-                            existingTask.getName(),
-                            "Task in project: " + existingTask.getProject().getName() + "\n" + existingTask.getDescription(),
-                            startDateTimeStr,
-                            endDateTimeStr,
-                            "Europe/Warsaw"
-                        );
-
-                        // Update the calendar event
-                        calendarService.updateEvent(assignee.getUser().getId(), assignee.getCalendarEventId(), eventDTO);
-                    } catch (Exception e) {
-                        System.err.println("Failed to update calendar event: " + e.getMessage());
-                    }
-                }
-            });
+        if (datesChanged && existingTask.getCalendarEventId() != null) {
+            try {
+                // Update the main calendar event for this task using service account
+                LocalDateTime startDateTime = existingTask.getStartDate();
+                LocalDateTime endDateTime = existingTask.getEndDate() != null ? 
+                    existingTask.getEndDate() :
+                    existingTask.getStartDate();
+                
+                ZonedDateTime startZoned = startDateTime.atZone(ZoneId.of("Europe/Warsaw"));
+                ZonedDateTime endZoned = endDateTime.atZone(ZoneId.of("Europe/Warsaw"));
+                
+                String summary = existingTask.getName() + " (" + existingTask.getProject().getName() + ")"; 
+                
+                // Get current event to preserve description with assignees
+                calendarService.updateEventWithServiceAccount(
+                    existingTask.getCalendarEventId(),
+                    summary,
+                    startZoned,
+                    endZoned
+                );
+                
+                log.info("Updated calendar event {} for task {}", existingTask.getCalendarEventId(), existingTask.getName());
+            } catch (Exception e) {
+                log.error("Failed to update calendar event: {}", e.getMessage());
+            }
         }
 
         if (updatedTask.getStatus() != null) {
@@ -199,17 +195,24 @@ public class TaskService {
             
             // Handle calendar events when task is completed
             if (!wasCompleted && isNowCompleted) {
-                // Remove calendar events for all assignees
-                existingTask.getAssignees().forEach(assignee -> {
-                    if (assignee.getCalendarEventId() != null) {
-                        try {
-                            calendarService.deleteEvent(assignee.getUser().getId(), assignee.getCalendarEventId());
+                // Remove calendar event for the task when it is completed
+                if (existingTask.getCalendarEventId() != null) {
+                    try {
+                        calendarService.deleteEventWithServiceAccount(existingTask.getCalendarEventId());
+                        existingTask.setCalendarEventId(null);
+                        
+                        // Clear calendar event IDs from all assignees
+                        existingTask.getAssignees().forEach(assignee -> {
                             assignee.setCalendarEventId(null);
                             taskAssigneeRepository.save(assignee);
-                        } catch (Exception e) {
-                            System.err.println("Failed to delete calendar event: " + e.getMessage());
-                        }
+                        });
+                    } catch (Exception e) {
+                        log.error("Failed to delete calendar event: {}", e.getMessage());
                     }
+                }
+                
+                // Notify all assignees
+                existingTask.getAssignees().forEach(assignee -> {
                     notificationHelper.notifyTaskAssignee(
                         assignee.getUser(),
                         NotificationStatus.TASK_COMPLETED,
@@ -258,16 +261,11 @@ public class TaskService {
 
         if (task.getCalendarEventId() != null && !task.getCalendarEventId().isEmpty()) {
             try {
-                // Find the project administrator to delete the event
-                UUID adminUserId = getAdminUserId(task.getProject());
-                if (adminUserId == null) {
-                    adminUserId = user.getId();
-                }
-
-                calendarService.deleteEvent(adminUserId, task.getCalendarEventId());
+                // Delete the event using service account
+                calendarService.deleteEventWithServiceAccount(task.getCalendarEventId());
                 log.info("Deleted calendar event {} for task {}", task.getCalendarEventId(), task.getName());
             } catch (Exception e) {
-                System.err.println("Failed to delete main calendar event during task deletion: " + e.getMessage());
+                log.error("Failed to delete main calendar event during task deletion: {}", e.getMessage());
             }
         }
         
