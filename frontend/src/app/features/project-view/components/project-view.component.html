@@ -165,13 +165,13 @@
                     <!-- Start Date Column -->
                     <ng-container matColumnDef="startDate">
                       <th mat-header-cell *matHeaderCellDef mat-sort-header> Data rozpoczęcia </th>
-                      <td mat-cell *matCellDef="let task"> {{task.startDate | date:'shortDate':'':'pl-PL'}} </td>
+                      <td mat-cell *matCellDef="let task"> {{task.startDate | date:'shortDate':'':'pl-PL'}} {{task.startDate | date:'HH:mm':'':'pl-PL'}} </td>
                     </ng-container>
                     
                     <!-- End Date Column -->
                     <ng-container matColumnDef="endDate">
                       <th mat-header-cell *matHeaderCellDef mat-sort-header> Data zakończenia </th>
-                      <td mat-cell *matCellDef="let task"> {{task.endDate ? (task.endDate | date:'shortDate':'':'pl-PL') : '—'}} </td>
+                      <td mat-cell *matCellDef="let task"> {{task.endDate ? (task.endDate | date:'shortDate':'':'pl-PL') + ' ' + (task.endDate | date:'HH:mm':'':'pl-PL') : '—'}} </td>
                     </ng-container>
                     
                     <!-- Assignees Column -->

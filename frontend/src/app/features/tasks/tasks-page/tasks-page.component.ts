@@ -174,12 +174,29 @@ export class TasksPageComponent implements OnInit {
   /**
    * Format date for display
    * @param dateInput Date string or Date object to format
-   * @returns Formatted date string
+   * @param includeTime Whether to include time in the formatted string
+   * @returns Formatted date and time string
    */
-  formatDate(dateInput: string | Date | undefined): string {
+  formatDate(dateInput: string | Date | undefined, includeTime: boolean = false): string {
     if (!dateInput) return 'Nie ustawiono';
     const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-    return date.toLocaleDateString('pl-PL');
+    
+    if (includeTime) {
+      // Format with date and time (24-hour format)
+      return date.toLocaleDateString('pl-PL') + ' ' + date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', hour12: false });
+    } else {
+      // Format with date only
+      return date.toLocaleDateString('pl-PL');
+    }
+  }
+  
+  /**
+   * Format date with time for display
+   * @param dateInput Date string or Date object to format
+   * @returns Formatted date and time string
+   */
+  formatDateTime(dateInput: string | Date | undefined): string {
+    return this.formatDate(dateInput, true);
   }
   
   /**

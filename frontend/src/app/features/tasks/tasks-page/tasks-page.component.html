@@ -98,11 +98,11 @@
       <div class="task-dates">
         <div class="date-item">
           <mat-icon>event</mat-icon>
-          <span>Start: {{ formatDate(task.startDate) }}</span>
+          <span>Start: {{ formatDateTime(task.startDate) }}</span>
         </div>
         <div class="date-item" *ngIf="task.endDate">
           <mat-icon>event_busy</mat-icon>
-          <span>Koniec: {{ formatDate(task.endDate) }}</span>
+          <span>Koniec: {{ formatDateTime(task.endDate) }}</span>
         </div>
       </div>
       
