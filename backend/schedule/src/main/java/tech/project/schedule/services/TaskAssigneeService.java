@@ -89,8 +89,6 @@ public class TaskAssigneeService {
                 return updatedEvent.getId();
             }
         } catch (Exception e) {
-            // Log error but don't fail the assignment
-            log.error("Failed to manage calendar event with service account: {}", e.getMessage());
             return null;
         }
     }
