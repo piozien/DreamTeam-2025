@@ -16,6 +16,7 @@ import tech.project.schedule.model.project.ProjectMember;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.user.User;
+import tech.project.schedule.repositories.UserRepository;
 import tech.project.schedule.services.utils.GetProjectRole;
 import tech.project.schedule.services.utils.NotificationHelper;
 import tech.project.schedule.utils.UserUtils;
@@ -44,7 +45,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final TaskAssigneeRepository taskAssigneeRepository;
-    private final tech.project.schedule.repositories.UserRepository userRepository;
+    private final UserRepository userRepository;
     private final NotificationHelper notificationHelper;
     private final GoogleCalendarService calendarService;
     

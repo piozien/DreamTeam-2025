@@ -165,14 +165,9 @@ public class NotificationService {
      */
     @Transactional
     public void deleteAllNotifications(User user) {
-        boolean isAdmin = user.getGlobalRole() == GlobalRole.ADMIN;
         List<Notification> notifications = notificationRepository.findByUser(user);
         if(notifications.isEmpty()) {
             throw new ApiException("No notifications found", HttpStatus.NOT_FOUND);
-        }
-        if(!isAdmin&&notifications.stream()
-                .anyMatch(notification -> notification.getUser().getId().equals(user.getId()))) {
-            throw new ApiException("You do not have permission to view notifications", HttpStatus.UNAUTHORIZED);
         }
         notificationRepository.deleteAll(notifications);
     }
