@@ -58,7 +58,8 @@ export class LoginComponent {
       next: () => {
         console.log('Login successful');
         this.isLoading = false;
-        this.router.navigate(['/']);
+        // Redirect to projects page after successful login
+        this.router.navigate(['/projects']);
       },
       error: (error) => {
         console.error('Login failed:', error);

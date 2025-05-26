@@ -51,8 +51,8 @@ export class OAuthCallbackComponent implements OnInit, OnDestroy {
         // Process the OAuth token using the modified service method
         // We don't need handleOAuthCallback anymore, just store the token
         this.authService.storeOAuthToken(token);
-        // Redirect to home page immediately
-        this.router.navigate(['/']); // Navigate to projects page
+        // Redirect to projects page after successful authentication
+        this.router.navigate(['/projects']);
       } else {
         // No token or error found, something went wrong
         this.errorMessage = 'Invalid callback state. Redirecting to login.';
