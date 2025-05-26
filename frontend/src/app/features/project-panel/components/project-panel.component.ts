@@ -17,7 +17,7 @@ import { WebSocketService } from '../../../shared/services/websocket.service';
 import { ProjectDialogComponent } from './project-dialog/project-dialog.component';
 import { Subscription, Observable, forkJoin, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr';
+import { ToastNotificationService } from '../../../shared/services/toast-notification.service';
 import { AuthService } from '../../../shared/services/auth.service';
 
 
@@ -71,7 +71,7 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
     private projectService: ProjectService,
     private router: Router,
     private dialog: MatDialog,
-    private toastService: ToastrService,
+    private toastService: ToastNotificationService,
     private websocketService: WebSocketService,
     private authService: AuthService
   ) {}
@@ -95,28 +95,15 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
       this.websocketService.notifications$.subscribe(notification => {
         console.log('Received notification in project panel:', notification);
         
-        // Handle project-related notifications
+        // Instead of handling notifications here, navbar component now handles all toasts
+        // Just handle actions like refreshing lists
         if (notification && notification.status) {
+          // Project-related notifications
           switch(notification.status) {
             case 'PROJECT_CREATED':
-              // Show toast notification for project creation
-              this.toastService.success(notification.message || 'Projekt został utworzony');
-              break;
-              
             case 'PROJECT_UPDATED':
-              this.toastService.info(notification.message || 'Projekt został zaktualizowany');
-              break;
-              
-            case 'PROJECT_MEMBER_ADDED':
-              this.toastService.info(notification.message || 'Dodano użytkownika do projektu');
-              break;
-              
-            case 'PROJECT_MEMBER_REMOVED':
-              this.toastService.info(notification.message || 'Usunięto użytkownika z projektu');
-              break;
-              
             case 'PROJECT_DELETED':
-              this.toastService.warning(notification.message || 'Projekt został usunięty');
+              this.loadProjects(); // Refresh projects list
               break;
           }
         }
@@ -128,15 +115,11 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
 
-    this.toastService.clear();
     this.subscription.add(
       this.projectService.getProjects().subscribe({
         next: (projects) => {
           console.log('Projects loaded successfully:', projects.length);
           this.projects = projects || [];
-          // We'll show a success message here but loading will be set to false
-          // after categorizeProjects() completes
-          this.toastService.success('Projekty zostały pomyślnie załadowane.');
           
           // Start categorizing projects, which sets its own loading state
           this.categorizeProjects();
@@ -153,12 +136,12 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
           // Check if this is an authentication error
           if (error && error.message === 'AUTHENTICATION_REQUIRED') {
             this.error = 'Wymagane zalogowanie się do systemu.';
-            this.toastService.error('Wymagane zalogowanie. Zaloguj się, aby kontynuować.');
+            // Error will be set in the UI without toast notification
             // Redirect to login page once, not in a loop
             this.router.navigate(['/auth/login']);
           } else {
             this.error = 'Wystąpił błąd podczas ładowania projektów.';
-            this.toastService.error('Wystąpił błąd podczas ładowania projektów.');
+            // Error will be set in the UI without toast notification
           }
         }
       })
@@ -297,24 +280,25 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
       endDate: projectData.endDate
     };
 
-    console.log('Final project object being sent:', newProject);
-    console.log('End date type:', typeof newProject.endDate);
-    console.log('End date value:', newProject.endDate);
-
     this.subscription.add(
       this.projectService.createProject(newProject).subscribe({
         next: (project) => {
           this.projects.push(project);
           this.categorizeProjects(); // Recategorize projects
-          this.selectProject(project);
+          
+          // Add a delay before navigation to allow toast to be seen
+          setTimeout(() => {
+            this.selectProject(project);
+          }, 1500); // 1.5 second delay
           this.isCreating = false;
-          // Toast will come from the WebSocket notification
+          // No toast here - will be handled by WebSocket notification
         },
         error: (error) => {
           console.error('Error creating project:', error);
           this.error = 'Wystąpił błąd podczas tworzenia projektu.';
           this.isCreating = false;
-          this.toastService.error('Wystąpił błąd podczas tworzenia projektu.');
+          
+          // Error will be set in the UI without toast notification
         }
       })
     );
@@ -338,13 +322,14 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
           }
           this.categorizeProjects(); // Recategorize projects
           this.loading = false;
-          this.toastService.success('Projekt został zaktualizowany');
+          // No toast here - will be handled by WebSocket notification
         },
         error: (error) => {
           console.error('Error updating project:', error);
           this.error = 'Wystąpił błąd podczas aktualizacji projektu.';
           this.loading = false;
-          this.toastService.error('Wystąpił błąd podczas aktualizacji projektu.');
+          
+          // Error will be set in the UI without toast notification
         }
       })
     );
@@ -362,12 +347,14 @@ export class ProjectPanelComponent implements OnInit, OnDestroy {
             // Update categorized projects
             this.categorizeProjects();
             this.loading = false;
-            this.toastService.success('Projekt został usunięty');
+            // No toast here - will be handled by WebSocket notification
           },
           error: (error) => {
             console.error('Error deleting project:', error);
             this.error = 'Wystąpił błąd podczas usuwania projektu.';
             this.loading = false;
+            
+            // Error will be set in the UI without toast notification
           }
         })
       );
