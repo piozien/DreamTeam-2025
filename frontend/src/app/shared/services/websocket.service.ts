@@ -59,17 +59,21 @@ export class WebSocketService {
    */
   private async setupWebSocket(): Promise<void> {
     try {
+      console.log('Setting up WebSocket connection...');
       // Only load libraries if they haven't been loaded yet
       if (!this.SockJS || !this.Stomp) {
+        console.log('Loading WebSocket libraries...');
         // Dynamically import the required libraries
         const sockjsModule = await import('sockjs-client');
         const stompModule = await import('stompjs');
         
         this.SockJS = sockjsModule.default;
         this.Stomp = stompModule;
+        console.log('WebSocket libraries loaded');
       }
       
       // Now initialize the connection
+      console.log('Initializing WebSocket connection...');
       this.initWebSocket();
     } catch (error) {
       console.error('Error setting up WebSocket:', error);
@@ -82,7 +86,10 @@ export class WebSocketService {
    */
   private initWebSocket(): void {
     // Safety check
-    if (!this.SockJS || !this.Stomp || !this.isBrowser) return;
+    if (!this.SockJS || !this.Stomp || !this.isBrowser) {
+      console.error('WebSocket initialization failed: Missing dependencies or not in browser');
+      return;
+    }
     
     // Disconnect existing connection if any
     this.disconnectWebSocket();
@@ -96,44 +103,76 @@ export class WebSocketService {
         return;
       }
       
+      console.log('Creating new WebSocket connection...');
       const ws = new this.SockJS('http://localhost:8080/ws');
       this.socketClient = this.Stomp.over(ws);
       
       // Prevent debug logs from Stomp
-      this.socketClient.debug = null;
+      this.socketClient.debug = (message: string) => {
+        // Only log WebSocket messages at debug level
+        console.debug('[WebSocket]', message);
+      };
       
+      console.log('Connecting to WebSocket server...');
       // Connect with headers
       this.socketClient.connect(
-        { 'Authorization': `Bearer ${token}` }, 
+        { 
+          'Authorization': `Bearer ${token}`,
+          'X-UserId': userId // Add user ID to headers for debugging
+        }, 
         () => {
-          console.log('Connected to WebSocket');
+          console.log('Successfully connected to WebSocket server');
           this.connectedSubject.next(true);
           
           // Subscribe to notifications - use the correct destination format
           const destination = `/user/${userId}/queue/notifications`;
-          console.log(`Subscribing to: ${destination}`);
+          console.log(`Subscribing to notifications at: ${destination}`);
           
           this.notificationSubscription = this.socketClient.subscribe(
             destination,
             (message: any) => {
-              console.log('Received notification (raw):', message.body);
+              console.log('Received raw WebSocket message:', message);
               try {
                 const notification = JSON.parse(message.body);
-                console.log('Parsed notification:', notification);
+                console.log('Successfully parsed notification:', notification);
                 // Emit notification through subject
                 this.notificationSubject.next(notification);
               } catch (e) {
-                console.error('Error parsing notification:', e);
+                console.error('Error parsing notification:', e, 'Raw message:', message);
               }
-            }
+            },
+            { 'durable': false, 'auto-delete': true, 'exclusive': false }
           );
+          
+          console.log('Successfully subscribed to notifications');
         }, 
         (error: any) => {
-          console.error('Error connecting to WebSocket:', error);
+          console.error('Error connecting to WebSocket server:', error);
           this.socketClient = null;
           this.connectedSubject.next(false);
+          
+          // Try to reconnect after a delay
+          console.log('Will attempt to reconnect in 5 seconds...');
+          setTimeout(() => this.setupWebSocket(), 5000);
         }
       );
+      
+      // Handle WebSocket errors
+      ws.onerror = (error: Event) => {
+        console.error('WebSocket error:', error);
+        this.connectedSubject.next(false);
+      };
+      
+      ws.onclose = (event: CloseEvent) => {
+        console.log('WebSocket connection closed:', event);
+        this.connectedSubject.next(false);
+        
+        // Try to reconnect if this wasn't an intentional disconnect
+        if (this.socketClient) {
+          console.log('WebSocket connection lost. Attempting to reconnect...');
+          setTimeout(() => this.setupWebSocket(), 5000);
+        }
+      };
     } catch (error) {
       console.error('Error initializing WebSocket:', error);
       this.socketClient = null;

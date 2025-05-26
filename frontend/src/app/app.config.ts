@@ -23,7 +23,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideAnimations(),
     provideToastr({
-      timeOut: 5000,
+      timeOut: 6000,
       positionClass: 'toast-top-right',
       preventDuplicates: true,
       closeButton: true,
@@ -31,7 +31,15 @@ export const appConfig: ApplicationConfig = {
       tapToDismiss: true,
       enableHtml: false,
       easeTime: 300,
-      newestOnTop: true
+      newestOnTop: true,
+      resetTimeoutOnDuplicate: true,
+      disableTimeOut: false,
+      extendedTimeOut: 2000,
+      maxOpened: 5,
+      autoDismiss: false,
+      toastClass: 'ngx-toastr',
+      // Critical setting that allows toasts to persist during navigation
+      onActivateTick: true
     }),
     HelloService,
     AuthService,

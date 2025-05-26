@@ -13,6 +13,8 @@ import { WebSocketService } from '../../shared/services/websocket.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { NotificationCenterComponent } from '../notification-center/notification-center.component';
 import { Subscription } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+import { ToastNotificationService } from '../../shared/services/toast-notification.service';
 
 @Component({
   selector: 'app-navbar',
@@ -33,6 +35,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private webSocketService = inject(WebSocketService);
   private notificationService = inject(NotificationService);
+  private toastService = inject(ToastrService);
+  private toastNotificationService = inject(ToastNotificationService);
   private router = inject(Router);
   private isBrowser: boolean;
   private subscriptions: Subscription[] = [];
@@ -75,6 +79,57 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.isSocketConnected = connected;
       })
     );
+    
+    // Subscribe to WebSocket notifications
+    this.subscriptions.push(
+      this.webSocketService.notifications$.subscribe(notification => {
+        console.log('Received notification in navbar:', notification);
+        
+        // Refresh notifications list
+        this.notificationService.getNotifications().subscribe();
+        
+        // Show toast notification
+        const toastNotification = this.toastNotificationService.processWebSocketNotification(notification);
+        if (toastNotification) {
+          switch (toastNotification.type) {
+            case 'success':
+              this.toastService.success(toastNotification.message, toastNotification.title);
+              break;
+            case 'error':
+              this.toastService.error(toastNotification.message, toastNotification.title);
+              break;
+            case 'info':
+              this.toastService.info(toastNotification.message, toastNotification.title);
+              break;
+            case 'warning':
+              this.toastService.warning(toastNotification.message, toastNotification.title);
+              break;
+          }
+        }
+      })
+    );
+    
+    // Subscribe to direct toast notifications
+    this.subscriptions.push(
+      this.toastNotificationService.toast$.subscribe(notification => {
+        if (notification) {
+          switch (notification.type) {
+            case 'success':
+              this.toastService.success(notification.message, notification.title);
+              break;
+            case 'error':
+              this.toastService.error(notification.message, notification.title);
+              break;
+            case 'info':
+              this.toastService.info(notification.message, notification.title);
+              break;
+            case 'warning':
+              this.toastService.warning(notification.message, notification.title);
+              break;
+          }
+        }
+      })
+    );
   }
   
   ngOnDestroy(): void {
@@ -86,5 +141,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.webSocketService.disconnect();
     this.authService.logout();
     this.router.navigate(['/auth/login']);
+    this.toastService.clear();
   }
 }

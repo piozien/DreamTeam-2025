@@ -10,7 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../shared/services/auth.service';
 import { SetPasswordRequest } from '../../../shared/dtos/auth/set-password-request.dto';
-import { ToastrService } from 'ngx-toastr';
+import { ToastNotificationService } from '../../../shared/services/toast-notification.service';
 
 @Component({
   selector: 'app-change-password',
@@ -40,7 +40,7 @@ export class ChangePasswordComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastNotificationService
   ) {}
   
   ngOnInit(): void {
@@ -96,13 +96,13 @@ export class ChangePasswordComponent implements OnInit {
     this.authService.setPassword(request).subscribe({
       next: () => {
         this.loading = false;
-        this.toastr.success('Hasło zostało zmienione pomyślnie');
+        // Success will be handled in the UI without toast notification
         this.router.navigate(['/projects']);
       },
       error: (error) => {
         this.loading = false;
         this.errorMessage = error.error?.message || 'Wystąpił błąd podczas zmiany hasła';
-        this.toastr.error(this.errorMessage);
+        // Error will be set in the UI without toast notification
         console.error('Password change error:', error);
       }
     });

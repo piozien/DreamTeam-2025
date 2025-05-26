@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { WebSocketService } from './shared/services/websocket.service';
 
 @Component({
   selector: 'app-root',
@@ -47,4 +48,18 @@ import { FooterComponent } from './components/footer/footer.component';
     }
   `]
 })
-export class AppComponent {}
+export class AppComponent implements OnInit, OnDestroy {
+  constructor(private webSocketService: WebSocketService) {}
+
+  ngOnInit() {
+    // Initialize WebSocket connection when the app starts
+    this.webSocketService.connect().catch(error => {
+      console.error('Failed to connect to WebSocket:', error);
+    });
+  }
+
+  ngOnDestroy() {
+    // Clean up WebSocket connection when the app is destroyed
+    this.webSocketService.disconnect();
+  }
+}

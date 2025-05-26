@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -14,7 +14,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -32,7 +31,7 @@ import { AuthService } from '../../../shared/services/auth.service';
 import { ProjectDialogComponent } from '../../../features/project-panel/components/project-dialog/project-dialog.component';
 import { MemberDialogComponent } from './member-dialog/member-dialog.component';
 import { TaskDialogComponent } from './task-dialog/task-dialog.component';
-import { ToastrService } from 'ngx-toastr';
+import { ToastNotificationService } from '../../../shared/services/toast-notification.service';
 import { ProjectCalendarComponent } from './project-calendar/project-calendar.component';
 
 @Component({
@@ -56,7 +55,6 @@ import { ProjectCalendarComponent } from './project-calendar/project-calendar.co
     MatInputModule,
     MatSelectModule,
     MatTooltipModule,
-    MatSnackBarModule,
     MatMenuModule,
     MatChipsModule,
     MatBadgeModule,
@@ -97,8 +95,8 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
     private taskService: TaskService,
     private authService: AuthService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar,
-    private toastService: ToastrService
+    private cdr: ChangeDetectorRef,
+    private toastNotificationService: ToastNotificationService
   ) {}
   
   ngOnInit(): void {
@@ -106,7 +104,7 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.projectId) {
       this.loadProject(this.projectId);
     } else {
-      this.toastService.error('Nie znaleziono identyfikatora projektu');
+      // Error will be set in the UI without toast notification
       this.loading = false;
     }
   }
@@ -180,7 +178,6 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
         error: (error) => {
           console.error('Error loading tasks:', error);
           this.isLoadingTasks = false;
-          this.snackBar.open('Problem z załadowaniem zadań', 'Zamknij', { duration: 3000 });
         }
       })
     );
@@ -307,7 +304,7 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
         },
         error: (error) => {
           console.error('Error loading project members:', error);
-          this.snackBar.open('Problem z wczytaniem członków projektu', 'Zamknij', { duration: 3000 });
+          this.toastNotificationService.error('Problem z wczytaniem członków projektu');
         }
       })
     );
@@ -478,12 +475,12 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
               if (this.dataSource) {
                 this.dataSource.data = this.tasks;
               }
-              this.snackBar.open('Zadanie zostało utworzone', 'Zamknij', { duration: 3000 });
+              this.toastNotificationService.success('Zadanie zostało utworzone');
             },
             error: (error) => {
               console.error('Error creating task:', error);
               console.error('Response body:', error.error);
-              this.snackBar.open(`Problem z utworzeniem zadania: ${error.status} ${error.statusText}`, 'Zamknij', { duration: 3000 });
+              this.toastNotificationService.error(`Problem z utworzeniem zadania: ${error.status} ${error.statusText}`);
             }
           })
         );
@@ -531,11 +528,11 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
               if (this.dataSource) {
                 this.dataSource.data = this.tasks;
               }
-              this.snackBar.open('Zadanie zostało zaktualizowane', 'Zamknij', { duration: 3000 });
+              this.toastNotificationService.success('Zadanie zostało zaktualizowane');
             },
             error: (error) => {
               console.error('Error updating task:', error);
-              this.snackBar.open('Problem z aktualizacją zadania', 'Zamknij', { duration: 3000 });
+              this.toastNotificationService.error('Problem z aktualizacją zadania');
             }
           })
         );
@@ -555,11 +552,11 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
             if (this.dataSource) {
               this.dataSource.data = this.tasks;
             }
-            this.snackBar.open('Zadanie zostało usunięte', 'Zamknij', { duration: 3000 });
+            this.toastNotificationService.success('Zadanie zostało usunięte');
           },
           error: (error) => {
             console.error('Error deleting task:', error);
-            this.snackBar.open('Problem z usunięciem zadania', 'Zamknij', { duration: 3000 });
+            this.toastNotificationService.error('Problem z usunięciem zadania');
           }
         })
       );
@@ -626,12 +623,10 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
           this.projectService.updateProject(updatedProject).subscribe({
             next: (project) => {
               this.project = project;
-              this.snackBar.open('Projekt został zaktualizowany', 'Zamknij', { duration: 3000 });
             },
             error: (error) => {
               console.error('Error updating project:', error);
               this.error = 'Wystąpił błąd podczas aktualizacji projektu.';
-              this.snackBar.open('Problem z aktualizacją projektu', 'Zamknij', { duration: 3000 });
             }
           })
         );
@@ -675,7 +670,7 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
               console.log('Member added successfully:', memberDTO);
               // Refresh the project members list
               this.loadProjectMembers(this.projectId as string);
-              this.snackBar.open('Członek został dodany do projektu', 'Zamknij', { duration: 3000 });
+              this.toastNotificationService.success('Członek został dodany do projektu');
             },
             error: (error) => {
               console.error('Error adding project member:', error);
@@ -683,7 +678,7 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
               if (error.error && error.error.message) {
                 errorMessage += ': ' + error.error.message;
               }
-              this.snackBar.open(errorMessage, 'Zamknij', { duration: 5000 });
+              this.toastNotificationService.error(errorMessage);
             }
           })
         );
@@ -719,11 +714,11 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
               if (index !== -1) {
                 this.projectMembers[index].role = result.role;
               }
-              this.snackBar.open('Rola członka została zaktualizowana', 'Zamknij', { duration: 3000 });
+              this.toastNotificationService.success('Rola członka została zaktualizowana');
             },
             error: (error) => {
               console.error('Error updating member role:', error);
-              this.snackBar.open('Problem z aktualizacją roli członka', 'Zamknij', { duration: 3000 });
+              this.toastNotificationService.error('Problem z aktualizacją roli członka');
             }
           })
         );
@@ -743,12 +738,12 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
             // Remove member from the local array
             this.projectMembers = this.projectMembers.filter(m => m.id !== member.id);
             this.isPerformingMemberAction = false;
-            this.snackBar.open('Członek został usunięty z projektu', 'Zamknij', { duration: 3000 });
+            this.toastNotificationService.success('Członek został usunięty z projektu');
           },
           error: (error) => {
             console.error('Error removing project member:', error);
             this.isPerformingMemberAction = false;
-            this.snackBar.open('Problem z usunięciem członka projektu', 'Zamknij', { duration: 3000 });
+            this.toastNotificationService.error('Problem z usunięciem członka projektu');
           }
         })
       );

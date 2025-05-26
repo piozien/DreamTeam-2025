@@ -16,7 +16,7 @@ import { Task } from '../../../shared/models/task.model';
 import { Project, ProjectMemberDTO } from '../../../shared/models/project.model';
 import { TaskPriority } from '../../../shared/enums/task-priority.enum';
 import { TaskStatus } from '../../../shared/enums/task-status.enum';
-import { ToastrService } from 'ngx-toastr';
+import { ToastNotificationService } from '../../../shared/services/toast-notification.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 
@@ -62,7 +62,7 @@ export class TasksPageComponent implements OnInit {
   private taskService = inject(TaskService);
   private authService = inject(AuthService);
   private projectService = inject(ProjectService);
-  private toastr = inject(ToastrService);
+  private toastr = inject(ToastNotificationService);
   
   ngOnInit(): void {
     this.loadUserTasks();
@@ -74,7 +74,7 @@ export class TasksPageComponent implements OnInit {
   loadUserTasks(): void {
     const userId = this.authService.getUserId();
     if (!userId) {
-      this.toastr.error('User ID not found');
+      // Error will be set in the UI without toast notification
       this.loading = false;
       return;
     }
@@ -83,7 +83,7 @@ export class TasksPageComponent implements OnInit {
     this.taskService.getUserTasks(userId).pipe(
       catchError(error => {
         console.error('Error loading user tasks:', error);
-        this.toastr.error('Nie udało się załadować zadań');
+        // Error will be set in the UI without toast notification
         return of([]);
       }),
       switchMap(tasks => {
@@ -122,7 +122,7 @@ export class TasksPageComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error processing tasks and projects:', error);
-        this.toastr.error('Wystąpił błąd podczas ładowania zadań');
+        // Error will be set in the UI without toast notification
         this.loading = false;
       }
     });

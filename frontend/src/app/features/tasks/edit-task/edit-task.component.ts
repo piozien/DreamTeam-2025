@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { ToastrService } from 'ngx-toastr';
+import { ToastNotificationService } from '../../../shared/services/toast-notification.service';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -111,7 +111,7 @@ export class EditTaskComponent implements OnInit {
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
   private datePipe = inject(DatePipe);
-  private toastrService = inject(ToastrService);
+  private toastrService = inject(ToastNotificationService);
   private memberSearchText = '';
 
   constructor() {}
@@ -610,17 +610,19 @@ export class EditTaskComponent implements OnInit {
   }
 
   /**
-   * Shows an error message using the ToastrService
+   * Method stub for error handling - no longer shows toast messages directly
    */
   showError(message: string): void {
-    this.toastrService.error(message);
+    // Error will be handled in the UI without toast notification
+    console.error(message);
   }
 
   /**
-   * Shows a success message using the ToastrService
+   * Method stub for success handling - no longer shows toast messages directly
    */
   showSuccess(message: string): void {
-    this.toastrService.success(message);
+    // Success will be handled in the UI without toast notification
+    console.log(message);
   }
 
   /**
