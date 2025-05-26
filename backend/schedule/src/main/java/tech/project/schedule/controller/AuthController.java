@@ -22,7 +22,6 @@ import tech.project.schedule.model.enums.GlobalRole;
 import tech.project.schedule.model.enums.UserStatus;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
-import tech.project.schedule.services.OAuth2TokenService;
 import tech.project.schedule.services.UserService;
 import tech.project.schedule.security.JwtUtil;
 import java.util.Map;
@@ -47,7 +46,6 @@ public class AuthController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-    private final OAuth2TokenService oAuth2TokenService;
     
     @GetMapping("/oauth2-success")
     public RedirectView oauth2Success(@AuthenticationPrincipal OidcUser principal,
@@ -77,8 +75,8 @@ public class AuthController {
         }
 
         // Find or create user logic (keep as is)
-        Optional<tech.project.schedule.model.user.User> userOpt = userRepository.findByEmail(email);
-        tech.project.schedule.model.user.User user;
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        User user;
         if (userOpt.isPresent()) {
             user = userOpt.get();
             // Optionally update user details if they changed in Google

@@ -12,14 +12,19 @@ import tech.project.schedule.model.enums.TaskStatus;
 import tech.project.schedule.model.project.Project;
 import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.model.project.ProjectMember;
+import tech.project.schedule.model.task.Task;
+import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.ProjectRepository;
+import tech.project.schedule.repositories.TaskRepository;
+import tech.project.schedule.repositories.TaskAssigneeRepository;
 import tech.project.schedule.services.utils.GetProjectRole;
 import tech.project.schedule.services.utils.NotificationHelper;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -34,6 +39,8 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final NotificationHelper notificationHelper;
+    private final TaskRepository taskRepository;
+    private final TaskAssigneeRepository taskAssigneeRepository;
 
     /**
      * Creates a new project with the current user as Project Manager.
@@ -290,15 +297,35 @@ public class ProjectService {
                 throw new ApiException("Cannot remove the last Project Manager", HttpStatus.CONFLICT);
             }
         }
-        
-        // Zachowaj referencję do usuwanego użytkownika przed usunięciem
+
         User removedUser = project.getMembers().get(userId).getUser();
         String projectName = project.getName();
+        
+        // Remove all task assignments for this user in the project
+        Set<Task> projectTasks = project.getTasks();
+        if (projectTasks != null) {
+            for (Task task : projectTasks) {
+                Set<TaskAssignee> assignees = task.getAssignees();
+                if (assignees != null) {
+                    // Remove assignments using repository
+                    List<TaskAssignee> assignmentsToRemove = assignees.stream()
+                        .filter(assignee -> assignee.getUser().getId().equals(userId))
+                        .collect(Collectors.toList());
+                    
+                    taskAssigneeRepository.deleteAll(assignmentsToRemove);
+                    
+                    // Update task assignees collection
+                    assignees.removeAll(assignmentsToRemove);
+                    
+                    // Save task to persist changes
+                    taskRepository.save(task);
+                }
+            }
+        }
         
         project.getMembers().remove(userId);
         projectRepository.save(project);
         
-        // Powiadom usuniętego użytkownika
         notificationHelper.notifyUser(
             removedUser,
             NotificationStatus.PROJECT_UPDATED, 
