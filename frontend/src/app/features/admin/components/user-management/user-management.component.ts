@@ -9,8 +9,6 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
-import { HttpClient } from '@angular/common/http';
-
 import { AdminService } from '../../../../shared/services/admin.service';
 import { AuthService } from '../../../../shared/services/auth.service';
 import { User } from '../../../../shared/models/user.model';

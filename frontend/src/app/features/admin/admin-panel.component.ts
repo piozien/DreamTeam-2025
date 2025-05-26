@@ -6,8 +6,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-
-
 import { UserManagementComponent } from './components/user-management/user-management.component';
 import { RegisterUserComponent } from './components/register-user/register-user.component';
 import { AuthService } from '../../shared/services/auth.service';

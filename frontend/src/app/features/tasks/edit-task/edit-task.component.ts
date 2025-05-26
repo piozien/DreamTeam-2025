@@ -17,17 +17,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-
 import { TaskService } from '../../../shared/services/task.service';
-import { Task, TaskUpdate, TaskAssignee, TaskComment } from '../../../shared/models/task.model';
+import { Task, TaskUpdate, TaskAssignee } from '../../../shared/models/task.model';
 import { TaskPriority } from '../../../shared/enums/task-priority.enum';
 import { TaskStatus } from '../../../shared/enums/task-status.enum';
 import { AuthService } from '../../../shared/services/auth.service';
 import { ProjectService } from '../../../shared/services/project.service';
 import { ProjectMemberDTO, Project } from '../../../shared/models/project.model';
-import { Observable, forkJoin, catchError, throwError, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-edit-task',
@@ -51,8 +47,6 @@ import { Observable, forkJoin, catchError, throwError, switchMap } from 'rxjs';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatTabsModule,
-    MatProgressBarModule,
-    MatTooltipModule,
     MatDividerModule
   ],
   providers: [DatePipe]
@@ -102,10 +96,6 @@ export class EditTaskComponent implements OnInit {
   // Map for task ID to name lookup
   taskMap: Map<string, string> = new Map();
   
-  // File handling properties
-  selectedFile: File | null = null;
-  uploadProgress = 0;
-  
   // Enums for template
   TaskStatus = TaskStatus;
   TaskPriority = TaskPriority;
@@ -120,7 +110,6 @@ export class EditTaskComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private datePipe = inject(DatePipe);
   private toastrService = inject(ToastNotificationService);
-  private memberSearchText = '';
 
   constructor() {}
   
@@ -179,7 +168,6 @@ export class EditTaskComponent implements OnInit {
               this.loadAssignees(task.projectId);
               this.loadTaskDependencies(task.projectId);
               this.loadComments();
-              this.loadFiles();
               return;
             }
             console.log('Project data loaded:', project);
@@ -200,7 +188,6 @@ export class EditTaskComponent implements OnInit {
             this.loadAssignees(task.projectId);
             this.loadTaskDependencies(task.projectId);
             this.loadComments();
-            this.loadFiles();
           },
           error: (err: any) => {
             console.error('Failed to load project:', err);
@@ -209,7 +196,6 @@ export class EditTaskComponent implements OnInit {
             this.loadAssignees(task.projectId);
             this.loadTaskDependencies(task.projectId);
             this.loadComments();
-            this.loadFiles();
           }
         });
       },
@@ -1106,207 +1092,6 @@ export class EditTaskComponent implements OnInit {
     });
   }
 
-  /**
-   * Extract file name from file path
-   * @param filePath Full file path
-   * @returns File name without path
-   */
-  getFileName(filePath: string): string {
-    if (!filePath) return 'Nieznany plik';
-    
-    // Extract file name from path (handles both Windows and Unix paths)
-    const parts = filePath.split(/[\/]/);
-    return parts[parts.length - 1];
-  }
-
-  /**
-   * Format file size in human-readable format
-   * @param bytes File size in bytes
-   * @returns Formatted file size (e.g., 1.5 MB)
-   */
-  formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-
-  /**
-   * Handle file selection from file input
-   * @param event File input change event
-   */
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-      console.log('File selected:', this.selectedFile.name);
-    }
-  }
-
-  /**
-   * Upload selected file to the server
-   */
-  uploadFile(): void {
-    if (!this.selectedFile || !this.taskId) {
-      return;
-    }
-
-    this.submitting = true;
-    this.uploadProgress = 1; // Start progress
-    
-    const userId = this.authService.getUserId();
-    if (!userId) {
-      this.showError('Nie udało się zidentyfikować użytkownika');
-      this.submitting = false;
-      this.uploadProgress = 0;
-      return;
-    }
-    
-    // Simulate progress during upload (since HttpClient doesn't easily expose progress)
-    const progressInterval = setInterval(() => {
-      if (this.uploadProgress < 90) {
-        this.uploadProgress += 5;
-      }
-    }, 200);
-
-    this.taskService.uploadFile(this.taskId, this.selectedFile, userId).subscribe({
-      next: (file) => {
-        console.log('File uploaded successfully:', file);
-        clearInterval(progressInterval);
-        this.uploadProgress = 100;
-        
-        // Add the file to the task's files list
-        if (!this.task!.files) {
-          this.task!.files = [];
-        }
-        this.task!.files.push(file);
-        
-        // Reset file selection
-        this.selectedFile = null;
-        this.submitting = false;
-        
-        // After a short delay, reset progress to hide the progress bar
-        setTimeout(() => {
-          this.uploadProgress = 0;
-        }, 1000);
-        
-        this.showSuccess('Plik został pomyślnie przesłany');
-      },
-      error: (err) => {
-        console.error('Error uploading file:', err);
-        clearInterval(progressInterval);
-        this.uploadProgress = 0;
-        this.submitting = false;
-        this.showError(`Nie udało się przesłać pliku: ${err.message || 'Nieznany błąd'}`);
-      }
-    });
-  }
-
-  /**
-   * Download a file from the server
-   * @param fileId ID of the file to download
-   */
-  downloadFile(fileId: string): void {
-    if (!fileId || !this.taskId) {
-      return;
-    }
-
-    this.submitting = true;
-    const userId = this.authService.getUserId();
-    if (!userId) {
-      this.showError('Nie udało się zidentyfikować użytkownika');
-      this.submitting = false;
-      return;
-    }
-
-    // Find the file in the task's files to get the file name
-    const file = this.task?.files?.find(f => f.id === fileId);
-    if (!file) {
-      this.showError('Nie znaleziono pliku');
-      this.submitting = false;
-      return;
-    }
-
-    const fileName = this.getFileName(file.filePath);
-    
-    this.taskService.downloadFile(this.taskId, fileId, userId, fileName).subscribe({
-      next: () => {
-        console.log('File downloaded successfully');
-        this.submitting = false;
-        // No need for success message as the file download itself is the feedback
-      },
-      error: (err) => {
-        console.error('Error downloading file:', err);
-        this.submitting = false;
-        this.showError(`Nie udało się pobrać pliku: ${err.message || 'Nieznany błąd'}`);
-      }
-    });
-  }
-
-  /**
-   * Delete a file from the task
-   * @param fileId ID of the file to delete
-   */
-  deleteFile(fileId: string): void {
-    if (!fileId || !this.taskId) {
-      return;
-    }
-
-    if (!confirm('Czy na pewno chcesz usunąć ten plik? Tej operacji nie można cofnąć.')) {
-      return;
-    }
-
-    this.submitting = true;
-    const userId = this.authService.getUserId();
-    if (!userId) {
-      this.showError('Nie udało się zidentyfikować użytkownika');
-      this.submitting = false;
-      return;
-    }
-
-    this.taskService.deleteFile(this.taskId, fileId, userId).subscribe({
-      next: () => {
-        console.log('File deleted successfully');
-        // Remove the file from the task's files list
-        if (this.task?.files) {
-          this.task.files = this.task.files.filter(f => f.id !== fileId);
-        }
-        this.submitting = false;
-        this.showSuccess('Plik został usunięty');
-      },
-      error: (err) => {
-        console.error('Error deleting file:', err);
-        this.submitting = false;
-        this.showError(`Nie udało się usunąć pliku: ${err.message || 'Nieznany błąd'}`);
-      }
-    });
-  }
-
-  /**
-   * Load files for the task if not already included
-   */
-  loadFiles(): void {
-    if (!this.taskId) return;
-    
-    const userId = this.authService.getUserId();
-    if (!userId) return;
-    
-    this.taskService.getTaskFiles(this.taskId, userId).subscribe({
-      next: (files) => {
-        console.log('Files loaded:', files);
-        if (this.task) {
-          this.task.files = files;
-        }
-      },
-      error: (err) => {
-        console.error('Error loading files:', err);
-      }
-    });
-  }
-  
   /**
    * Load assignees and available project members.
    */

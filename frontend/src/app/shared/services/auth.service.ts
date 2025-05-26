@@ -4,7 +4,6 @@ import { Observable, BehaviorSubject, tap, map, catchError, of, throwError } fro
 import { User } from '../models/user.model'; 
 import { isPlatformBrowser } from '@angular/common';
 import { jwtDecode } from 'jwt-decode'; 
-
 import { LoginResponseDTO } from '../dtos/auth/login-response.dto';
 import { RegistrationRequest } from '../dtos/auth/registration-request.dto';
 import { RegistrationResponseDTO } from '../dtos/auth/registration-response.dto';
