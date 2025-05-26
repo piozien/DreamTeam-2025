@@ -224,8 +224,18 @@
               <div class="comments-list" *ngIf="task?.comments?.length; else noComments">
                 <div class="comment-item" *ngFor="let comment of task?.comments">
                   <div class="comment-header">
-                    <strong>{{ getUserName(comment.userId) }}</strong>
-                    <span class="comment-date">{{ comment.createdAt | date:'short' }}</span>
+                    <div class="comment-user-info">
+                      <strong>{{ getUserName(comment.userId) }}</strong>
+                      <span class="comment-date">{{ comment.createdAt | date:'short' }}</span>
+                    </div>
+                    <button 
+                      mat-icon-button 
+                      color="warn" 
+                      (click)="deleteComment(comment.id)"
+                      [disabled]="submitting"
+                      matTooltip="Usuń komentarz">
+                      <mat-icon>delete</mat-icon>
+                    </button>
                   </div>
                   <div class="comment-body">
                     {{ comment.comment }}

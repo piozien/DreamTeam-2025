@@ -986,18 +986,18 @@ export class EditTaskComponent implements OnInit {
    * Add a comment to the task
    */
   addComment(): void {
-    if (!this.newComment.trim()) {
+    if (!this.task || !this.newComment.trim()) {
       return;
     }
-    
+
     this.submitting = true;
     const userId = this.authService.getUserId();
     if (!userId) {
-      this.showError('User ID is missing.');
+      this.showError('Nie udało się zidentyfikować użytkownika');
       this.submitting = false;
       return;
     }
-    
+
     this.taskService.addComment(this.taskId, this.newComment, userId).subscribe({
       next: (comment) => {
         console.log('Successfully added comment:', comment);
@@ -1014,6 +1014,45 @@ export class EditTaskComponent implements OnInit {
         console.error('Error adding comment:', err);
         this.submitting = false;
         this.showError(`Nie udało się dodać komentarza: ${err.message || 'Nieznany błąd'}`);
+      }
+    });
+  }
+
+  /**
+   * Delete a comment by its ID
+   * @param commentId The ID of the comment to delete
+   */
+  deleteComment(commentId: string): void {
+    if (!commentId || !this.taskId) {
+      return;
+    }
+
+    if (!confirm('Czy na pewno chcesz usunąć ten komentarz? Tej operacji nie można cofnąć.')) {
+      return;
+    }
+
+    this.submitting = true;
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      this.showError('Nie udało się zidentyfikować użytkownika');
+      this.submitting = false;
+      return;
+    }
+
+    this.taskService.deleteComment(this.taskId, commentId, userId).subscribe({
+      next: () => {
+        console.log('Successfully deleted comment:', commentId);
+        // Remove the comment from the task's comments list
+        if (this.task?.comments) {
+          this.task.comments = this.task.comments.filter(comment => comment.id !== commentId);
+        }
+        this.submitting = false;
+        this.showSuccess('Komentarz został usunięty');
+      },
+      error: (err) => {
+        console.error('Error deleting comment:', err);
+        this.submitting = false;
+        this.showError(`Nie udało się usunąć komentarza: ${err.message || 'Nieznany błąd'}`);
       }
     });
   }

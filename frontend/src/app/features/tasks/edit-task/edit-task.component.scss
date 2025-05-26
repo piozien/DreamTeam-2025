@@ -118,23 +118,116 @@
 }
 
 .comment-item {
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  border-left: 3px solid var(--primary-color);
-  background-color: rgba(var(--background-color-rgb), 0.5);
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+  border-radius: 4px;
+  background-color: var(--background-color);
+  box-shadow: var(--shadow-sm);
+  
+  .comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+    
+    .comment-user-info {
+      display: flex;
+      flex-direction: column;
+      
+      strong {
+        font-size: 0.9rem;
+        color: var(--text-color);
+        margin-bottom: 0.25rem;
+      }
+      
+      .comment-date {
+        font-size: 0.75rem;
+        color: var(--text-color-light);
+      }
+    }
+    
+    button {
+      margin-left: 0.5rem;
+      opacity: 0.7;
+      transition: opacity 0.2s, transform 0.1s, background-color 0.2s;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--danger-color);
+      
+      &:hover:not([disabled]) {
+        opacity: 1;
+        transform: scale(1.1);
+        background-color: rgba(var(--danger-color-rgb), 0.1);
+      }
+      
+      &[disabled] {
+        opacity: 0.3;
+        cursor: not-allowed;
+        transform: none;
+      }
+      
+      .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+      }
+    }
+  }
+  
+  .comment-body {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-color);
+    white-space: pre-wrap;
+    word-break: break-word;
+    padding: 0.5rem 0;
+  }
+  
+  &:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+    box-shadow: var(--shadow-md);
+  }
 }
 
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
+/* Ensure the comments list has proper spacing */
+.comments-list {
+  margin: 1.5rem 0;
+  
+  .comment-item {
+    margin-bottom: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 }
 
-.comment-date {
+/* Style the no comments message */
+.no-comments {
   color: var(--text-color-light);
-  font-size: 0.85rem;
+  font-style: italic;
+  margin: 1.5rem 0;
+  text-align: center;
+  padding: 1.5rem 1rem;
+  background-color: rgba(var(--primary-color-rgb), 0.05);
+  border-radius: 4px;
+  border: 1px dashed rgba(var(--primary-color-rgb), 0.2);
 }
 
-.comment-body {
-  white-space: pre-line;
+/* Add some spacing between the comment form and the list */
+.section-divider {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid rgba(var(--primary-color-rgb), 0.1);
 }
