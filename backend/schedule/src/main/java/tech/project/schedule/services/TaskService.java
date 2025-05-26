@@ -216,7 +216,7 @@ public class TaskService {
             notificationHelper.notifyUser(
                     user,
                     NotificationStatus.TASK_COMPLETED,
-                    "Task o nazwie " + existingTask.getName()+ " został zakończony."
+                    "Zadanie o nazwie " + existingTask.getName()+ " został zakończone."
             );
             // Notify all assignees
             existingTask.getAssignees().forEach(assignee -> {
