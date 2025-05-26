@@ -62,12 +62,20 @@ public class TaskCommentService {
         
         // Powiadom wszystkich przypisanych użytkowników o nowym komentarzu
         task.getAssignees().forEach(assignee -> {
-            notificationHelper.notifyTaskAssignee(
-                assignee.getUser(),
-                NotificationStatus.TASK_COMMENT_ADDED,
-                task.getName()
-            );
+            if(!assignee.getUser().getId().equals(user.getId())){
+                notificationHelper.notifyTaskAssignee(
+                        assignee.getUser(),
+                        NotificationStatus.TASK_COMMENT_ADDED,
+                        task.getName()
+                );
+            }
         });
+
+        notificationHelper.notifyUser(
+                user,
+                NotificationStatus.TASK_COMMENT_ADDED,
+                "Dodano komentarz do " + task.getName() + "."
+        );
         
         return comment;
     }

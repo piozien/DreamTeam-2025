@@ -212,32 +212,41 @@ public class TaskService {
                     }
                 }
 
-                // Notify the person who updated the task
-                notificationHelper.notifyUser(
-                        user,
-                        NotificationStatus.TASK_COMPLETED,
-                        existingTask.getName()
+            // Notify the person who updated the task
+            notificationHelper.notifyUser(
+                    user,
+                    NotificationStatus.TASK_COMPLETED,
+                    "Task o nazwie " + existingTask.getName()+ " został zakończony."
+            );
+            // Notify all assignees
+            existingTask.getAssignees().forEach(assignee -> {
+                notificationHelper.notifyTaskAssignee(
+                    assignee.getUser(),
+                    NotificationStatus.TASK_COMPLETED,
+                    existingTask.getName()
                 );
-                // Notify all assignees
-                existingTask.getAssignees().forEach(assignee -> {
-                    notificationHelper.notifyTaskAssignee(
-                        assignee.getUser(),
-                        NotificationStatus.TASK_COMPLETED,
-                        existingTask.getName()
-                    );
-                });
+            });
             }
         }
         
         Task savedTask = taskRepository.save(existingTask);
-        
+
+        // Notify user about task update
+        notificationHelper.notifyUser(
+                user,
+                NotificationStatus.TASK_UPDATED,
+                "Zadanie o nazwie " + updatedTask.getName() + " zostało zaktualizowane."
+        );
+
         // Notify assignees about task update
         existingTask.getAssignees().forEach(assignee -> {
+            if (assignee.getUser() != user) {
                 notificationHelper.notifyTaskAssignee(
-                    assignee.getUser(),
-                    NotificationStatus.TASK_UPDATED,
-                    existingTask.getName()
+                        assignee.getUser(),
+                        NotificationStatus.TASK_UPDATED,
+                        existingTask.getName()
                 );
+            }
         });
         return savedTask;
     }

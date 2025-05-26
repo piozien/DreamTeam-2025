@@ -130,6 +130,12 @@ public class TaskDependencyService {
                 "Usunięto zależność pomiędzy zadaniami: " + task.getName() + " i " + dependencyTaskName
             );
         });
+
+        notificationHelper.notifyUser(
+                user,
+                NotificationStatus.TASK_DEPENDENCY_DELETED,
+                "Usunięto zależność pomiędzy zadaniami: " + task.getName() + " i " + dependencyTaskName
+        );
     }
 
     /**
