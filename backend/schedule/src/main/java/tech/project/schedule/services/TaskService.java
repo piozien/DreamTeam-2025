@@ -299,7 +299,7 @@ public class TaskService {
             notificationHelper.notifyUser(
                     user,
                     NotificationStatus.TASK_DELETED,
-                    taskName
+                    taskName + " został usunięty."
             );
         }
 

@@ -330,7 +330,7 @@ public class ProjectService {
         notificationHelper.notifyUser(
                 currentUser,
                 NotificationStatus.PROJECT_UPDATED,
-                "Usunąłeś z projektu: " + projectName + "użytkownika: "+ removedUser.getName()
+                "Usunąłeś z projektu: " + projectName + " użytkownika: "+ removedUser.getName()
         );
     }
 
