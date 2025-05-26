@@ -34,6 +34,7 @@ build/
 
 ### Environment and Properties Files ###
 .env
+serviceEmail.json
 **/application-dev.properties
 **/application-prod.properties
 **/application-local.properties
