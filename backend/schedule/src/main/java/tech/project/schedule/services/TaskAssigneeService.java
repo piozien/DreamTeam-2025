@@ -206,7 +206,7 @@ public class TaskAssigneeService {
         notificationHelper.notifyUser(
                 currentUser,
                 NotificationStatus.TASK_UPDATED,
-                "Usunąłeś użytkownika " + userToNotify.getName()
+                "Usunąłeś użytkownika " + userToNotify.getName() + " z zadania."
         );
 
         // Notify the deleted user
