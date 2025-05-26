@@ -128,19 +128,102 @@ export class TaskService {
   }
 
   // Task Files
+  /**
+   * Get all files associated with a task
+   * @param taskId The ID of the task
+   * @param userId The ID of the current user
+   * @returns Observable of TaskFile array
+   */
   getTaskFiles(taskId: string, userId: string): Observable<TaskFile[]> {
     const params = new HttpParams().set('userId', userId);
     return this.http.get<TaskFile[]>(`${this.apiUrl}/${taskId}/files`, { params });
   }
 
-  addFile(taskId: string, file: TaskFile, userId: string): Observable<TaskFile> {
+  /**
+   * Get a specific file by ID
+   * @param taskId The ID of the task
+   * @param fileId The ID of the file to retrieve
+   * @param userId The ID of the current user
+   * @returns Observable of the file as a Blob
+   */
+  getTaskFile(taskId: string, fileId: string, userId: string): Observable<Blob> {
     const params = new HttpParams().set('userId', userId);
-    return this.http.post<TaskFile>(`${this.apiUrl}/${taskId}/files`, file, { params });
+    return this.http.get(`${this.apiUrl}/${taskId}/files/${fileId}`, {
+      params,
+      responseType: 'blob'
+    });
   }
 
+  /**
+   * Upload a file to a task
+   * @param taskId The ID of the task
+   * @param file The file to upload
+   * @param userId The ID of the current user
+   * @returns Observable of the created TaskFile
+   */
+  uploadFile(taskId: string, file: File, userId: string): Observable<TaskFile> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const params = new HttpParams().set('userId', userId);
+    
+    return this.http.post<TaskFile>(
+      `${this.apiUrl}/${taskId}/files/upload`, 
+      formData, 
+      { params }
+    );
+  }
+
+  /**
+   * Add file metadata to a task (for already uploaded files)
+   * @param taskId The ID of the task
+   * @param fileData The file metadata
+   * @param userId The ID of the current user
+   * @returns Observable of the created TaskFile
+   */
+  addFile(taskId: string, fileData: Omit<TaskFile, 'id' | 'uploadedAt'>, userId: string): Observable<TaskFile> {
+    const params = new HttpParams().set('userId', userId);
+    return this.http.post<TaskFile>(
+      `${this.apiUrl}/${taskId}/files`, 
+      fileData, 
+      { params }
+    );
+  }
+
+  /**
+   * Delete a file from a task
+   * @param taskId The ID of the task
+   * @param fileId The ID of the file to delete
+   * @param userId The ID of the current user
+   * @returns Observable of void
+   */
   deleteFile(taskId: string, fileId: string, userId: string): Observable<void> {
     const params = new HttpParams().set('userId', userId);
     return this.http.delete<void>(`${this.apiUrl}/${taskId}/files/${fileId}`, { params });
+  }
+
+  /**
+   * Download a file from the server
+   * @param taskId The ID of the task
+   * @param fileId The ID of the file to download
+   * @param userId The ID of the current user
+   * @param fileName Optional custom file name for the download
+   * @returns Observable that completes when the file is downloaded
+   */
+  downloadFile(taskId: string, fileId: string, userId: string, fileName?: string): Observable<Blob> {
+    return this.getTaskFile(taskId, fileId, userId).pipe(
+      tap(blob => {
+        // Create a temporary anchor element to trigger the download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName || `file-${fileId}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      })
+    );
   }
 
   // Task Dependencies
