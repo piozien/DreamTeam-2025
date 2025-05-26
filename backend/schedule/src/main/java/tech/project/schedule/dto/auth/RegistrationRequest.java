@@ -1,14 +1,24 @@
 package tech.project.schedule.dto.auth;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tech.project.schedule.model.enums.GlobalRole;
 
-@Getter
-@AllArgsConstructor
-public class RegistrationRequest {
-    private final String username;
-    private final String firstName;
-    private final String lastName;
-    private final String password;
-    private final String email;
-}
+/**
+ * Data Transfer Object that contains user information needed for registration.
+ * This class captures all required fields for creating a new user account in the system.
+ */
+/**
+ * Data Transfer Object that contains user information needed for registration.
+ * This class captures all required fields for creating a new user account in the system.
+ */
+public record RegistrationRequest(
+    @NotBlank String username,
+    @NotBlank String firstName,
+    @NotBlank String lastName,
+    @Email @NotBlank String email,
+    GlobalRole role
+) {}
+

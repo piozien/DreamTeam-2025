@@ -1,25 +1,29 @@
 package tech.project.schedule.dto.task;
 
-import java.time.LocalDate;
-import java.util.Set;
-import java.util.UUID;
 import tech.project.schedule.model.enums.TaskPriority;
 import tech.project.schedule.model.enums.TaskStatus;
 
+import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * Data Transfer Object that represents a task in the scheduling system.
+ * Contains comprehensive task information including identification, scheduling details,
+ * priority and status, as well as relationships to assigned users, comments,
+ * and task dependencies.
+ */
 public record TaskDTO(
         UUID id,
         UUID projectId,
         String name,
         String description,
-        LocalDate startDate,
-        LocalDate endDate,
+        LocalDateTime startDate,
+        LocalDateTime endDate,
         TaskPriority priority,
         TaskStatus status,
         Set<UUID> assigneeIds,
-        Set<UUID> commentIds,
-        Set<UUID> historyIds,
-        Set<UUID> fileIds,
-        Set<UUID> dependencyIds,
-        Set<UUID> dependentTaskIds
+        Set<TaskCommentDTO> comments,
+        Set<UUID> dependencyIds
 ) {
 }
