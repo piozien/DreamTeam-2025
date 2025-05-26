@@ -529,9 +529,44 @@ $shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06
   color: $primary-color;
 }
 
+/* Week and day event styling for continuous events */
+.week-event, .day-event {
+  position: relative;
+  
+  &.continuation {
+    border-left: 3px solid currentColor;
+    padding-left: 10px;
+    font-size: 11px;
+    opacity: 0.85;
+  }
+  
+  &.start-of-day {
+    font-weight: 500;
+    background-color: rgba(255, 255, 255, 0.2);
+    font-size: 12px;
+    opacity: 1;
+  }
+  
+  &.isEndOfDay {
+    font-weight: 500;
+    border-right: 3px solid currentColor;
+  }
+}
+
 /* Priority classes */
 .priority-critical {
-  background-color: var(--priority-critical-color) !important;
+  background-color: $critical-color !important;
+  color: white;
+}
+
+.priority-important {
+  background-color: $important-color !important;
+  color: white;
+}
+
+.priority-optional {
+  background-color: $optional-color !important;
+  color: white;
 }
 
 .priority-critical.end-date {
@@ -539,9 +574,6 @@ $shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06
   box-shadow: 0 0 4px rgba(var(--priority-critical-color-rgb), 0.5);
 }
 
-.priority-important {
-  background-color: var(--priority-important-color) !important;
-}
 
 .priority-important.end-date {
   border: 1px dashed rgba(255, 255, 255, 0.7);

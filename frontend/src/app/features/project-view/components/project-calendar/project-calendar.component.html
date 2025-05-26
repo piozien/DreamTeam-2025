@@ -108,12 +108,15 @@
             <div *ngFor="let event of getEventsForDayHour(day, i)" 
                  class="event-marker week-event" 
                  [class.end-date]="event.isEndDate"
+                 [class.continuation]="event.isContinuation"
+                 [class.start-of-day]="event.isStartOfDay"
+                 [class.isEndOfDay]="event.isEndOfDay"
                  [class.priority-critical]="event.task?.priority === 'CRITICAL'"
                  [class.priority-important]="event.task?.priority === 'IMPORTANT'"
                  [class.priority-optional]="event.task?.priority === 'OPTIONAL'"
-                 [matTooltip]="event.description">
-              <span class="event-title">{{event.title}}</span>
-              <mat-icon *ngIf="event.task" class="event-status-icon">
+                 [matTooltip]="(event.isContinuation && !event.isStartOfDay) ? 'Kontynuacja: ' + event.title : event.description">
+              <span class="event-title">{{(event.isContinuation && !event.isStartOfDay) ? '↪ ' + event.title : event.title}}{{event.isEndOfDay ? ' (Koniec)' : ''}}</span>
+              <mat-icon *ngIf="event.task && (event.isStartOfDay || event.isEndOfDay)" class="event-status-icon">
                 {{getStatusIcon(event.task.status)}}
               </mat-icon>
             </div>
@@ -138,16 +141,22 @@
             <div *ngFor="let event of getEventsForHour(i)" 
                  class="event-marker day-event" 
                  [class.end-date]="event.isEndDate"
+                 [class.continuation]="event.isContinuation"
+                 [class.start-of-day]="event.isStartOfDay"
+                 [class.isEndOfDay]="event.isEndOfDay"
                  [class.priority-critical]="event.task?.priority === 'CRITICAL'"
                  [class.priority-important]="event.task?.priority === 'IMPORTANT'"
                  [class.priority-optional]="event.task?.priority === 'OPTIONAL'">
               <div class="event-header">
-                <span class="event-title">{{event.title}}</span>
-                <mat-icon *ngIf="event.task" class="event-status-icon">
+                <span class="event-title">
+                  {{(event.isContinuation && !event.isStartOfDay) ? '↪ ' + event.title : event.title}}
+                  {{event.isEndOfDay ? ' (Koniec)' : ''}}
+                </span>
+                <mat-icon *ngIf="event.task && (event.isStartOfDay || event.isEndOfDay)" class="event-status-icon">
                   {{getStatusIcon(event.task.status)}}
                 </mat-icon>
               </div>
-              <div class="event-description" *ngIf="event.description">
+              <div class="event-description" *ngIf="event.description && event.isStartOfDay">
                 {{event.description}}
               </div>
             </div>

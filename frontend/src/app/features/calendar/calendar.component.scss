@@ -499,6 +499,27 @@ $border-radius-lg: 12px;
 .week-event {
   min-height: 22px;
   margin-bottom: 3px;
+  position: relative;
+  
+  &.continuation {
+    border-left: 3px solid currentColor;
+    padding-left: 10px;
+    font-size: 11px;
+    opacity: 0.85;
+  }
+  
+  &.start-of-day {
+    font-weight: 500;
+    /* Add a subtle highlight effect for the first hour of each day */
+    background-color: rgba(255, 255, 255, 0.2);
+    font-size: 12px;
+    opacity: 1;
+  }
+  
+  &.isEndOfDay {
+    font-weight: 500;
+    border-right: 3px solid currentColor;
+  }
 }
 
 .week-event.end-date {

@@ -232,6 +232,11 @@ export class CalendarComponent implements OnInit {
   // Change view (month, week, day)
   changeView(view: 'month' | 'week' | 'day'): void {
     this.currentView = view;
+    
+    // If switching to day view, make sure selectedDay is set
+    if (view === 'day') {
+      this.updateSelectedDay();
+    }
   }
   
   // Navigate to previous month/week/day
@@ -245,6 +250,8 @@ export class CalendarComponent implements OnInit {
         break;
       case 'day':
         this.currentDate = new Date(this.currentDate.getTime() - 24 * 60 * 60 * 1000);
+        // Update selectedDay when navigating in day view
+        this.updateSelectedDay();
         break;
     }
     this.generateCalendarDays();
@@ -261,6 +268,8 @@ export class CalendarComponent implements OnInit {
         break;
       case 'day':
         this.currentDate = new Date(this.currentDate.getTime() + 24 * 60 * 60 * 1000);
+        // Update selectedDay when navigating in day view
+        this.updateSelectedDay();
         break;
     }
     this.generateCalendarDays();
@@ -277,6 +286,21 @@ export class CalendarComponent implements OnInit {
     this.selectedDay = day;
     this.currentDate = new Date(day.date);
     this.currentView = 'day';
+  }
+  
+  // Update the selectedDay based on currentDate (for day view)
+  updateSelectedDay(): void {
+    // Create a day object for the current date with events
+    const date = new Date(this.currentDate);
+    const dayEvents = this.getTasksForDate(date);
+    
+    this.selectedDay = {
+      date: date,
+      dayNumber: date.getDate(),
+      isCurrentMonth: true,
+      isToday: this.isToday(date),
+      events: dayEvents
+    };
   }
   
   // Get current week days (for week view)
@@ -320,18 +344,59 @@ export class CalendarComponent implements OnInit {
       if (!event.startDate) return false;
       
       const eventDate = new Date(event.startDate);
+      const eventEndDate = event.endDate ? new Date(event.endDate) : null;
+      const selectedDayStr = this.formatDate(this.selectedDay!.date);
+      const eventStartStr = this.formatDate(eventDate);
+      const eventEndStr = eventEndDate ? this.formatDate(eventEndDate) : eventStartStr;
       
-      // If it's a regular event (not on end date), show it at its start hour
-      if (!event.isEndDate && eventDate.getHours() === hour) {
-        return true;
+      // If selected day is the start date of the event
+      if (selectedDayStr === eventStartStr) {
+        // Show at and after the start hour
+        return hour >= eventDate.getHours();
       }
       
-      // If it's the end date, only show it at 23:00 (last hour of the day)
-      if (event.isEndDate && hour === 23) {
+      // If selected day is the end date of the event
+      if (eventEndDate && selectedDayStr === eventEndStr) {
+        // Show up to and including the end hour
+        return hour <= eventEndDate.getHours();
+      }
+      
+      // If selected day is in the middle of a multi-day event
+      if (selectedDayStr > eventStartStr && (!eventEndDate || selectedDayStr < eventEndStr)) {
+        // Show all hours for days in the middle
         return true;
       }
       
       return false;
+    }).map(event => {
+      // Clone the event to add flags for styling
+      const newEvent = { ...event };
+      const eventDate = new Date(event.startDate);
+      const eventEndDate = event.endDate ? new Date(event.endDate) : null;
+      const selectedDayStr = this.formatDate(this.selectedDay!.date);
+      const eventStartStr = this.formatDate(eventDate);
+      const eventEndStr = eventEndDate ? this.formatDate(eventEndDate) : eventStartStr;
+      
+      // Add isContinuation flag for styling
+      newEvent.isContinuation = selectedDayStr > eventStartStr || (selectedDayStr === eventStartStr && hour > eventDate.getHours());
+      
+      // Flag the first hour of the event
+      if (selectedDayStr === eventStartStr && hour === eventDate.getHours()) {
+        newEvent.isStartOfDay = true;
+      } else if (selectedDayStr > eventStartStr && hour === 0) {
+        newEvent.isStartOfDay = true;
+      } else {
+        newEvent.isStartOfDay = false;
+      }
+      
+      // Flag the last hour of the event
+      if (eventEndDate && selectedDayStr === eventEndStr && hour === eventEndDate.getHours()) {
+        newEvent.isEndOfDay = true;
+      } else {
+        newEvent.isEndOfDay = false;
+      }
+      
+      return newEvent;
     });
   }
   
@@ -341,18 +406,63 @@ export class CalendarComponent implements OnInit {
       if (!event.startDate) return false;
       
       const eventDate = new Date(event.startDate);
+      const eventEndDate = event.endDate ? new Date(event.endDate) : null;
+      const currentDayStr = this.formatDate(day.date);
+      const eventStartStr = this.formatDate(eventDate);
+      const eventEndStr = eventEndDate ? this.formatDate(eventEndDate) : eventStartStr;
       
-      // If it's a regular event (not on end date), show it at its start hour
-      if (!event.isEndDate && eventDate.getHours() === hour) {
-        return true;
+      // For the first day of a task (start date)
+      if (currentDayStr === eventStartStr) {
+        // On start day, show at and after the start hour
+        return hour >= eventDate.getHours();
       }
       
-      // If it's the end date, only show it at 23:00 (last hour of the day)
-      if (event.isEndDate && hour === 23) {
+      // For the last day of a task (end date)
+      if (eventEndDate && currentDayStr === eventEndStr) {
+        // On end day, show up to and including the end hour
+        return hour <= eventEndDate.getHours();
+      }
+      
+      // For days in the middle of a multi-day task
+      if (currentDayStr > eventStartStr && (!eventEndDate || currentDayStr < eventEndStr)) {
+        // For middle days, show all hours (0-23)
         return true;
       }
       
       return false;
+    }).map(event => {
+      // Clone the event to add continuous flag
+      const newEvent = { ...event };
+      const currentDayStr = this.formatDate(day.date);
+      const eventDate = new Date(event.startDate);
+      const eventEndDate = event.endDate ? new Date(event.endDate) : null;
+      const eventStartStr = this.formatDate(eventDate);
+      const eventEndStr = eventEndDate ? this.formatDate(eventEndDate) : eventStartStr;
+      
+      // Add isContinuation flag to indicate if this is part of a multi-day task
+      newEvent.isContinuation = currentDayStr > eventStartStr || (currentDayStr === eventStartStr && hour > eventDate.getHours());
+      
+      // Add isStartOfDay flag to identify the first hour of the task for a day
+      if (currentDayStr === eventStartStr && hour === eventDate.getHours()) {
+        // First hour on the start day
+        newEvent.isStartOfDay = true;
+      } else if (currentDayStr > eventStartStr && currentDayStr < eventEndStr && hour === 0) {
+        // First hour (midnight) on middle days
+        newEvent.isStartOfDay = true;
+      } else if (eventEndDate && currentDayStr === eventEndStr && hour === 0) {
+        // First hour (midnight) on the end day
+        newEvent.isStartOfDay = true;
+      } else {
+        newEvent.isStartOfDay = false;
+      }
+      
+      // Add isEndOfDay flag to identify the last hour of the task for a day
+      if (eventEndDate && currentDayStr === eventEndStr && hour === eventEndDate.getHours()) {
+        // Last hour on the end day
+        newEvent.isEndOfDay = true;
+      }
+      
+      return newEvent;
     });
   }
   
@@ -401,6 +511,9 @@ interface CalendarEvent {
   startDate: string;
   endDate?: string;
   isEndDate?: boolean;  // Flag to indicate if the current day is the end date of the task
+  isContinuation?: boolean; // Flag to indicate if this is a continuation of a multi-day task
+  isStartOfDay?: boolean; // Flag to indicate if this is the first hour showing the task for this day
+  isEndOfDay?: boolean; // Flag to indicate if this is the last hour showing the task for this day
   color: string;
   task?: Task;
 } 

@@ -158,11 +158,30 @@ export class ProjectCalendarComponent implements OnInit, OnChanges {
 
     const startDate = new Date(this.project.startDate);
     startDate.setHours(0, 0, 0, 0);
-
-    const currentViewStart = new Date(this.currentDate);
-    currentViewStart.setDate(1); // First day of current month
+    
+    let currentViewStart = new Date(this.currentDate);
+    
+    // Handle different view types differently
+    switch (this.currentView) {
+      case 'month':
+        // For month view, check if first day of current month is after project start
+        currentViewStart.setDate(1);
+        break;
+      case 'week':
+        // For week view, check if start of current week is after project start
+        const day = currentViewStart.getDay() || 7; // Get day of week (0 = Sunday, so convert to 7)
+        const diff = currentViewStart.getDate() - day + 1; // Adjust to Monday
+        currentViewStart.setDate(diff); // Start of week (Monday)
+        break;
+      case 'day':
+        // For day view, just check the current date
+        // currentViewStart is already set to the current date
+        break;
+    }
+    
     currentViewStart.setHours(0, 0, 0, 0);
-
+    
+    // Allow navigation if the current view's start date is after project start date
     return currentViewStart > startDate;
   }
 
@@ -175,10 +194,29 @@ export class ProjectCalendarComponent implements OnInit, OnChanges {
     const endDate = this.project.endDate ? new Date(this.project.endDate) : new Date(new Date(this.project.startDate).getFullYear() + 1, 11, 31);
     endDate.setHours(23, 59, 59, 999);
 
-    const currentViewEnd = new Date(this.currentDate);
-    currentViewEnd.setMonth(currentViewEnd.getMonth() + 1, 0); // Last day of current month
+    let currentViewEnd = new Date(this.currentDate);
+    
+    // Handle different view types differently
+    switch (this.currentView) {
+      case 'month':
+        // For month view, check if last day of current month is before project end
+        currentViewEnd.setMonth(currentViewEnd.getMonth() + 1, 0); // Last day of current month
+        break;
+      case 'week':
+        // For week view, check if end of current week is before project end
+        const day = currentViewEnd.getDay() || 7; // Get day of week (0 = Sunday, so convert to 7)
+        const diff = currentViewEnd.getDate() - day + 1; // Adjust to Monday
+        currentViewEnd.setDate(diff + 6); // End of week (Sunday)
+        break;
+      case 'day':
+        // For day view, just check the current date
+        // currentViewEnd is already set to the current date
+        break;
+    }
+    
     currentViewEnd.setHours(23, 59, 59, 999);
-
+    
+    // Allow navigation if the current view's end date is before project end date
     return currentViewEnd < endDate;
   }
 
@@ -321,6 +359,27 @@ export class ProjectCalendarComponent implements OnInit, OnChanges {
   // Change view (month, week, day)
   changeView(view: 'month' | 'week' | 'day'): void {
     this.currentView = view;
+    
+    // If switching to day view, make sure selectedDay is set
+    if (view === 'day') {
+      this.updateSelectedDay();
+    }
+  }
+  
+  // Update the selectedDay based on currentDate (for day view)
+  updateSelectedDay(): void {
+    // Create a day object for the current date with events
+    const date = new Date(this.currentDate);
+    const dayEvents = this.getTasksForDate(date);
+    
+    this.selectedDay = {
+      date: date,
+      dayNumber: date.getDate(),
+      isCurrentMonth: true,
+      isToday: this.isToday(date),
+      isWithinProjectDates: this.isDateWithinProjectDates(date),
+      events: dayEvents
+    };
   }
   
   // Override the existing navigatePrevious method
@@ -338,6 +397,8 @@ export class ProjectCalendarComponent implements OnInit, OnChanges {
         break;
       case 'day':
         this.currentDate = new Date(this.currentDate.getTime() - 24 * 60 * 60 * 1000);
+        // Update selectedDay when navigating in day view
+        this.updateSelectedDay();
         break;
     }
     this.generateCalendarDays();
@@ -358,6 +419,8 @@ export class ProjectCalendarComponent implements OnInit, OnChanges {
         break;
       case 'day':
         this.currentDate = new Date(this.currentDate.getTime() + 24 * 60 * 60 * 1000);
+        // Update selectedDay when navigating in day view
+        this.updateSelectedDay();
         break;
     }
     this.generateCalendarDays();
@@ -443,18 +506,59 @@ export class ProjectCalendarComponent implements OnInit, OnChanges {
       if (!event.startDate) return false;
       
       const eventDate = new Date(event.startDate);
+      const eventEndDate = event.endDate ? new Date(event.endDate) : null;
+      const selectedDayStr = this.formatDate(this.selectedDay!.date);
+      const eventStartStr = this.formatDate(eventDate);
+      const eventEndStr = eventEndDate ? this.formatDate(eventEndDate) : eventStartStr;
       
-      // If it's a regular event (not on end date), show it at its start hour
-      if (!event.isEndDate && eventDate.getHours() === hour) {
-        return true;
+      // If selected day is the start date of the event
+      if (selectedDayStr === eventStartStr) {
+        // Show at and after the start hour
+        return hour >= eventDate.getHours();
       }
       
-      // If it's the end date, only show it at 23:00 (last hour of the day)
-      if (event.isEndDate && hour === 23) {
+      // If selected day is the end date of the event
+      if (eventEndDate && selectedDayStr === eventEndStr) {
+        // Show up to and including the end hour
+        return hour <= eventEndDate.getHours();
+      }
+      
+      // If selected day is in the middle of a multi-day event
+      if (selectedDayStr > eventStartStr && (!eventEndDate || selectedDayStr < eventEndStr)) {
+        // Show all hours for days in the middle
         return true;
       }
       
       return false;
+    }).map(event => {
+      // Clone the event to add flags for styling
+      const newEvent = { ...event };
+      const eventDate = new Date(event.startDate);
+      const eventEndDate = event.endDate ? new Date(event.endDate) : null;
+      const selectedDayStr = this.formatDate(this.selectedDay!.date);
+      const eventStartStr = this.formatDate(eventDate);
+      const eventEndStr = eventEndDate ? this.formatDate(eventEndDate) : eventStartStr;
+      
+      // Add isContinuation flag for styling
+      newEvent.isContinuation = selectedDayStr > eventStartStr || (selectedDayStr === eventStartStr && hour > eventDate.getHours());
+      
+      // Flag the first hour of the event
+      if (selectedDayStr === eventStartStr && hour === eventDate.getHours()) {
+        newEvent.isStartOfDay = true;
+      } else if (selectedDayStr > eventStartStr && hour === 0) {
+        newEvent.isStartOfDay = true;
+      } else {
+        newEvent.isStartOfDay = false;
+      }
+      
+      // Flag the last hour of the event
+      if (eventEndDate && selectedDayStr === eventEndStr && hour === eventEndDate.getHours()) {
+        newEvent.isEndOfDay = true;
+      } else {
+        newEvent.isEndOfDay = false;
+      }
+      
+      return newEvent;
     });
   }
   
@@ -464,18 +568,63 @@ export class ProjectCalendarComponent implements OnInit, OnChanges {
       if (!event.startDate) return false;
       
       const eventDate = new Date(event.startDate);
+      const eventEndDate = event.endDate ? new Date(event.endDate) : null;
+      const currentDayStr = this.formatDate(day.date);
+      const eventStartStr = this.formatDate(eventDate);
+      const eventEndStr = eventEndDate ? this.formatDate(eventEndDate) : eventStartStr;
       
-      // If it's a regular event (not on end date), show it at its start hour
-      if (!event.isEndDate && eventDate.getHours() === hour) {
-        return true;
+      // For the first day of a task (start date)
+      if (currentDayStr === eventStartStr) {
+        // On start day, show at and after the start hour
+        return hour >= eventDate.getHours();
       }
       
-      // If it's the end date, only show it at 23:00 (last hour of the day)
-      if (event.isEndDate && hour === 23) {
+      // For the last day of a task (end date)
+      if (eventEndDate && currentDayStr === eventEndStr) {
+        // On end day, show up to and including the end hour
+        return hour <= eventEndDate.getHours();
+      }
+      
+      // For days in the middle of a multi-day task
+      if (currentDayStr > eventStartStr && (!eventEndDate || currentDayStr < eventEndStr)) {
+        // For middle days, show all hours (0-23)
         return true;
       }
       
       return false;
+    }).map(event => {
+      // Clone the event to add continuous flag
+      const newEvent = { ...event };
+      const eventDate = new Date(event.startDate);
+      const eventEndDate = event.endDate ? new Date(event.endDate) : null;
+      const currentDayStr = this.formatDate(day.date);
+      const eventStartStr = this.formatDate(eventDate);
+      const eventEndStr = eventEndDate ? this.formatDate(eventEndDate) : eventStartStr;
+      
+      // Add isContinuation flag to indicate if this is part of a multi-day task
+      newEvent.isContinuation = currentDayStr > eventStartStr || (currentDayStr === eventStartStr && hour > eventDate.getHours());
+      
+      // Add isStartOfDay flag to identify the first hour of the task for a day
+      if (currentDayStr === eventStartStr && hour === eventDate.getHours()) {
+        // First hour on the start day
+        newEvent.isStartOfDay = true;
+      } else if (currentDayStr > eventStartStr && currentDayStr < eventEndStr && hour === 0) {
+        // First hour (midnight) on middle days
+        newEvent.isStartOfDay = true;
+      } else if (eventEndDate && currentDayStr === eventEndStr && hour === 0) {
+        // First hour (midnight) on the end day
+        newEvent.isStartOfDay = true;
+      } else {
+        newEvent.isStartOfDay = false;
+      }
+      
+      // Add isEndOfDay flag to identify the last hour of the task for a day
+      if (eventEndDate && currentDayStr === eventEndStr && hour === eventEndDate.getHours()) {
+        // Last hour on the end day
+        newEvent.isEndOfDay = true;
+      }
+      
+      return newEvent;
     });
   }
   
@@ -503,6 +652,9 @@ interface CalendarEvent {
   startDate: string;
   endDate?: string;
   isEndDate?: boolean;
+  isContinuation?: boolean; // Flag to indicate if this is a continuation of a multi-day task
+  isStartOfDay?: boolean; // Flag to indicate if this is the first hour showing the task for this day
+  isEndOfDay?: boolean; // Flag to indicate if this is the last hour showing the task for this day
   color: string;
   task?: Task;
-} 
+}
