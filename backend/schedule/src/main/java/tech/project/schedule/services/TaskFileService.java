@@ -6,11 +6,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.enums.GlobalRole;
+import tech.project.schedule.model.enums.NotificationStatus;
 import tech.project.schedule.model.task.TaskFile;
 import tech.project.schedule.repositories.TaskFileRepository;
 import tech.project.schedule.repositories.TaskRepository;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.model.task.Task;
+import tech.project.schedule.services.utils.NotificationHelper;
 import tech.project.schedule.services.utils.PmAndAssigneeCheck;
 
 import java.util.List;
@@ -28,6 +30,7 @@ public class TaskFileService {
 
     private final TaskFileRepository taskFileRepository;
     private final TaskRepository taskRepository;
+    private final NotificationHelper notificationHelper;
 
     /**
      * Attaches a new file to a task.
@@ -63,6 +66,22 @@ public class TaskFileService {
         }
         task.getFiles().add(savedFile);
         taskRepository.save(task);
+
+        notificationHelper.notifyUser(
+                user,
+                NotificationStatus.TASK_FILE_UPLOADED,
+                "Dodano plik do zadania " + task.getName() + " o ścieżce " + file.getFilePath()
+        );
+
+        task.getAssignees().forEach(assignee -> {
+            if (!assignee.getUser().getId().equals(user.getId())) {
+                notificationHelper.notifyTaskAssignee(
+                        assignee.getUser(),
+                        NotificationStatus.TASK_FILE_UPLOADED,
+                        task.getName()
+                );
+            }
+        });
         
         return savedFile;
     }
@@ -94,7 +113,22 @@ public class TaskFileService {
         
         task.getFiles().remove(file);
         taskRepository.save(task);
-        
+
+        notificationHelper.notifyUser(
+                user,
+                NotificationStatus.TASK_FILE_DELETED,
+                "Usunięto plik z zadania " + task.getName()
+        );
+
+        task.getAssignees().forEach(assignee -> {
+            if (!assignee.getUser().getId().equals(user.getId())) {
+                notificationHelper.notifyTaskAssignee(
+                        assignee.getUser(),
+                        NotificationStatus.TASK_FILE_DELETED,
+                        task.getName()
+                );
+            }
+        });
         taskFileRepository.deleteById(fileId);
     }
 

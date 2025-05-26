@@ -136,13 +136,11 @@ public class ProjectService {
         
         // All project members get notified about the update
         existingProject.getMembers().values().forEach(member -> {
-            if (!member.getUser().getId().equals(user.getId())) {
-                notificationHelper.notifyProjectMember(
-                    member.getUser(),
-                    NotificationStatus.PROJECT_UPDATED,
-                    existingProject.getName()
-                );
-            }
+            notificationHelper.notifyProjectMember(
+                member.getUser(),
+                NotificationStatus.PROJECT_UPDATED,
+                existingProject.getName()
+            );
         });
         
         return savedProject;
@@ -179,13 +177,11 @@ public class ProjectService {
         
         // All project members get notified about the project deletion.
         members.forEach(member -> {
-            if (!member.getId().equals(user.getId())) {
-                notificationHelper.notifyProjectMember(
-                    member,
-                    NotificationStatus.PROJECT_DELETED,
-                    projectName
-                );
-            }
+            notificationHelper.notifyProjectMember(
+                member,
+                NotificationStatus.PROJECT_DELETED,
+                projectName
+            );
         });
     }
 
@@ -331,6 +327,11 @@ public class ProjectService {
             NotificationStatus.PROJECT_UPDATED, 
             "Zostałeś usunięty z projektu " + projectName
         );
+        notificationHelper.notifyUser(
+                currentUser,
+                NotificationStatus.PROJECT_UPDATED,
+                "Usunąłeś z projektu: " + projectName + "użytkownika: "+ removedUser.getName()
+        );
     }
 
     /**
@@ -381,7 +382,13 @@ public class ProjectService {
             NotificationStatus.PROJECT_UPDATED,
             "Twoja rola w projekcie " + project.getName() + " została zmieniona z " + oldRole + " na " + newRole
         );
-        
+
+        notificationHelper.notifyUser(
+                currentUser,
+                NotificationStatus.PROJECT_UPDATED,
+                "Aktualizowałeś rolę w projekcie " + project.getName() + " użytkownika: " + member.getUser().getName()
+        );
+
         return member;
     }
 

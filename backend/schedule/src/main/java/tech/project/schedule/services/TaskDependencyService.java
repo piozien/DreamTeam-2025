@@ -124,14 +124,11 @@ public class TaskDependencyService {
         
         // Powiadom przypisanych użytkowników o usunięciu zależności
         task.getAssignees().forEach(assignee -> {
-            // Nie powiadamiaj ponownie osoby usuwającej zależność
-            if (!assignee.getUser().getId().equals(user.getId())) {
-                notificationHelper.notifyUser(
-                    assignee.getUser(),
-                    NotificationStatus.TASK_DEPENDENCY_DELETED,
-                    "Usunięto zależność pomiędzy zadaniami: " + task.getName() + " i " + dependencyTaskName
-                );
-            }
+            notificationHelper.notifyUser(
+                assignee.getUser(),
+                NotificationStatus.TASK_DEPENDENCY_DELETED,
+                "Usunięto zależność pomiędzy zadaniami: " + task.getName() + " i " + dependencyTaskName
+            );
         });
     }
 
@@ -182,15 +179,12 @@ public class TaskDependencyService {
         
         // Powiadom przypisanych użytkowników o aktualizacji zależności
         task.getAssignees().forEach(assignee -> {
-            // Nie powiadamiaj ponownie osoby aktualizującej zależność
-            if (!assignee.getUser().getId().equals(user.getId())) {
-                notificationHelper.notifyUser(
-                    assignee.getUser(),
-                    NotificationStatus.TASK_DEPENDENCY_UPDATED,
-                    "Zaktualizowano zależność dla zadania " + task.getName() + ": teraz zależy od " + 
-                    newDependencyTask.getName() + " (wcześniej: " + oldDependencyName + ")"
-                );
-            }
+            notificationHelper.notifyUser(
+                assignee.getUser(),
+                NotificationStatus.TASK_DEPENDENCY_UPDATED,
+                "Zaktualizowano zależność dla zadania " + task.getName() + ": teraz zależy od " +
+                newDependencyTask.getName() + " (wcześniej: " + oldDependencyName + ")"
+            );
         });
     }
 

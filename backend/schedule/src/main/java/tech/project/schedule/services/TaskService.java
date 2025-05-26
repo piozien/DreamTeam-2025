@@ -211,7 +211,13 @@ public class TaskService {
                         log.error("Failed to delete calendar event: {}", e.getMessage());
                     }
                 }
-                
+
+                // Notify the person who updated the task
+                notificationHelper.notifyUser(
+                        user,
+                        NotificationStatus.TASK_COMPLETED,
+                        existingTask.getName()
+                );
                 // Notify all assignees
                 existingTask.getAssignees().forEach(assignee -> {
                     notificationHelper.notifyTaskAssignee(
@@ -227,15 +233,12 @@ public class TaskService {
         
         // Notify assignees about task update
         existingTask.getAssignees().forEach(assignee -> {
-            if (!assignee.getUser().getId().equals(user.getId())) {
                 notificationHelper.notifyTaskAssignee(
                     assignee.getUser(),
                     NotificationStatus.TASK_UPDATED,
                     existingTask.getName()
                 );
-            }
         });
-        
         return savedTask;
     }
 
@@ -269,22 +272,28 @@ public class TaskService {
                 log.error("Failed to delete main calendar event during task deletion: {}", e.getMessage());
             }
         }
-        
+
         // Save the task name for use in notifications
         String taskName = task.getName();
         
         taskRepository.deleteById(taskId);
-        
+
         // Notify assigned users of task deletion
         assignees.forEach(assignee -> {
-            if (!assignee.getId().equals(user.getId())) {
-                notificationHelper.notifyTaskAssignee(
-                    assignee,
+            notificationHelper.notifyTaskAssignee(
+                assignee,
+                NotificationStatus.TASK_DELETED,
+                taskName
+            );
+        });
+        if(!assignees.contains(user)){
+            notificationHelper.notifyUser(
+                    user,
                     NotificationStatus.TASK_DELETED,
                     taskName
-                );
-            }
-        });
+            );
+        }
+
     }
 
     /**

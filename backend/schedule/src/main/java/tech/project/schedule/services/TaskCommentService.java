@@ -62,14 +62,11 @@ public class TaskCommentService {
         
         // Powiadom wszystkich przypisanych użytkowników o nowym komentarzu
         task.getAssignees().forEach(assignee -> {
-            // Nie powiadamiaj autora komentarza
-            if (!assignee.getUser().getId().equals(user.getId())) {
-                notificationHelper.notifyTaskAssignee(
-                    assignee.getUser(),
-                    NotificationStatus.TASK_COMMENT_ADDED,
-                    task.getName()
-                );
-            }
+            notificationHelper.notifyTaskAssignee(
+                assignee.getUser(),
+                NotificationStatus.TASK_COMMENT_ADDED,
+                task.getName()
+            );
         });
         
         return comment;
@@ -100,15 +97,12 @@ public class TaskCommentService {
         
         task.getComments().remove(comment);
         taskRepository.save(task);
-        
-        // Powiadom autora komentarza o usunięciu
-        if (!commentAuthor.getId().equals(user.getId())) {
-            notificationHelper.notifyUser(
-                commentAuthor,
-                NotificationStatus.TASK_COMMENT_DELETED,
-                "Twój komentarz w zadaniu " + task.getName() + " został usunięty"
-            );
-        }
+
+        notificationHelper.notifyUser(
+            commentAuthor,
+            NotificationStatus.TASK_COMMENT_DELETED,
+            "Twój komentarz w zadaniu " + task.getName() + " został usunięty"
+        );
         
         // Powiadom wszystkich przypisanych użytkowników
         task.getAssignees().forEach(assignee -> {
@@ -144,14 +138,11 @@ public class TaskCommentService {
         
         // Powiadom wszystkich przypisanych użytkowników
         task.getAssignees().forEach(assignee -> {
-            // Nie powiadamiaj osoby usuwającej komentarze
-            if (!assignee.getUser().getId().equals(user.getId())) {
-                notificationHelper.notifyUser(
-                    assignee.getUser(),
-                    NotificationStatus.TASK_COMMENT_DELETED,
-                    "Wszystkie komentarze w zadaniu " + task.getName() + " zostały usunięte"
-                );
-            }
+            notificationHelper.notifyUser(
+                assignee.getUser(),
+                NotificationStatus.TASK_COMMENT_DELETED,
+                "Wszystkie komentarze w zadaniu " + task.getName() + " zostały usunięte"
+            );
         });
     }
 

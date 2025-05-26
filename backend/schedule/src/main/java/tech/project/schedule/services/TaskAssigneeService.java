@@ -92,21 +92,6 @@ public class TaskAssigneeService {
             return null;
         }
     }
-    
-    /**
-     * Gets an admin user ID for calendar operations
-     * 
-     * @param project The project to get admin for
-     * @return User ID of a project manager or system admin
-     */
-    private UUID getAdminUserId(Project project) {
-        for (ProjectMember member : project.getMembers().values()) {
-            if (member.getRole() == ProjectUserRole.PM) {
-                return member.getUser().getId();
-            }
-        }
-        return null; // No admin found
-    }
 
     /**
      * Assigns a project member to a specific task.
@@ -217,7 +202,13 @@ public class TaskAssigneeService {
         task.getAssignees().remove(assigneeToRemove);
         taskRepository.save(task);
         taskAssigneeRepository.delete(assigneeToRemove);
-        
+
+        notificationHelper.notifyUser(
+                currentUser,
+                NotificationStatus.TASK_UPDATED,
+                "Usunąłeś użytkownika " + userToNotify.getName()
+        );
+
         // Notify the deleted user
         notificationHelper.notifyUser(
             userToNotify,
