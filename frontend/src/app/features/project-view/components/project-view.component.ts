@@ -475,7 +475,6 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
               if (this.dataSource) {
                 this.dataSource.data = this.tasks;
               }
-              this.toastNotificationService.success('Zadanie zostało utworzone');
             },
             error: (error) => {
               console.error('Error creating task:', error);
@@ -670,7 +669,6 @@ export class ProjectViewComponent implements OnInit, OnDestroy, AfterViewInit {
               console.log('Member added successfully:', memberDTO);
               // Refresh the project members list
               this.loadProjectMembers(this.projectId as string);
-              this.toastNotificationService.success('Członek został dodany do projektu');
             },
             error: (error) => {
               console.error('Error adding project member:', error);
