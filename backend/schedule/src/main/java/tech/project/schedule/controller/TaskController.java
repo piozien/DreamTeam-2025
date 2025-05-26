@@ -12,7 +12,6 @@ import tech.project.schedule.exception.ApiException;
 import tech.project.schedule.model.task.Task;
 import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.task.TaskComment;
-import tech.project.schedule.model.task.TaskFile;
 import tech.project.schedule.model.user.User;
 import tech.project.schedule.repositories.UserRepository;
 import tech.project.schedule.services.*;
@@ -25,7 +24,7 @@ import tech.project.schedule.utils.UserUtils;
 /**
  * Controller responsible for managing task-related operations.
  * This controller provides endpoints for creating, retrieving, updating, and deleting tasks,
- * as well as managing task assignees, dependencies, comments, and associated files.
+ * as well as managing task assignees, dependencies, and comments.
  * It serves as the REST API interface for all task management functionality.
  */
 @RestController
@@ -38,7 +37,6 @@ public class TaskController {
     private final TaskAssigneeService taskAssigneeService;
     private final TaskDependencyService taskDependencyService;
     private final TaskCommentService taskCommentService;
-    private final TaskFileService taskFileService;
     
     /**
      * Creates a new task.
@@ -508,101 +506,5 @@ public class TaskController {
         taskCommentService.deleteAllCommentsForTask(taskId, user);
         return ResponseEntity.noContent().build();
     }
-
-      /**
-     * Adds a file to a task.
-     *
-     * @param taskId ID of the task to add the file to
-     * @param taskFileDTO Data transfer object containing file details
-     * @param userId ID of the user adding the file
-     * @return ResponseEntity containing the created file as DTO with HTTP status 201 (CREATED)
-     * @throws ApiException if the user is not found, task doesn't exist, or user lacks permissions
-     */
-    @PostMapping("/{taskId}/files")
-    public ResponseEntity<TaskFileDTO> addFile(
-            @PathVariable UUID taskId,
-            @Valid @RequestBody TaskFileDTO taskFileDTO,
-            @RequestParam UUID userId
-    ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-        UserUtils.assertAuthorized(user);
-
-        TaskFile file = TaskMapper.dtoToFile(taskFileDTO);
-        TaskFile createdFile = taskFileService.addTaskFile(taskId, user, file);
-        return ResponseEntity.status(HttpStatus.CREATED).body(TaskMapper.fileToDTO(createdFile));
-
-    }
-
-    /**
-     * Retrieves a specific file associated with a task.
-     *
-     * @param taskId ID of the task containing the file
-     * @param fileId ID of the file to retrieve
-     * @param userId ID of the user requesting the file
-     * @return ResponseEntity containing the file as DTO
-     * @throws ApiException if the user is not found, task/file doesn't exist, or user lacks access
-     */
-    @GetMapping("/{taskId}/files/{fileId}")
-    public ResponseEntity<TaskFileDTO> getTaskFileByTaskId(
-            @PathVariable UUID taskId,
-            @PathVariable UUID fileId,
-            @RequestParam UUID userId
-    ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-        UserUtils.assertAuthorized(user);
-
-        TaskFile file = taskFileService.getTaskFileById(taskId, fileId, user);
-        return ResponseEntity.ok(TaskMapper.fileToDTO(file));
-    }
-
-     /**
-     * Retrieves all files associated with a specific task.
-     *
-     * @param taskId ID of the task whose files are to be retrieved
-     * @param userId ID of the user requesting the files
-     * @return ResponseEntity containing a list of files as DTOs
-     * @throws ApiException if the user is not found, task doesn't exist, or user lacks access
-     */
-    @GetMapping("/{taskId}/files")
-    public ResponseEntity<List<TaskFileDTO>> getTaskFiles(
-            @PathVariable UUID taskId,
-            @RequestParam UUID userId
-    ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-        UserUtils.assertAuthorized(user);
-
-        List<TaskFile> files = taskFileService.getTaskFiles(taskId, user);
-        List<TaskFileDTO> fileDTOs = files.stream()
-                .map(TaskMapper::fileToDTO)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(fileDTOs);
-    }
-    
-     /**
-     * Retrieves all files associated with a specific task.
-     *
-     * @param taskId ID of the task whose files are to be retrieved
-     * @param userId ID of the user requesting the files
-     * @return ResponseEntity containing a list of files as DTOs
-     * @throws ApiException if the user is not found, task doesn't exist, or user lacks access
-     */
-    @DeleteMapping("/{taskId}/files/{fileId}")
-    public ResponseEntity<Void> deleteTaskFile(
-            @PathVariable UUID taskId,
-            @PathVariable UUID fileId,
-            @RequestParam UUID userId
-    ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
-        UserUtils.assertAuthorized(user);
-
-        taskFileService.deleteTaskFile(taskId, fileId, user);
-        return ResponseEntity.noContent().build();
-    }
-
 
 }

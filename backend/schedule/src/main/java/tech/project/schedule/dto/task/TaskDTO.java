@@ -10,7 +10,7 @@ import java.util.UUID;
 /**
  * Data Transfer Object that represents a task in the scheduling system.
  * Contains comprehensive task information including identification, scheduling details,
- * priority and status, as well as relationships to assigned users, comments, files,
+ * priority and status, as well as relationships to assigned users, comments,
  * and task dependencies.
  */
 public record TaskDTO(
@@ -24,7 +24,6 @@ public record TaskDTO(
         TaskStatus status,
         Set<UUID> assigneeIds,
         Set<TaskCommentDTO> comments,
-        Set<TaskFileDTO> files,
         Set<UUID> dependencyIds
 ) {
 }

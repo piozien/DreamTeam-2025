@@ -20,9 +20,6 @@ public enum NotificationStatus {
     TASK_DEPENDENCY_ADDED,
     TASK_DEPENDENCY_DELETED,
     TASK_DEPENDENCY_UPDATED,
-    TASK_FILE_UPLOADED,
-    TASK_FILE_DELETED,
-    TASK_FILE_UPDATED,
     
     // Error and system notification types
     ERROR,              // For general error notifications

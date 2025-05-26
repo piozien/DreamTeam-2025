@@ -77,7 +77,6 @@ public class TaskService {
         task.setComments(new HashSet<>());
         task.setDependencies(new HashSet<>());
         task.setDependentTasks(new HashSet<>());
-        task.setFiles(new HashSet<>());
 
         Task newTask = taskRepository.save(task);
         project.getTasks().add(newTask);

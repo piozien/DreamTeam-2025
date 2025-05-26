@@ -24,6 +24,5 @@ public record TaskUpdateDTO(
         TaskStatus status,
         Set<UUID> assigneeIds,
         Set<TaskCommentDTO> comments,
-        Set<TaskFileDTO> files,
         Set<UUID> dependencyIds
 ) {}

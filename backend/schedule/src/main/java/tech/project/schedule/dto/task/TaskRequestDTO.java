@@ -36,6 +36,5 @@ public record TaskRequestDTO(
 
         Set<UUID> assigneeIds,
         Set<TaskCommentDTO> comments,
-        Set<TaskFileDTO> files,
         Set<UUID> dependencyIds
 ) {}

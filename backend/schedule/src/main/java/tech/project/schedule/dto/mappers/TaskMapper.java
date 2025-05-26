@@ -1,11 +1,9 @@
 package tech.project.schedule.dto.mappers;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import tech.project.schedule.dto.task.TaskAssigneeDTO;
 import tech.project.schedule.dto.task.TaskCommentDTO;
 import tech.project.schedule.dto.task.TaskDTO;
-import tech.project.schedule.dto.task.TaskFileDTO;
 import tech.project.schedule.dto.task.TaskRequestDTO;
 import tech.project.schedule.dto.task.TaskUpdateDTO;
 import tech.project.schedule.model.project.Project;
@@ -19,7 +17,7 @@ import java.util.stream.Collectors;
 /**
  * Utility class that provides mapping methods between Task-related entities and DTOs.
  * Handles the conversion of data between domain models and data transfer objects
- * for tasks and their associated elements like assignees, comments and files.
+ * for tasks and their associated elements like assignees and comments.
  */
 @RequiredArgsConstructor
 public class TaskMapper {
@@ -71,7 +69,7 @@ public class TaskMapper {
 
      /**
      * Converts a Task entity to a TaskDTO.
-     * Handles conversion of associated collections like assignees, comments, files and dependencies.
+     * Handles conversion of associated collections like assignees, comments, and dependencies.
      * 
      * @param task The Task entity to convert
      * @return A TaskDTO containing the task data and associated elements
@@ -85,11 +83,6 @@ public class TaskMapper {
         Set<TaskCommentDTO> commentDtos = new HashSet<>();
         if(task.getComments() != null) {
             commentDtos = task.getComments().stream().map(TaskComment::mapToTaskCommentDTO)
-                    .collect(Collectors.toSet());
-        }
-        Set<TaskFileDTO> taskFileDtos = new HashSet<>();
-        if(task.getFiles() != null) {
-            taskFileDtos = task.getFiles().stream().map(TaskFile::mapToTaskFileDTO)
                     .collect(Collectors.toSet());
         }
         Set<UUID> dependencyIds = new HashSet<>();
@@ -111,7 +104,6 @@ public class TaskMapper {
                 task.getStatus(),
                 assigneeIds,
                 commentDtos,
-                taskFileDtos,
                 dependencyIds
         );
     }
@@ -157,37 +149,6 @@ public class TaskMapper {
                 createdComment.getUser().getId(),
                 createdComment.getComment(),
                 createdComment.getCreatedAt()
-        );
-    }
-
-    /**
-     * Converts a TaskFileDTO to a TaskFile entity.
-     * 
-     * @param taskFileDTO The TaskFileDTO to convert
-     * @return A new TaskFile entity with properties set from the DTO
-     */
-    public static TaskFile dtoToFile(@Valid TaskFileDTO taskFileDTO) {
-        TaskFile file = new TaskFile();
-        if (taskFileDTO.id() != null) {
-            file.setId(taskFileDTO.id());
-        }
-        file.setFilePath(taskFileDTO.filePath());
-        return file;
-    }
-
-     /**
-     * Converts a TaskFile entity to a TaskFileDTO.
-     * 
-     * @param createdFile The TaskFile entity to convert
-     * @return A TaskFileDTO containing the file data
-     */
-    public static TaskFileDTO fileToDTO(TaskFile createdFile) {
-        return new TaskFileDTO(
-            createdFile.getId(),
-            createdFile.getTask().getId(),
-            createdFile.getUploadedBy().getId(),
-            createdFile.getFilePath(),
-            createdFile.getUploadedAt()
         );
     }
 }

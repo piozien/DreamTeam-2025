@@ -42,9 +42,6 @@ public class NotificationHelper {
             case TASK_COMMENT_ADDED -> "Dodano nowy komentarz do zadania " + taskName;
             case TASK_COMMENT_UPDATED -> "Zaktualizowano komentarz w zadaniu " + taskName;
             case TASK_COMMENT_DELETED -> "Usunięto komentarz z zadania " + taskName;
-            case TASK_FILE_UPLOADED -> "Dodano nowy plik do zadania " + taskName;
-            case TASK_FILE_UPDATED -> "Zaktualizowano plik w zadaniu " + taskName;
-            case TASK_FILE_DELETED -> "Usunięto plik z zadania " + taskName;
             case TASK_DEPENDENCY_ADDED -> "Dodano nową zależność do zadania " + taskName;
             case TASK_DEPENDENCY_DELETED -> "Usunięto zależność z zadania " + taskName;
             case TASK_DEPENDENCY_UPDATED -> "Zaktualizowano zależność w zadaniu " + taskName;

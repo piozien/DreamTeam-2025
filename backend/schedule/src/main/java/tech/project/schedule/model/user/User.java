@@ -10,7 +10,6 @@ import tech.project.schedule.model.enums.UserStatus;
 import tech.project.schedule.model.project.ProjectMember;
 import tech.project.schedule.model.task.TaskAssignee;
 import tech.project.schedule.model.task.TaskComment;
-import tech.project.schedule.model.task.TaskFile;
 
 import java.util.Set;
 import java.util.UUID;
@@ -92,13 +91,6 @@ public class User {
     @OneToMany(mappedBy = "user")
     @EqualsAndHashCode.Exclude
     private Set<TaskComment> taskComments;
-
-     /**
-     * Files uploaded by this user.
-     */
-    @OneToMany(mappedBy = "uploadedBy")
-    @EqualsAndHashCode.Exclude
-    private Set<TaskFile> taskFiles;
 
     /**
      * Projects associated with this user.

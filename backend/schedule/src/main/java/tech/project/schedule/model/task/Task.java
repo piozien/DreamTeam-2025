@@ -96,13 +96,6 @@ public class Task {
     private Set<TaskComment> comments;
 
     /**
-     * Files attached to the task.
-     */
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
-    @EqualsAndHashCode.Exclude
-    private Set<TaskFile> files;
-
-    /**
      * Tasks that this task depends on (prerequisites).
      */
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
@@ -136,7 +129,6 @@ public class Task {
         this.comments = new HashSet<>();
         this.dependencies = new HashSet<>();
         this.dependentTasks = new HashSet<>();
-        this.files = new HashSet<>();
     }
 
     /**
@@ -157,9 +149,6 @@ public class Task {
         }
         if(dependentTasks == null){
             dependentTasks = new HashSet<>();
-        }
-        if(files == null){
-            files = new HashSet<>();
         }
     }
 }
