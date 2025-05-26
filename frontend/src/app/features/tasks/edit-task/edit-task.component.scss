@@ -198,9 +198,37 @@
 .comments-list {
   margin: 1.5rem 0;
   
+  .comments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    h3 {
+      margin: 0;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .delete-all-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+  }
+
   .comment-item {
     margin-bottom: 1rem;
     transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    padding: 1rem;
+    padding-right: 2rem; /* Add more padding on the right */
+    border-radius: 4px;
+    background-color: rgba(var(--primary-color-rgb), 0.03);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.1);
+    position: relative; /* For absolute positioning of the delete button */
     
     &:hover {
       transform: translateY(-2px);
@@ -209,6 +237,48 @@
     
     &:last-child {
       margin-bottom: 0;
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+      position: relative; /* For absolute positioning of the delete button */
+      padding-right: 0; /* Remove padding since we're using absolute positioning */
+
+      .comment-user-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding-right: 40px; /* Make space for the delete button */
+        flex: 1;
+        word-break: break-word; /* Ensure long text wraps properly */
+
+        .comment-date {
+          font-size: 0.8rem;
+          color: var(--text-color-light);
+        }
+      }
+
+      .delete-comment-btn {
+        position: absolute;
+        right: -16px; /* Position from the right edge of the comment item */
+        top: -4px; /* Align with the top of the header */
+        margin: 0; /* Reset any margins */
+        padding: 8px; /* Ensure enough clickable area */
+        width: 36px; /* Fixed width for consistency */
+        height: 36px; /* Fixed height for consistency */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    .comment-body {
+      margin-top: 0.5rem;
+      padding-left: 0.5rem;
+      border-left: 2px solid var(--primary-color);
     }
   }
 }

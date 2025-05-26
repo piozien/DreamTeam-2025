@@ -220,7 +220,17 @@
           <!-- Comments Tab -->
           <mat-tab label="Komentarze">
             <div class="form-section">
-              <h3>Komentarze</h3>
+              <div class="comments-header">
+                <h3>Komentarze</h3>
+                <button 
+                  mat-stroked-button 
+                  color="warn" 
+                  (click)="confirmDeleteAllComments()"
+                  [disabled]="!task?.comments?.length || submitting"
+                  class="delete-all-btn">
+                  <mat-icon>delete_forever</mat-icon> Usuń wszystkie komentarze
+                </button>
+              </div>
               <div class="comments-list" *ngIf="task?.comments?.length; else noComments">
                 <div class="comment-item" *ngFor="let comment of task?.comments">
                   <div class="comment-header">
@@ -233,7 +243,8 @@
                       color="warn" 
                       (click)="deleteComment(comment.id)"
                       [disabled]="submitting"
-                      matTooltip="Usuń komentarz">
+                      matTooltip="Usuń komentarz"
+                      class="delete-comment-btn">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </div>

@@ -159,6 +159,11 @@ export class TaskService {
     return this.http.delete<void>(`${this.apiUrl}/${taskId}/dependencies/${dependencyId}`, { params });
   }
 
+  deleteAllCommentsInTask(taskId: string, userId: string): Observable<void> {
+    const params = new HttpParams().set('userId', userId);
+    return this.http.delete<void>(`${this.apiUrl}/${taskId}/comments`, { params });
+  }
+
   updateDependency(taskId: string, dependencyId: string, userId: string): Observable<void> {
     const params = new HttpParams().set('userId', userId);
     return this.http.put<void>(`${this.apiUrl}/${taskId}/dependencies/${dependencyId}`, null, { params });

@@ -1056,6 +1056,44 @@ export class EditTaskComponent implements OnInit {
       }
     });
   }
+
+  /**
+   * Confirms and deletes all comments for the current task
+   */
+  confirmDeleteAllComments(): void {
+    if (!this.taskId) {
+      return;
+    }
+
+    if (!confirm('Czy na pewno chcesz usunąć WSZYSTKIE komentarze? Tej operacji nie można cofnąć.')) {
+      return;
+    }
+
+    this.submitting = true;
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      this.showError('Nie udało się zidentyfikować użytkownika');
+      this.submitting = false;
+      return;
+    }
+
+    this.taskService.deleteAllCommentsInTask(this.taskId, userId).subscribe({
+      next: () => {
+        console.log('Successfully deleted all comments');
+        // Clear all comments from the task
+        if (this.task) {
+          this.task.comments = [];
+        }
+        this.submitting = false;
+        this.showSuccess('Wszystkie komentarze zostały usunięte');
+      },
+      error: (err) => {
+        console.error('Error deleting all comments:', err);
+        this.submitting = false;
+        this.showError(`Nie udało się usunąć komentarzy: ${err.message || 'Nieznany błąd'}`);
+      }
+    });
+  }
   
   /**
    * Load assignees and available project members.
