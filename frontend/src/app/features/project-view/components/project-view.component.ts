@@ -21,7 +21,7 @@ import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
-import { Project, ProjectStatus, ProjectUserRole, ProjectMemberDTO, AddProjectMemberDTO } from '../../../shared/models/project.model';
+import { Project, ProjectStatus, ProjectUserRole, AddProjectMemberDTO } from '../../../shared/models/project.model';
 import { Task, TaskPriority, TaskStatus, TaskAssignee } from '../../../shared/models/task.model';
 import { User } from '../../../shared/models/user.model';
 import { ProjectService } from '../../../shared/services/project.service';

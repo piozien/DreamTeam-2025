@@ -8,7 +8,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-
 import { AdminService } from '../../../../shared/services/admin.service';
 import { GlobalRole } from '../../../../shared/enums/global-role.enum';
 import { RegistrationRequest } from '../../../../shared/dtos/auth/registration-request.dto';
