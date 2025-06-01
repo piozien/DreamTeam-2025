@@ -1,0 +1,32 @@
+<div class="container mt-4">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <h1>Admin Panel</h1>
+      </mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <mat-tab-group animationDuration="0ms">
+        <mat-tab label="User Management">
+          <app-user-management></app-user-management>
+        </mat-tab>
+        <mat-tab label="Register New User">
+          <app-register-user></app-register-user>
+        </mat-tab>
+        <mat-tab label="System Tools">
+          <div class="system-tools-container">
+            <h2>Google Calendar Integration</h2>
+            <div class="tool-section">
+              <p>Verify that the Google Calendar integration is working correctly.</p>
+              <button mat-raised-button color="primary" (click)="testGoogleCalendarToken()" [disabled]="isTestingToken">
+                <mat-icon>verified</mat-icon>
+                {{ isTestingToken ? 'Testing...' : 'Test Calendar Token' }}
+              </button>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+</div>

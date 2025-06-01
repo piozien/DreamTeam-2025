@@ -1,0 +1,180 @@
+// Main notification button
+.notification-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  
+  .mat-icon {
+    display: block;
+    margin: auto;
+  }
+}
+
+::ng-deep .notification-menu {
+  max-width: 400px !important;
+  min-width: 350px !important;
+
+  // Make sure this width is applied to the panel
+  .mat-mdc-menu-panel {
+    max-width: 400px !important;
+    min-width: 350px !important;
+  }
+}
+
+// Notification panel header
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  
+  .notification-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+  
+  .notification-actions {
+    display: flex;
+    gap: 4px;
+    
+    button {
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+      overflow: hidden; /* Contain ripple effect */
+      border-radius: 50%; /* Ensure circular ripple */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      
+      .mat-icon {
+        font-size: 18px;
+        height: 18px;
+        width: 18px;
+        display: block;
+        margin: auto;
+      }
+    }
+  }
+}
+
+// Notification content area
+.notification-content {
+  max-height: 400px;
+  overflow-y: auto;
+  
+  // Loading state
+  .notification-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    color: rgba(var(--primary-color-rgb), 0.7);
+    gap: 8px;
+    
+    .rotating {
+      animation: rotate 1.5s linear infinite;
+    }
+    
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  }
+  
+  // Empty state
+  .notification-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    color: rgba(0, 0, 0, 0.54);
+    gap: 8px;
+  }
+  
+  // Notifications list
+  .notification-list {
+    .notification-item {
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+      
+      &.notification-unread {
+        background-color: rgba(var(--primary-color-rgb), 0.08);
+        
+        &:hover {
+          background-color: rgba(var(--primary-color-rgb), 0.12);
+        }
+      }
+      
+      .notification-item-content {
+        display: flex;
+        padding: 12px 16px;
+        gap: 8px;
+        
+        .notification-status {
+          padding-top: 4px;
+          
+          .notification-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: transparent;
+            
+            &.unread {
+              background-color: var(--primary-color);
+            }
+          }
+        }
+        
+        .notification-message {
+          flex: 1;
+          
+          .message-text {
+            margin: 0 0 4px;
+            font-size: 14px;
+            line-height: 1.4;
+          }
+          
+          .message-time {
+            margin: 0;
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.54);
+          }
+        }
+        
+        .notification-item-actions {
+          display: flex;
+          align-items: center;
+          
+          button {
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            overflow: hidden; /* Contain ripple effect */
+            border-radius: 50%; /* Ensure circular ripple */
+            margin: 0 2px; /* Add a small margin for better spacing */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            
+            .mat-icon {
+              font-size: 16px;
+              height: 16px;
+              width: 16px;
+              display: block;
+              margin: auto;
+            }
+          }
+        }
+      }
+    }
+  }
+}

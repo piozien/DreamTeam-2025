@@ -1,0 +1,86 @@
+{
+  "projects": [
+    {
+      "id": "1",
+      "name": "Platforma E-commerce",
+      "description": "Budowa nowoczesnej platformy e-commerce z wykorzystaniem React i Spring Boot",
+      "startDate": "2025-01-15",
+      "endDate": "2025-06-30",
+      "members": [
+        {
+          "id": "1",
+          "projectId": "1",
+          "user": {
+            "id": "1",
+            "name": "Jan Kowalski",
+            "email": "jan@example.com",
+            "globalRole": "CLIENT"
+          },
+          "role": "PM"
+        },
+        {
+          "id": "2",
+          "projectId": "1",
+          "user": {
+            "id": "2",
+            "name": "Anna Nowak",
+            "email": "anna@example.com",
+            "globalRole": "CLIENT"
+          },
+          "role": "MEMBER"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Aplikacja Mobilna",
+      "description": "Tworzenie aplikacji mobilnej do śledzenia aktywności fizycznej",
+      "startDate": "2025-03-01",
+      "endDate": "2025-08-15",
+      "members": [
+        {
+          "id": "3",
+          "projectId": "2",
+          "user": {
+            "id": "3",
+            "name": "Michał Wiśniewski",
+            "email": "michal@example.com",
+            "globalRole": "CLIENT"
+          },
+          "role": "PM"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Migracja do Chmury",
+      "description": "Migracja systemów legacy do infrastruktury chmurowej AWS",
+      "startDate": "2025-02-01",
+      "endDate": "2025-04-30",
+      "members": [
+        {
+          "id": "4",
+          "projectId": "3",
+          "user": {
+            "id": "4",
+            "name": "Katarzyna Zielińska",
+            "email": "katarczyna@example.com",
+            "globalRole": "CLIENT"
+          },
+          "role": "PM"
+        },
+        {
+          "id": "5",
+          "projectId": "3",
+          "user": {
+            "id": "5",
+            "name": "Tomasz Brzoza",
+            "email": "tomasz@example.com",
+            "globalRole": "CLIENT"
+          },
+          "role": "MEMBER"
+        }
+      ]
+    }
+  ]
+}

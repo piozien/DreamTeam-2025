@@ -1,0 +1,177 @@
+<div class="calendar-container">
+  <div class="calendar-header">
+    <div class="calendar-title">
+      <h2>Kalendarz</h2>
+      <button mat-icon-button (click)="refreshCalendar()" matTooltip="Odśwież">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+    
+    <div class="calendar-controls">
+      <button mat-button [class.active]="currentView === 'month'" (click)="changeView('month')">Miesiąc</button>
+      <button mat-button [class.active]="currentView === 'week'" (click)="changeView('week')">Tydzień</button>
+      <button mat-button [class.active]="currentView === 'day'" (click)="changeView('day')">Dzień</button>
+      
+      <div class="date-controls">
+        <button mat-icon-button (click)="navigatePrevious()">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        
+        <div class="date-picker-container">
+          <div *ngIf="currentView === 'month'" class="month-year-display">
+            <mat-form-field appearance="fill">
+              <mat-label>Miesiąc</mat-label>
+              <mat-select [value]="currentDate.getMonth()" 
+                         (selectionChange)="changeMonthYear($event.value, currentDate.getFullYear())">
+                <mat-option *ngFor="let month of months; let i = index" [value]="i">
+                  {{month}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            
+            <mat-form-field appearance="fill">
+              <mat-label>Rok</mat-label>
+              <mat-select [value]="currentDate.getFullYear()" 
+                         (selectionChange)="changeMonthYear(currentDate.getMonth(), $event.value)">
+                <mat-option *ngFor="let year of getYearRange()" [value]="year">{{year}}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          
+          <div *ngIf="currentView === 'week'" class="current-date-display week-range">
+            {{getWeekRangeString()}}
+          </div>
+          
+          <div *ngIf="currentView === 'day'" class="current-date-display">
+            {{currentDate | date:'dd MMMM yyyy'}}
+          </div>
+        </div>
+        
+        <button mat-icon-button (click)="navigateNext()">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="calendar-body">
+    <!-- Loading indicator -->
+    <div *ngIf="loading" class="loading-overlay">
+      <mat-icon class="spinner">sync</mat-icon>
+      <span>Ładowanie zadań...</span>
+    </div>
+    
+    <!-- Month View -->
+    <div *ngIf="currentView === 'month'" class="month-view">
+      <div class="weekday-header">
+        <div *ngFor="let day of weekDays" class="weekday">{{day}}</div>
+      </div>
+      
+      <div class="month-grid">
+        <div *ngFor="let day of calendarDays" 
+             class="day" 
+             [class.not-current-month]="!day.isCurrentMonth"
+             [class.today]="day.isToday"
+             (click)="selectDay(day)">
+          <span class="day-number">{{day.dayNumber}}</span>
+          <div class="day-events">
+            <div *ngFor="let event of day.events?.slice(0, 2)" 
+                 class="event-marker" 
+                 [class.end-date]="event.isEndDate"
+                 [class.priority-critical]="event.task?.priority === 'CRITICAL'"
+                 [class.priority-important]="event.task?.priority === 'IMPORTANT'"
+                 [class.priority-optional]="event.task?.priority === 'OPTIONAL'"
+                 [matTooltip]="event.title">
+              <span class="event-title">{{event.title}}</span>
+              <mat-icon *ngIf="event.task" class="event-status-icon">
+                {{getStatusIcon(event.task.status)}}
+              </mat-icon>
+            </div>
+            <div *ngIf="day.events && day.events.length > 2" class="more-events">
+              +{{day.events.length - 2}} więcej
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Week View -->
+    <div *ngIf="currentView === 'week'" class="week-view">
+      <div class="weekday-header">
+        <div class="hour-cell"></div>
+        <div *ngFor="let day of getCurrentWeekDays()" class="weekday" 
+             [class.today]="day.isToday">
+          <div class="weekday-name">{{weekDays[day.date.getDay() === 0 ? 6 : day.date.getDay() - 1]}}</div>
+          <div class="weekday-date">{{day.dayNumber}}</div>
+        </div>
+      </div>
+      
+      <div class="week-grid">
+        <div *ngFor="let hourString of getHours(); let i = index" class="hour-row">
+          <div class="hour-cell">{{hourString}}</div>
+          <div *ngFor="let day of getCurrentWeekDays()" class="day-hour-cell"
+               [class.today]="day.isToday">
+            <div *ngFor="let event of getEventsForDayHour(day, i)" 
+                 class="event-marker week-event" 
+                 [class.end-date]="event.isEndDate"
+                 [class.continuation]="event.isContinuation"
+                 [class.start-of-day]="event.isStartOfDay"
+                 [class.isEndOfDay]="event.isEndOfDay"
+                 [class.priority-critical]="event.task?.priority === 'CRITICAL'"
+                 [class.priority-important]="event.task?.priority === 'IMPORTANT'"
+                 [class.priority-optional]="event.task?.priority === 'OPTIONAL'"
+                 [matTooltip]="(event.isContinuation && !event.isStartOfDay) ? 'Kontynuacja: ' + event.title : event.description">
+              <span class="event-title">{{(event.isContinuation && !event.isStartOfDay) ? '↪ ' + event.title : event.title}}{{event.isEndOfDay ? ' (Koniec)' : ''}}</span>
+              <mat-icon *ngIf="event.task && (event.isStartOfDay || event.isEndOfDay)" class="event-status-icon">
+                {{getStatusIcon(event.task.status)}}
+              </mat-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Day View -->
+    <div *ngIf="currentView === 'day'" class="day-view">
+      <div class="day-header">
+        <h3>{{currentDate | date:'EEEE, d MMMM yyyy'}}</h3>
+      </div>
+      
+      <div class="day-grid">
+        <div *ngFor="let hourString of getHours(); let i = index" class="hour-row">
+          <div class="hour-cell">{{hourString}}</div>
+          <div class="day-hour-content">
+            <div *ngFor="let event of getEventsForHour(i)" 
+                 class="event-marker day-event" 
+                 [class.end-date]="event.isEndDate"
+                 [class.continuation]="event.isContinuation"
+                 [class.start-of-day]="event.isStartOfDay"
+                 [class.isEndOfDay]="event.isEndOfDay"
+                 [class.priority-critical]="event.task?.priority === 'CRITICAL'"
+                 [class.priority-important]="event.task?.priority === 'IMPORTANT'"
+                 [class.priority-optional]="event.task?.priority === 'OPTIONAL'">
+              <div class="event-header">
+                <span class="event-title">
+                  {{(event.isContinuation && !event.isStartOfDay) ? '↪ ' + event.title : event.title}}
+                  {{event.isEndOfDay ? ' (Koniec)' : ''}}
+                </span>
+                <mat-icon *ngIf="event.task && (event.isStartOfDay || event.isEndOfDay)" class="event-status-icon">
+                  {{getStatusIcon(event.task.status)}}
+                </mat-icon>
+              </div>
+              <div class="event-description" *ngIf="event.description && event.isStartOfDay">
+                {{event.description}}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- No tasks message -->
+    <div *ngIf="userTasks.length === 0 && !loading" class="no-tasks-message">
+      <mat-icon>event_busy</mat-icon>
+      <p>Brak zadań do wyświetlenia</p>
+    </div>
+  </div>
+</div> 
