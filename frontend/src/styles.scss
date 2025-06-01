@@ -1,0 +1,344 @@
+/* You can add global styles to this file, and also import other style files */
+@use 'ngx-toastr/toastr';
+
+/* Import the prebuilt theme but we'll override it with CSS variables */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+:root {
+  /* Main Brand Colors */
+  --primary-color: #455d7a;
+  --primary-color-dark: #233142;
+  --primary-color-light: #798898;
+  --accent-color: #f95959;
+  --accent-color-light: #ff9898;
+  --accent-color-dark: #d04848;
+  --background-color: #e3e3e3;
+  --text-color: #233142;
+  --text-color-light: #455d7a;
+  --text-color-on-dark: #ffffff;
+  
+  /* Shadow variables for consistent elevation */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.2);
+  
+  /* RGB Versions for rgba() use */
+  --primary-color-rgb: 69, 93, 122;
+  --primary-color-dark-rgb: 35, 49, 66;
+  --primary-color-light-rgb: 121, 136, 152;
+  --accent-color-rgb: 249, 89, 89;
+  --accent-color-light-rgb: 255, 152, 152;
+  --accent-color-dark-rgb: 208, 72, 72;
+  --background-color-rgb: 227, 227, 227;
+  
+  /* Functional Colors */
+  --success-color: #4CAF50;
+  --success-color-rgb: 76, 175, 80;
+  --info-color: #5d6e82;
+  --info-color-rgb: 93, 110, 130;
+  --warning-color: #e65151;
+  --warning-color-rgb: 230, 81, 81;
+  --danger-color: #bc3f3f;
+  --danger-color-rgb: 188, 63, 63;
+  
+  /* Priority Colors */
+  --priority-optional-color: #4CAF50;
+  --priority-optional-color-rgb: 76, 175, 80;
+  --priority-important-color: #E6B64C;
+  --priority-important-color-rgb: 230, 182, 76;
+  --priority-critical-color: #bc3f3f;
+  --priority-critical-color-rgb: 188, 63, 63;
+}
+
+html, body { height: 100%; }
+body { 
+  margin: 0; 
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background: linear-gradient(135deg, #e8e8e8 0%, var(--background-color) 100%);
+  background-attachment: fixed;
+  color: var(--text-color);
+  line-height: 1.5;
+}
+
+/* Global Pagination Styles */
+.mat-paginator {
+  .mat-paginator-container {
+    color: var(--text-color);
+  }
+  
+  .mat-paginator-navigation-first,
+  .mat-paginator-navigation-previous,
+  .mat-paginator-navigation-next,
+  .mat-paginator-navigation-last {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.3);
+    margin: 0 2px;
+  }
+  
+  .mat-paginator-icon {
+    fill: var(--primary-color) !important;
+    transform: scale(1.2);
+  }
+  
+  .mat-paginator-range-label,
+  .mat-paginator-page-size-label {
+    color: var(--text-color);
+  }
+  
+  .mat-select-value {
+    color: var(--primary-color);
+  }
+}
+
+/* Typography and Text Colors */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--primary-color-dark);
+  margin-top: 0;
+  font-weight: 500;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1.25rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+h4 {
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+/* Text color utility classes */
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.text-primary-dark {
+  color: var(--primary-color-dark) !important;
+}
+
+.text-accent {
+  color: var(--accent-color) !important;
+}
+
+.text-light {
+  color: var(--text-color-light) !important;
+}
+
+.text-white {
+  color: var(--text-color-on-dark) !important;
+}
+
+.text-success {
+  color: var(--success-color) !important;
+}
+
+.text-danger {
+  color: var(--danger-color) !important;
+}
+
+.text-info {
+  color: var(--info-color) !important;
+}
+
+.text-warning {
+  color: var(--warning-color) !important;
+}
+
+/* Text size utility classes */
+.text-sm {
+  font-size: 0.875rem !important;
+}
+
+.text-md {
+  font-size: 1rem !important;
+}
+
+.text-lg {
+  font-size: 1.25rem !important;
+}
+
+.text-xl {
+  font-size: 1.5rem !important;
+}
+
+/* Text weight utility classes */
+.font-normal {
+  font-weight: 400 !important;
+}
+
+.font-medium {
+  font-weight: 500 !important;
+}
+
+.font-bold {
+  font-weight: 700 !important;
+}
+
+/* Material Component Overrides */
+
+/* Buttons */
+.mat-mdc-button.mat-primary,
+.mat-mdc-icon-button.mat-primary,
+.mat-mdc-stroked-button.mat-primary {
+  --mdc-text-button-label-text-color: var(--primary-color);
+  --mdc-outlined-button-label-text-color: var(--primary-color);
+  --mdc-icon-button-icon-color: var(--primary-color);
+}
+
+.mat-mdc-button.mat-accent,
+.mat-mdc-icon-button.mat-accent,
+.mat-mdc-stroked-button.mat-accent {
+  --mdc-text-button-label-text-color: var(--accent-color);
+  --mdc-outlined-button-label-text-color: var(--accent-color);
+  --mdc-icon-button-icon-color: var(--accent-color);
+}
+
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary,
+.mat-mdc-fab.mat-primary {
+  --mdc-protected-button-container-color: var(--primary-color);
+  --mdc-protected-button-label-text-color: var(--text-color-on-dark);
+  --mdc-filled-button-container-color: var(--primary-color);
+  --mdc-filled-button-label-text-color: var(--text-color-on-dark);
+  --mat-fab-container-color: var(--primary-color);
+  --mat-fab-foreground-color: var(--text-color-on-dark);
+}
+
+.mat-mdc-raised-button.mat-accent,
+.mat-mdc-unelevated-button.mat-accent,
+.mat-mdc-fab.mat-accent {
+  --mdc-protected-button-container-color: var(--accent-color);
+  --mdc-protected-button-label-text-color: var(--text-color-on-dark);
+  --mdc-filled-button-container-color: var(--accent-color);
+  --mdc-filled-button-label-text-color: var(--text-color-on-dark);
+  --mat-fab-container-color: var(--accent-color);
+  --mat-fab-foreground-color: var(--text-color-on-dark);
+}
+
+/* Toolbar */
+.mat-toolbar.mat-primary {
+  background-color: var(--primary-color);
+  color: var(--text-color-on-dark);
+}
+
+.mat-toolbar.mat-accent {
+  background-color: var(--accent-color);
+  color: var(--text-color-on-dark);
+}
+
+/* Sidenav */
+.mat-sidenav {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Cards */
+.mat-mdc-card {
+  --mdc-elevated-card-container-color: white;
+}
+
+.mat-mdc-card-title {
+  color: var(--primary-color-dark);
+}
+
+/* Progress Bars/Spinners */
+.mat-progress-bar-fill::after {
+  background-color: var(--primary-color);
+}
+
+.mat-progress-spinner circle, .mat-spinner circle {
+  stroke: var(--primary-color);
+}
+
+/* Badges */
+.mat-badge-content {
+  background: var(--accent-color);
+  color: var(--text-color-on-dark);
+}
+
+/* Form Controls */
+.mat-mdc-form-field.mat-focused .mat-mdc-form-field-focus-overlay {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-text-field-wrapper .mdc-notched-outline__leading,
+.mat-mdc-form-field.mat-focused .mat-mdc-text-field-wrapper .mdc-notched-outline__notch,
+.mat-mdc-form-field.mat-focused .mat-mdc-text-field-wrapper .mdc-notched-outline__trailing {
+  border-color: var(--primary-color);
+}
+
+.mat-mdc-slide-toggle.mat-checked:not(.mat-disabled) .mdc-switch__track {
+  background-color: var(--primary-color);
+}
+
+.mat-mdc-slide-toggle.mat-checked:not(.mat-disabled) .mdc-switch__handle {
+  background-color: var(--primary-color-light);
+}
+
+/* Ripples */
+.mat-ripple-element {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+/* Custom toast styling with the new color palette */
+.toast-container {
+  pointer-events: auto !important;
+}
+
+.toast {
+  opacity: 1 !important;
+}
+
+.toast-success {
+  background-color: var(--success-color) !important;
+  box-shadow: 0 0 12px rgba(var(--success-color-rgb), 0.3) !important;
+  border-radius: 4px;
+}
+
+.toast-error {
+  background-color: var(--danger-color) !important;
+  box-shadow: 0 0 12px rgba(var(--danger-color-rgb), 0.3) !important;
+  border-radius: 4px;
+}
+
+.toast-warning {
+  background-color: var(--warning-color) !important;
+  box-shadow: 0 0 12px rgba(var(--warning-color-rgb), 0.3) !important;
+  border-radius: 4px;
+}
+
+.toast-info {
+  background-color: var(--info-color) !important;
+  box-shadow: 0 0 12px rgba(var(--info-color-rgb), 0.3) !important;
+  border-radius: 4px;
+}
+
+.toast-close-button {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  opacity: 0.8;
+  cursor: pointer;
+  color: var(--text-color-on-dark);
+}
+
+.toast-close-button:hover {
+  opacity: 1;
+}

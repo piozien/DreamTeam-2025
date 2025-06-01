@@ -1,0 +1,38 @@
+.register-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+.form-field {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+.success-message {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #dff0d8;
+  border-radius: 4px;
+  color: #3c763d;
+}
+
+.register-card {
+  padding: 10px;
+}
+
+.spinner-button {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+}

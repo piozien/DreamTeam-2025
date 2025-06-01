@@ -1,0 +1,748 @@
+.project-view-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: var(--background-color);
+  min-height: 100vh;
+
+  .back-button-container {
+    margin-bottom: 20px;
+
+    button {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      font-weight: 500;
+      
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+
+  .loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    
+    span {
+      margin-top: 16px;
+      font-size: 16px;
+      color: var(--text-color-light);
+    }
+  }
+
+  .error-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: var(--danger-color);
+    
+    mat-icon {
+      margin-right: 8px;
+      font-size: 24px;
+      height: 24px;
+      width: 24px;
+    }
+    
+    span {
+      font-size: 16px;
+    }
+  }
+
+  .primary-action-button {
+    // This style is now moved to be more generally applicable within .project-view-container
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); // Keep shadow consistent with other buttons
+    transition: background-color 0.3s ease;
+    
+    &:hover:not([disabled]) {
+      background-color: var(--primary-color-dark);
+    }
+    
+    &[disabled] {
+      opacity: 0.6;
+    }
+    
+    mat-icon {
+      margin-right: 4px;
+    }
+  }
+
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--primary-color-dark);
+    }
+    
+    .project-status {
+      .status-label {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      
+      .status-planned {
+        background-color: rgba(var(--primary-color-rgb), 0.15);
+        color: var(--primary-color);
+      }
+      
+      .status-in_progress {
+        background-color: rgba(var(--success-color-rgb), 0.15);
+        color: var(--success-color);
+      }
+      
+      .status-completed {
+        background-color: rgba(var(--primary-color-rgb), 0.25);
+        color: var(--primary-color-dark);
+      }
+    }
+  }
+
+  mat-tab-group {
+    ::ng-deep {
+      .mat-mdc-tab .mdc-tab__text-label {
+        color: var(--text-color);
+        font-weight: 400;
+      }
+      
+      .mat-mdc-tab:not(.mat-mdc-tab-disabled).mdc-tab--active .mdc-tab__text-label {
+        color: var(--primary-color-dark);
+        font-weight: 700;
+      }
+      
+      .mat-mdc-tab-header {
+        border-radius: 8px 8px 0 0;
+      }
+      
+      .mdc-tab-indicator__content--underline {
+        border-color: var(--primary-color);
+      }
+    }
+    
+    .tab-icon {
+      margin-right: 8px;
+      color: var(--text-color);
+    }
+    
+    .tab-content {
+      padding: 24px 0;
+      
+      mat-card {
+        margin-bottom: 20px;
+        background-color: rgba(var(--background-color-rgb), 0.8);
+        
+        h3 {
+          margin-top: 0;
+          margin-bottom: 16px;
+          font-size: 18px;
+          font-weight: 500;
+          color: var(--primary-color-dark);
+        }
+      }
+    }
+  }
+
+  .project-details {
+    .detail-section {
+      margin-bottom: 32px;
+      
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        
+        h3 {
+          margin: 0;
+        }
+        
+        button {
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+      }
+      
+      .detail-item {
+        display: flex;
+        margin-bottom: 12px;
+        
+        .label {
+          min-width: 150px;
+          font-weight: 500;
+          color: var(--primary-color);
+        }
+        
+        .value {
+          flex: 1;
+        }
+      }
+    }
+    
+    .team-members {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+      
+      .member-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px;
+        background-color: white;
+        border-radius: 8px;
+        
+        .member-info-container {
+          display: flex;
+          align-items: center;
+          
+          .member-avatar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--background-color);
+            margin-right: 12px;
+            
+            mat-icon {
+              color: var(--text-color-light);
+            }
+          }
+          
+          .member-info {
+            .member-name {
+              font-weight: 500;
+              margin-bottom: 4px;
+            }
+            
+            .member-role {
+              font-size: 12px;
+              color: var(--text-color-light);
+            }
+          }
+        }
+        
+        .member-actions {
+          display: flex;
+          gap: 8px;
+          
+          button[color="primary"] {
+            color: var(--primary-color);
+          }
+          
+          button[color="warn"] {
+            color: var(--danger-color);
+          }
+        }
+      }
+    }
+  }
+
+  .coming-soon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-color-light);
+    
+    mat-icon {
+      font-size: 48px;
+      height: 48px;
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    }
+    
+    .mat-card-title {
+      color: var(--primary-color-dark);
+      margin-bottom: 16px;
+      font-weight: 500;
+      position: relative;
+      padding-left: 8px;
+    }
+
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 16px 20px;
+      background: linear-gradient(to right, rgba(var(--primary-color-rgb), 0.05), rgba(var(--primary-color-rgb), 0.02));
+    }
+
+    h2 {
+      margin: 0;
+      font-weight: 500;
+      color: var(--primary-color-dark);
+      font-size: 22px;
+    }
+
+    .coming-soon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-color-light);
+      position: relative;
+      padding-bottom: 8px;
+      
+      &:after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 40px;
+        height: 3px;
+        background-color: var(--primary-color);
+        border-radius: 3px;
+      }
+    }
+    
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: 4px;
+      padding: 0 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease;
+      
+      &:hover:not([disabled]) {
+        background-color: var(--primary-color-dark);
+      }
+      
+      &[disabled] {
+        opacity: 0.6;
+      }
+      
+      .mat-icon {
+        margin-right: 6px;
+      }
+    }
+  }
+  
+  .task-filter-container {
+    width: 100%;
+    padding: 16px;
+    background-color: var(--background-color) !important;
+    border-radius: 4px 4px 0 0;
+    border: 1px solid rgba(var(--primary-color-rgb), 0.1);
+    border-bottom: none;
+    
+    .filter-field {
+      width: 100%;
+      max-width: 500px;
+      
+      .mat-form-field-wrapper {
+        padding-bottom: 0;
+      }
+      
+      ::ng-deep .mat-form-field-outline {
+        background-color: white;
+      }
+      
+      ::ng-deep .mat-form-field-infix {
+        padding: 0.5em 0;
+      }
+      
+      ::ng-deep .mat-form-field-label {
+        color: var(--text-color-light) !important;
+      }
+      
+      ::ng-deep input.mat-input-element {
+        color: var(--text-color) !important;
+      }
+    }
+  }
+  
+  .tasks-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 32px !important; /* Increased spacing between header and table */
+    
+    h2 {
+      margin: 0 !important;
+      color: var(--primary-color-dark) !important;
+    }
+    
+    button.primary-action-button {
+      margin-left: auto !important; /* Pushes the button to the right */
+    }
+  }
+  
+  .task-table-container {
+    background-color: white !important;
+    border-radius: 0 0 4px 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.1);
+    margin-bottom: 24px;
+    
+    .task-table {
+      width: 100%;
+      background-color: white !important;
+      
+      .mat-header-row {
+        background-color: var(--background-color) !important;
+      }
+      
+      .mat-row {
+        background-color: white !important;
+      }
+      
+      th.mat-header-cell {
+        font-weight: 500;
+        color: var(--primary-color-dark) !important;
+        background-color: var(--background-color) !important;
+        padding: 16px 12px;
+        font-size: 14px;
+        border-bottom: 2px solid rgba(var(--primary-color-rgb), 0.1);
+      }
+      
+      td.mat-cell {
+        // Styles for action buttons in the table
+        .action-buttons {
+          display: flex;
+          align-items: center;
+          gap: 4px; // Adjust spacing as needed
+
+          .edit-button {
+            mat-icon {
+              color: var(--primary-color);
+            }
+            &:hover {
+              mat-icon {
+                color: var(--primary-color-dark);
+              }
+            }
+          }
+
+          .delete-button {
+            mat-icon {
+              color: var(--danger-color);
+            }
+            &:hover {
+              mat-icon {
+                color: var(--accent-color-dark); // Or a darker shade of danger
+              }
+            }
+          }
+        }
+
+        padding: 14px 12px;
+        color: var(--text-color) !important;
+        border-bottom: 1px solid rgba(var(--background-color-rgb), 0.5);
+        font-size: 14px;
+      }
+      
+      .mat-row:hover {
+        background-color: rgba(var(--background-color-rgb), 0.3);
+      }
+      
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        
+        button {
+          min-width: 32px;
+          width: 32px;
+          height: 32px;
+          line-height: 32px;
+          padding: 0;
+          border-radius: 50%;
+          
+          mat-icon {
+            font-size: 18px;
+            height: 18px;
+            width: 18px;
+            line-height: 18px;
+          }
+        }
+        
+        .edit-button {
+          background-color: rgba(var(--primary-color-rgb), 0.15);
+          color: var(--primary-color);
+        }
+        
+        .delete-button {
+          background-color: rgba(var(--danger-color-rgb), 0.15);
+          color: var(--danger-color);
+        }
+      }
+    }
+    
+    .task-status-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+      min-width: 100px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      letter-spacing: 0.3px;
+    }
+    
+    .status-todo {
+      background-color: rgba(var(--warning-color-rgb), 0.15);
+      color: var(--warning-color);
+      border: 1px solid rgba(var(--warning-color-rgb), 0.2);
+    }
+    
+    .status-in-progress {
+      background-color: rgba(var(--primary-color-rgb), 0.15);
+      color: var(--primary-color);
+      border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+    }
+    
+    .status-done {
+      background-color: rgba(var(--success-color-rgb), 0.15);
+      color: var(--success-color);
+      border: 1px solid rgba(var(--success-color-rgb), 0.2);
+    }
+    
+    .task-priority-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+      min-width: 70px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      letter-spacing: 0.3px;
+    }
+    
+    .priority-optional {
+      background-color: rgba(var(--priority-optional-color-rgb), 0.15);
+      color: var(--priority-optional-color);
+      border: 1px solid rgba(var(--priority-optional-color-rgb), 0.2);
+    }
+    
+    .priority-important {
+      background-color: rgba(var(--priority-important-color-rgb), 0.15);
+      color: var(--priority-important-color);
+      border: 1px solid rgba(var(--priority-important-color-rgb), 0.2);
+    }
+    
+    .priority-critical {
+      background-color: rgba(var(--priority-critical-color-rgb), 0.15);
+      color: var(--priority-critical-color);
+      border: 1px solid rgba(var(--priority-critical-color-rgb), 0.2);
+    }
+  }
+  
+  .no-data {
+    padding: 16px 0;
+    color: var(--text-color-light);
+    font-style: italic;
+  }
+  
+  /* Task Filter Styles */
+  .task-filter-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.1);
+    
+    .search-input-container {
+      display: flex;
+      align-items: center;
+      max-width: 500px;
+      border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+      border-radius: 6px;
+      padding: 10px 16px;
+      background-color: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) inset;
+      transition: all 0.2s ease;
+      
+      &:focus-within {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.15);
+      }
+      
+      mat-icon {
+        color: var(--text-color-light);
+        margin-right: 8px;
+      }
+      
+      input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 16px;
+        color: var(--text-color);
+        background-color: transparent;
+      }
+    }
+  }
+  
+  /* Table Styles */
+  .task-table-container {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 24px;
+    position: relative;
+    background-color: white;
+    border: 1px solid rgba(var(--primary-color-rgb), 0.1);
+  }
+  
+  .task-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    
+    th.mat-header-cell {
+      background-color: rgba(var(--primary-color-rgb), 0.1);
+      color: var(--text-color);
+      font-weight: 500;
+      padding: 16px 12px;
+    }
+    
+    td.mat-cell {
+      color: var(--text-color);
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    tr.mat-row:hover {
+      background-color: rgba(var(--primary-color-rgb), 0.05);
+    }
+    
+    tr.mat-row:last-child td.mat-cell {
+      border-bottom: none;
+    }
+    
+    .mat-row.cdk-row {
+      height: auto;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      
+      button.edit-button {
+        background-color: rgba(var(--primary-color-rgb), 0.1);
+        color: var(--primary-color);
+      }
+      
+      button.delete-button {
+        background-color: rgba(var(--danger-color-rgb), 0.1);
+        color: var(--danger-color);
+      }
+      
+      .mat-icon-button {
+        &:hover {
+          background-color: rgba(var(--primary-color-rgb), 0.2);
+        }
+      }
+    }
+  }
+  
+  .mat-paginator {
+    background-color: white;
+    border: 1px solid rgba(var(--primary-color-rgb), 0.1);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    
+    ::ng-deep {
+      /* Pagination controls */
+      .mat-paginator-container {
+        color: var(--text-color);
+        min-height: 56px; /* Taller container */
+      }
+      
+      .mat-paginator-page-size-label {
+        margin: 0 4px;
+        color: var(--text-color);
+        font-weight: 500;
+      }
+      
+      .mat-paginator-range-label {
+        margin: 0 32px;
+        color: var(--text-color);
+        font-weight: 500;
+      }
+      
+      /* Navigation button styling */
+      .mat-paginator-navigation-first,
+      .mat-paginator-navigation-previous,
+      .mat-paginator-navigation-next,
+      .mat-paginator-navigation-last {
+        color: var(--primary-color) !important;
+        background-color: rgba(var(--primary-color-rgb), 0.15) !important;
+        border: 1px solid rgba(var(--primary-color-rgb), 0.3);
+        margin: 0 4px;
+        height: 36px;
+        width: 36px;
+        padding: 6px;
+        
+        &:hover {
+          background-color: rgba(var(--primary-color-rgb), 0.3) !important;
+        }
+        
+        &[disabled] {
+          opacity: 0.5;
+          color: rgba(var(--primary-color-rgb), 0.5) !important;
+        }
+        
+        .mat-icon {
+          height: 24px;
+          width: 24px;
+          font-size: 24px;
+          line-height: 24px;
+        }
+      }
+      
+      /* Icon fill color */
+      .mat-paginator-icon {
+        fill: var(--primary-color);
+        transform: scale(1.2);
+      }
+      
+      /* Text labels */
+      .mat-paginator-range-label,
+      .mat-paginator-page-size-label {
+        color: var(--text-color);
+      }
+      
+      /* Dropdown styling */
+      .mat-select-value {
+        color: var(--primary-color);
+      }
+      
+      .mat-select-arrow {
+        color: var(--primary-color);
+      }
+    }
+  }
+}
+}

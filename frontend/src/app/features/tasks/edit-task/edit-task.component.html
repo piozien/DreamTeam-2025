@@ -1,0 +1,295 @@
+<div class="container" *ngIf="!loading">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Edytuj zadanie</mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <form [formGroup]="taskForm" (ngSubmit)="onSubmit()">
+        <mat-tab-group>
+          <!-- Basic Task Information -->
+          <mat-tab label="Szczegóły zadania">
+            <div class="form-section">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Nazwa zadania</mat-label>
+                <input matInput formControlName="name" required>
+                <mat-error *ngIf="taskForm.get('name')?.hasError('required')">
+                  Nazwa zadania jest wymagana
+                </mat-error>
+              </mat-form-field>
+          
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Opis</mat-label>
+                <textarea matInput formControlName="description" rows="5"></textarea>
+              </mat-form-field>
+          
+              <div class="date-container">
+                <!-- Start Date and Time -->
+                <div class="date-time-pair">
+                  <mat-form-field appearance="outline" class="date-field">
+                    <mat-label>Data rozpoczęcia</mat-label>
+                    <!-- Explicitly set min to null to override any default behavior -->
+                    <input matInput [matDatepicker]="startPicker" formControlName="startDate" required (dateChange)="onStartDateChange()" [matDatepickerFilter]="startDateFilter" [min]="null">
+                    <!-- Hidden debug info to verify original date value -->
+                    <span style="display: none;">Original date: {{originalStartDate | date:'short'}}</span>
+                    <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #startPicker></mat-datepicker>
+                    <mat-error *ngIf="taskForm.get('startDate')?.hasError('required')">
+                      Data rozpoczęcia jest wymagana
+                    </mat-error>
+                    <!-- Only use custom validation messages, not the built-in min date validator -->
+                    <mat-error *ngIf="taskForm.get('startDate')?.invalid && !taskForm.get('startDate')?.hasError('required')">
+                      Data rozpoczęcia nie może być wcześniejsza niż {{ getMinDateLabel() }}
+                    </mat-error>
+                  </mat-form-field>
+                  
+                  <mat-form-field appearance="outline" class="time-field">
+                    <mat-label>Czas rozpoczęcia</mat-label>
+                    <div class="time-picker-container">
+                      <div class="time-field-container">
+                        <label class="time-label">Godzina</label>
+                        <mat-select [(value)]="startHour" (selectionChange)="onTimeChange('start')" class="time-select">
+                          <mat-option *ngFor="let hour of hours" [value]="hour">{{ hour }}</mat-option>
+                        </mat-select>
+                      </div>
+                      <span class="time-separator">:</span>
+                      <div class="time-field-container">
+                        <label class="time-label">Minuta</label>
+                        <mat-select [(value)]="startMinute" (selectionChange)="onTimeChange('start')" class="time-select">
+                          <mat-option *ngFor="let minute of minutes" [value]="minute">{{ minute }}</mat-option>
+                        </mat-select>
+                      </div>
+                    </div>
+                  </mat-form-field>
+                </div>
+            
+                <!-- End Date and Time -->
+                <div class="date-time-pair">
+                  <mat-form-field appearance="outline" class="date-field">
+                    <mat-label>Data zakończenia</mat-label>
+                    <!-- Use our endDateFilter to restrict selection of dates beyond project end date -->
+                    <input matInput [matDatepicker]="endPicker" formControlName="endDate" [matDatepickerFilter]="endDateFilter" [min]="null">
+                    <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #endPicker></mat-datepicker>
+                    <!-- Enhanced error messages -->
+                    <mat-error *ngIf="taskForm.get('endDate')?.invalid">
+                      <span *ngIf="taskForm.get('startDate')?.value && taskForm.get('endDate')?.value < taskForm.get('startDate')?.value">
+                        Data zakończenia nie może być wcześniejsza niż data rozpoczęcia
+                      </span>
+                      <span *ngIf="projectEndDate && taskForm.get('endDate')?.value > projectEndDate">
+                        Data zakończenia nie może być późniejsza niż data zakończenia projektu ({{projectEndDate | date:'yyyy-MM-dd'}})
+                      </span>
+                    </mat-error>
+                  </mat-form-field>
+                  
+                  <mat-form-field appearance="outline" class="time-field">
+                    <mat-label>Czas zakończenia</mat-label>
+                    <div class="time-picker-container">
+                      <div class="time-field-container">
+                        <label class="time-label">Godzina</label>
+                        <mat-select [(value)]="endHour" (selectionChange)="onTimeChange('end')" class="time-select" [disabled]="!taskForm.get('endDate')?.value">
+                          <mat-option *ngFor="let hour of hours" [value]="hour">{{ hour }}</mat-option>
+                        </mat-select>
+                      </div>
+                      <span class="time-separator">:</span>
+                      <div class="time-field-container">
+                        <label class="time-label">Minuta</label>
+                        <mat-select [(value)]="endMinute" (selectionChange)="onTimeChange('end')" class="time-select" [disabled]="!taskForm.get('endDate')?.value">
+                          <mat-option *ngFor="let minute of minutes" [value]="minute">{{ minute }}</mat-option>
+                        </mat-select>
+                      </div>
+                    </div>
+                  </mat-form-field>
+                </div>
+              </div>
+          
+              <div class="status-priority-container">
+                <mat-form-field appearance="outline" class="status-field">
+                  <mat-label>Status</mat-label>
+                  <mat-select formControlName="status" required>
+                    <mat-option [value]="TaskStatus.TO_DO">Do zrobienia</mat-option>
+                    <mat-option [value]="TaskStatus.IN_PROGRESS">W trakcie</mat-option>
+                    <mat-option [value]="TaskStatus.FINISHED">Zakończone</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="taskForm.get('status')?.hasError('required')">
+                    Status jest wymagany
+                  </mat-error>
+                </mat-form-field>
+            
+                <mat-form-field appearance="outline" class="priority-field">
+                  <mat-label>Priorytet</mat-label>
+                  <mat-select formControlName="priority" required>
+                    <mat-option [value]="TaskPriority.OPTIONAL">Opcjonalny</mat-option>
+                    <mat-option [value]="TaskPriority.IMPORTANT">Ważny</mat-option>
+                    <mat-option [value]="TaskPriority.CRITICAL">Krytyczny</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="taskForm.get('priority')?.hasError('required')">
+                    Priorytet jest wymagany
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-tab>
+        
+          <!-- Assignees Tab -->
+          <mat-tab label="Przypisani użytkownicy">
+            <div class="form-section">
+              <h3>Przypisani użytkownicy</h3>
+              <div class="assignees-list" *ngIf="task?.assigneeIds?.length; else noAssignees">
+                <div class="assignee-item" *ngFor="let assigneeId of task?.assigneeIds">
+                  <div class="assignee-info">
+                    <span>{{ getUserNameByAssignmentId(assigneeId) }}</span>
+                  </div>
+                  <button 
+                    mat-icon-button 
+                    color="warn" 
+                    (click)="removeAssignee(assigneeId)"
+                    [disabled]="submitting">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <ng-template #noAssignees>
+                <p>Brak przypisanych użytkowników do tego zadania.</p>
+              </ng-template>
+            
+              <mat-divider class="section-divider"></mat-divider>
+            
+              <h3>Dodaj użytkownika</h3>
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Wybierz użytkownika</mat-label>
+                <mat-select [(value)]="selectedAssigneeId">
+                  <mat-option *ngFor="let user of availableUsers" [value]="user.id">
+                    {{ user.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+              <button 
+                mat-raised-button 
+                color="primary" 
+                (click)="addAssignee()"
+                [disabled]="!selectedAssigneeId || submitting">
+                <mat-icon>add</mat-icon> Dodaj użytkownika
+              </button>
+            </div>
+          </mat-tab>
+
+          <!-- Dependencies Tab -->
+          <mat-tab label="Zależności">
+            <div class="form-section">
+              <h3>Aktualne zależności</h3>
+              <div class="dependencies-list" *ngIf="task?.dependencyIds?.length; else noDependencies">
+                <div class="dependency-item" *ngFor="let dependencyId of task?.dependencyIds">
+                  <div class="dependency-info">
+                    <span>{{ getDependencyName(dependencyId) }}</span>
+                  </div>
+                  <button 
+                    mat-icon-button 
+                    color="warn" 
+                    (click)="removeDependency(dependencyId)"
+                    [disabled]="submitting">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <ng-template #noDependencies>
+                <p>Brak zależności dla tego zadania.</p>
+              </ng-template>
+            
+              <mat-divider class="section-divider"></mat-divider>
+            
+              <h3>Dodaj zależność</h3>
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Wybierz zadanie</mat-label>
+                <mat-select [(value)]="selectedDependencyId">
+                  <mat-option *ngFor="let task of availableTasks" [value]="task.id">
+                    {{ task.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+              <button 
+                mat-raised-button 
+                color="primary" 
+                (click)="addDependency()"
+                [disabled]="!selectedDependencyId || submitting">
+                <mat-icon>add</mat-icon> Dodaj zależność
+              </button>
+            </div>
+          </mat-tab>
+
+          <!-- Comments Tab -->
+          <mat-tab label="Komentarze">
+            <div class="form-section">
+              <div class="comments-header">
+                <h3>Komentarze</h3>
+                <button 
+                  mat-stroked-button 
+                  color="warn" 
+                  (click)="confirmDeleteAllComments()"
+                  [disabled]="!task?.comments?.length || submitting"
+                  class="delete-all-btn">
+                  <mat-icon>delete_forever</mat-icon> Usuń wszystkie komentarze
+                </button>
+              </div>
+              <div class="comments-list" *ngIf="task?.comments?.length; else noComments">
+                <div class="comment-item" *ngFor="let comment of task?.comments">
+                  <div class="comment-header">
+                    <div class="comment-user-info">
+                      <strong>{{ getUserName(comment.userId) }}</strong>
+                      <span class="comment-date">{{ comment.createdAt | date:'short' }}</span>
+                    </div>
+                    <button 
+                      mat-icon-button 
+                      color="warn" 
+                      (click)="deleteComment(comment.id)"
+                      [disabled]="submitting"
+                      matTooltip="Usuń komentarz"
+                      class="delete-comment-btn">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                  <div class="comment-body">
+                    {{ comment.comment }}
+                  </div>
+                </div>
+              </div>
+              <ng-template #noComments>
+                <p>Brak komentarzy dla tego zadania.</p>
+              </ng-template>
+            
+              <mat-divider class="section-divider"></mat-divider>
+            
+              <h3>Dodaj komentarz</h3>
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Twój komentarz</mat-label>
+                <textarea matInput [(ngModel)]="newComment" [ngModelOptions]="{standalone: true}" rows="4"></textarea>
+              </mat-form-field>
+              <button 
+                mat-raised-button 
+                color="primary" 
+                (click)="addComment()"
+                [disabled]="!newComment || submitting">
+                <mat-icon>comment</mat-icon> Dodaj komentarz
+              </button>
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+        
+        <div class="form-actions">
+          <button type="button" mat-stroked-button routerLink="/projects/{{ projectId }}" [disabled]="submitting">
+            Anuluj
+          </button>
+          <button type="submit" mat-raised-button color="primary" [disabled]="!isFormValid() || submitting">
+            <mat-spinner *ngIf="submitting" diameter="20" class="spinner-button"></mat-spinner>
+            <span *ngIf="!submitting">Aktualizuj zadanie</span>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<div class="loading-container" *ngIf="loading">
+  <mat-spinner></mat-spinner>
+  <p>Ładowanie szczegółów zadania...</p>
+</div>

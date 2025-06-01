@@ -1,0 +1,64 @@
+.user-management-container {
+  padding: 20px;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  margin: 50px 0;
+}
+
+.error-message {
+  color: red;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.no-users {
+  text-align: center;
+  margin: 50px 0;
+  color: #666;
+}
+
+.users-table-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+}
+
+th.mat-header-cell {
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.mat-column-actions {
+  width: 100px;
+  text-align: center;
+}
+
+.admin-role {
+  color: #3f51b5;
+  font-weight: bold;
+}
+
+.user-role {
+  color: #333;
+}
+
+.status-authorized {
+  color: green;
+}
+
+.status-unauthorized {
+  color: orange;
+}
+
+.status-blocked {
+  color: red;
+}

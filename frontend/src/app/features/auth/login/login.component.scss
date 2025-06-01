@@ -1,0 +1,244 @@
+// Use CSS variables from styles.scss instead of hardcoded colors
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  padding: 20px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 450px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  }
+}
+
+.login-header {
+  padding: 24px 32px;
+  text-align: center;
+  background: linear-gradient(to right, rgba(var(--primary-color-rgb), 0.05), rgba(var(--primary-color-rgb), 0.02));
+  border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.1);
+
+  h2 {
+    color: var(--primary-color-dark);
+    font-size: 1.8rem;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+  }
+
+  .login-subtitle {
+    color: var(--text-color-light);
+    margin: 0;
+    font-size: 1rem;
+  }
+}
+
+.login-form {
+  padding: 24px 32px 32px;
+}
+
+.form-field {
+  margin-bottom: 20px;
+  
+  label {
+    display: block;
+    font-weight: 500;
+    color: var(--primary-color-dark);
+    margin-bottom: 8px;
+  }
+
+  .input-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+    border-radius: 6px;
+    padding: 0 12px;
+    background-color: white;
+    transition: all 0.2s ease;
+    
+    &:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+    }
+    
+    mat-icon {
+      color: var(--text-color-light);
+      margin-right: 8px;
+    }
+    
+    input {
+      width: 100%;
+      padding: 12px 0;
+      border: none;
+      font-size: 1rem;
+      background: transparent;
+      outline: none;
+      
+      &::placeholder {
+        color: rgba(var(--text-color-rgb), 0.4);
+      }
+      
+      &.is-invalid {
+        border-color: var(--danger-color);
+      }
+    }
+  }
+
+  .field-error {
+    color: var(--danger-color);
+    font-size: 0.85rem;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.error-message {
+  margin: 0 32px;
+  padding: 12px 16px;
+  background-color: rgba(var(--danger-color-rgb), 0.1);
+  border-left: 3px solid var(--danger-color);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  color: var(--danger-color);
+  margin-bottom: 20px;
+  
+  mat-icon {
+    margin-right: 8px;
+    font-size: 20px;
+  }
+}
+
+.login-actions {
+  margin-top: 32px;
+  
+  .login-button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(var(--primary-color-rgb), 0.2);
+    
+    &:hover {
+      box-shadow: 0 6px 8px rgba(var(--primary-color-rgb), 0.3);
+      transform: translateY(-1px);
+    }
+    
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+    }
+  }
+
+  .register-info {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--text-color-light);
+    font-size: 0.9rem;
+  }
+}
+
+.separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-color-light);
+  padding: 0 32px;
+  margin: 24px 0;
+  
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(var(--text-color-rgb), 0.1);
+  }
+  
+  &::before {
+    margin-right: 10px;
+  }
+  
+  &::after {
+    margin-left: 10px;
+  }
+  
+  span {
+    font-size: 0.9rem;
+  }
+}
+
+.social-login {
+  padding: 0 32px 32px;
+  
+  .btn-google {
+    width: 100%;
+    padding: 12px;
+    background-color: white;
+    color: var(--text-color);
+    border: 1px solid rgba(var(--text-color-rgb), 0.2);
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    
+    i {
+      color: #4285F4;
+      margin-right: 8px;
+    }
+    
+    &:hover {
+      background-color: #f8f8f8;
+      box-shadow: var(--shadow-md);
+    }
+    
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

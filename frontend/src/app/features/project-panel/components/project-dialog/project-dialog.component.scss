@@ -1,0 +1,19 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+mat-dialog-content {
+  padding-top: 20px;
+}
+
+mat-error {
+  font-size: 12px;
+  margin-top: 4px;
+}
