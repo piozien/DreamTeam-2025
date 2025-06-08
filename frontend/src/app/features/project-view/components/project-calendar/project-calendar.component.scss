@@ -188,19 +188,21 @@ $shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06
 .month-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-template-rows: repeat(6, 1fr);
+  grid-auto-rows: minmax(100px, 1fr);
+  gap: 1px;
   flex: 1;
+  background-color: $border-color;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  overflow: hidden;
   min-height: 500px;
-  background-color: #fff;
 }
 
 .day {
   position: relative;
-  border-right: 1px solid $border-color;
-  border-bottom: 1px solid $border-color;
+  background-color: #fff;
   padding: 8px;
-  height: 100%;
-  min-height: 90px;
+  min-height: 100px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -218,6 +220,13 @@ $shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06
 
 .day.not-current-month .day-number {
   opacity: 0.5;
+}
+
+.day-number {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
 .day.today {
@@ -240,22 +249,15 @@ $shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06
   opacity: 0.7;
 }
 
-.day-number {
-  font-weight: 600;
-  display: block;
-  margin-bottom: 4px;
-  font-size: 14px;
-}
-
 .day.today .day-number {
   display: inline-block;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   background-color: $primary-color;
   color: white;
   border-radius: 50%;
   text-align: center;
-  line-height: 24px;
+  line-height: 28px;
   box-shadow: $shadow-sm;
 }
 
